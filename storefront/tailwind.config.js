@@ -21,6 +21,12 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        kebe: {
+          black: "#000000",
+          ink: "#151915",
+          accent: "#12261E",
+          bone: "#E0E0DB",
+        },
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",
@@ -59,6 +65,8 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
+        display: ["var(--font-display)", "Cormorant Garamond", "Georgia", "serif"],
+        body: ["var(--font-body)", "EB Garamond", "Georgia", "serif"],
         sans: [
           "Inter",
           "-apple-system",

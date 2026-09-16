@@ -32,10 +32,11 @@ import { ApiKey } from "../../.medusa/types/query-entry-points";
 const SHIPPING_EXPEDITED_CAD = 20;
 const SHIPPING_XPRESSPOST_CAD = 30;
 
-// Only the uncorrected July 2024 fab run physically exists, and the owner has
-// not stated the unit count. Seeded low and deliberately: Medusa marks a
-// product sold out rather than overselling a hand-built board.
-const UNITS_ON_HAND = 5;
+// v1 ships as a visible but unbuyable listing: the site leads with the v2
+// waitlist, and v1 sits below it sold out. Zero stock is what makes Medusa
+// render "Sold Out" rather than a buy button. Raise this in Admin when there
+// are boards to sell.
+const UNITS_ON_HAND = 0;
 
 const updateStoreCurrencies = createWorkflow(
   "update-store-currencies",
@@ -304,7 +305,9 @@ export default async function seedKebeData({ container }: ExecArgs) {
             "The case is 3D printed and the boards are assembled by hand in Canada, " +
             "in small batches.",
           weight: 600,
-          status: ProductStatus.DRAFT,
+          // Published deliberately, with zero stock: the listing is meant to be
+          // visible and sold out, not hidden. Everything else stays draft.
+          status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           images: [
             { url: "/products/kebe-v1-hero.jpg" },
