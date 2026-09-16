@@ -311,33 +311,23 @@ export default async function seedKebeData({ container }: ExecArgs) {
             { url: "/products/kebe-v1-angle.jpg" },
             { url: "/products/kebe-v1-rgb.jpg" },
           ],
-          options: [
-            { title: "Case Colour", values: ["Natural", "Black"] },
-            { title: "Build", values: ["Assembled", "Kit"] },
-          ],
+          // No colour option. The repo ships `kebe-plate v22` + `kebe-bottom-black
+          // v4`, but the only photographed unit has a light grey case -- so
+          // "black" is a design-variant filename, not an established resin
+          // colour. Do not add a colour option until the owner confirms which
+          // colours can actually be ordered.
+          options: [{ title: "Build", values: ["Assembled", "Kit"] }],
           variants: [
             {
-              title: "Natural / Assembled",
-              sku: "KEBE-V1-NAT-ASM",
-              options: { "Case Colour": "Natural", Build: "Assembled" },
+              title: "Assembled",
+              sku: "KEBE-V1-ASM",
+              options: { Build: "Assembled" },
               prices: [],
             },
             {
-              title: "Natural / Kit",
-              sku: "KEBE-V1-NAT-KIT",
-              options: { "Case Colour": "Natural", Build: "Kit" },
-              prices: [],
-            },
-            {
-              title: "Black / Assembled",
-              sku: "KEBE-V1-BLK-ASM",
-              options: { "Case Colour": "Black", Build: "Assembled" },
-              prices: [],
-            },
-            {
-              title: "Black / Kit",
-              sku: "KEBE-V1-BLK-KIT",
-              options: { "Case Colour": "Black", Build: "Kit" },
+              title: "Kit",
+              sku: "KEBE-V1-KIT",
+              options: { Build: "Kit" },
               prices: [],
             },
           ],
@@ -356,7 +346,6 @@ export default async function seedKebeData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [{ url: "/products/kebe-v1-case.jpg" }],
           options: [
-            { title: "Colour", values: ["Natural", "Black"] },
             {
               title: "Contents",
               values: ["Plate + Bottom", "Plate only", "Bottom only"],
@@ -364,39 +353,21 @@ export default async function seedKebeData({ container }: ExecArgs) {
           ],
           variants: [
             {
-              title: "Natural / Plate + Bottom",
-              sku: "KEBE-CASE-NAT-BOTH",
-              options: { Colour: "Natural", Contents: "Plate + Bottom" },
+              title: "Plate + Bottom",
+              sku: "KEBE-CASE-BOTH",
+              options: { Contents: "Plate + Bottom" },
               prices: [],
             },
             {
-              title: "Natural / Plate only",
-              sku: "KEBE-CASE-NAT-PLATE",
-              options: { Colour: "Natural", Contents: "Plate only" },
+              title: "Plate only",
+              sku: "KEBE-CASE-PLATE",
+              options: { Contents: "Plate only" },
               prices: [],
             },
             {
-              title: "Natural / Bottom only",
-              sku: "KEBE-CASE-NAT-BOT",
-              options: { Colour: "Natural", Contents: "Bottom only" },
-              prices: [],
-            },
-            {
-              title: "Black / Plate + Bottom",
-              sku: "KEBE-CASE-BLK-BOTH",
-              options: { Colour: "Black", Contents: "Plate + Bottom" },
-              prices: [],
-            },
-            {
-              title: "Black / Plate only",
-              sku: "KEBE-CASE-BLK-PLATE",
-              options: { Colour: "Black", Contents: "Plate only" },
-              prices: [],
-            },
-            {
-              title: "Black / Bottom only",
-              sku: "KEBE-CASE-BLK-BOT",
-              options: { Colour: "Black", Contents: "Bottom only" },
+              title: "Bottom only",
+              sku: "KEBE-CASE-BOT",
+              options: { Contents: "Bottom only" },
               prices: [],
             },
           ],
