@@ -110,9 +110,17 @@ export default async function Footer() {
           </div>
         </div>
         <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} KeBe. All rights reserved.
-          </Text>
+          <div className="flex gap-x-4">
+            <Text className="txt-compact-small">
+              © {new Date().getFullYear()} KeBe. All rights reserved.
+            </Text>
+            <LocalizedClientLink
+              href="/privacy"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Privacy
+            </LocalizedClientLink>
+          </div>
           <Text className="txt-compact-small">
             Designed and Assembled in Canada
           </Text>
