@@ -17,8 +17,11 @@ export default function ProductPrice({
 
   const selectedPrice = variant ? variantPrice : cheapestPrice
 
+  // A variant with no price is not a price still loading -- KeBe products are
+  // seeded unpriced on purpose. The starter's pulsing skeleton never resolves
+  // and reads as a broken page, so render nothing instead.
   if (!selectedPrice) {
-    return <div className="block w-32 h-9 bg-gray-100 animate-pulse" />
+    return null
   }
 
   return (

@@ -30,7 +30,14 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       data-mode="light"
       className={`${display.variable} ${body.variable}`}
     >
-      <body className="bg-black font-body text-white antialiased">
+      {/* No global colour here. The homepage sets its own dark palette per
+          section; the product, cart and account pages are the starter's light
+          theme and go unreadable if white text is forced on them. */}
+      {/* Explicit white: the starter left body transparent and relied on the
+          browser's default, which goes black in a dark-mode browser and hides
+          the near-black product text. The homepage sets its own dark
+          backgrounds per section, so this never shows through there. */}
+      <body className="bg-white font-body antialiased">
         <main className="relative">{props.children}</main>
       </body>
     </html>
