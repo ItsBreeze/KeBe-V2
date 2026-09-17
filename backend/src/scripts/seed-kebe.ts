@@ -284,9 +284,10 @@ export default async function seedKebeData({ container }: ExecArgs) {
 
   logger.info("Seeding KeBe product data...");
 
-  // Every product ships as DRAFT with no prices. Pricing is not derivable from
-  // the repo -- no invoice or line pricing survives for any JLCPCB order -- and
-  // publishing a guessed price then raising it costs more goodwill than waiting.
+  // v1 prices are the owner's real numbers: CA$299 with shine-through keycaps,
+  // CA$199 with blanks, in either colour. Everything else stays DRAFT and
+  // unpriced -- no invoice or line pricing survives for any JLCPCB order, and a
+  // guessed price that later rises costs more goodwill than launching late.
   await createProductsWorkflow(container).run({
     input: {
       products: [
@@ -314,24 +315,34 @@ export default async function seedKebeData({ container }: ExecArgs) {
             { url: "/products/kebe-v1-angle.jpg" },
             { url: "/products/kebe-v1-rgb.jpg" },
           ],
-          // No colour option. The repo ships `kebe-plate v22` + `kebe-bottom-black
-          // v4`, but the only photographed unit has a light grey case -- so
-          // "black" is a design-variant filename, not an established resin
-          // colour. Do not add a colour option until the owner confirms which
-          // colours can actually be ordered.
-          options: [{ title: "Build", values: ["Assembled", "Kit"] }],
+          options: [
+            { title: "Colour", values: ["White", "Black"] },
+            { title: "Keycaps", values: ["Shine-through", "Blank"] },
+          ],
           variants: [
             {
-              title: "Assembled",
-              sku: "KEBE-V1-ASM",
-              options: { Build: "Assembled" },
-              prices: [],
+              title: "White / Shine-through",
+              sku: "KEBE-V1-WHT-SHINE",
+              options: { Colour: "White", Keycaps: "Shine-through" },
+              prices: [{ amount: 299, currency_code: "cad" }],
             },
             {
-              title: "Kit",
-              sku: "KEBE-V1-KIT",
-              options: { Build: "Kit" },
-              prices: [],
+              title: "Black / Shine-through",
+              sku: "KEBE-V1-BLK-SHINE",
+              options: { Colour: "Black", Keycaps: "Shine-through" },
+              prices: [{ amount: 299, currency_code: "cad" }],
+            },
+            {
+              title: "White / Blank",
+              sku: "KEBE-V1-WHT-BLANK",
+              options: { Colour: "White", Keycaps: "Blank" },
+              prices: [{ amount: 199, currency_code: "cad" }],
+            },
+            {
+              title: "Black / Blank",
+              sku: "KEBE-V1-BLK-BLANK",
+              options: { Colour: "Black", Keycaps: "Blank" },
+              prices: [{ amount: 199, currency_code: "cad" }],
             },
           ],
           sales_channels: [{ id: defaultSalesChannel[0].id }],
@@ -349,6 +360,7 @@ export default async function seedKebeData({ container }: ExecArgs) {
           shipping_profile_id: shippingProfile.id,
           images: [{ url: "/products/kebe-v1-case.jpg" }],
           options: [
+            { title: "Colour", values: ["White", "Black"] },
             {
               title: "Contents",
               values: ["Plate + Bottom", "Plate only", "Bottom only"],
@@ -356,21 +368,39 @@ export default async function seedKebeData({ container }: ExecArgs) {
           ],
           variants: [
             {
-              title: "Plate + Bottom",
-              sku: "KEBE-CASE-BOTH",
-              options: { Contents: "Plate + Bottom" },
+              title: "White / Plate + Bottom",
+              sku: "KEBE-CASE-WHT-BOTH",
+              options: { Colour: "White", Contents: "Plate + Bottom" },
               prices: [],
             },
             {
-              title: "Plate only",
-              sku: "KEBE-CASE-PLATE",
-              options: { Contents: "Plate only" },
+              title: "White / Plate only",
+              sku: "KEBE-CASE-WHT-PLATE",
+              options: { Colour: "White", Contents: "Plate only" },
               prices: [],
             },
             {
-              title: "Bottom only",
-              sku: "KEBE-CASE-BOT",
-              options: { Contents: "Bottom only" },
+              title: "White / Bottom only",
+              sku: "KEBE-CASE-WHT-BOT",
+              options: { Colour: "White", Contents: "Bottom only" },
+              prices: [],
+            },
+            {
+              title: "Black / Plate + Bottom",
+              sku: "KEBE-CASE-BLK-BOTH",
+              options: { Colour: "Black", Contents: "Plate + Bottom" },
+              prices: [],
+            },
+            {
+              title: "Black / Plate only",
+              sku: "KEBE-CASE-BLK-PLATE",
+              options: { Colour: "Black", Contents: "Plate only" },
+              prices: [],
+            },
+            {
+              title: "Black / Bottom only",
+              sku: "KEBE-CASE-BLK-BOT",
+              options: { Colour: "Black", Contents: "Bottom only" },
               prices: [],
             },
           ],
@@ -455,6 +485,6 @@ export default async function seedKebeData({ container }: ExecArgs) {
 
   logger.info("Finished seeding inventory levels data.");
   logger.info(
-    "All products seeded as DRAFT with no prices. Set prices and publish once real costs are known."
+    "Seeded. v1 is published and priced (CA$299 shine-through / CA$199 blank) but at zero stock; everything else is draft and unpriced."
   );
 }
