@@ -7,7 +7,7 @@
   },
   "deploy": {
     "preDeployCommand": ["cd .medusa/server && npm install && npm run predeploy"],
-    "startCommand": "cd .medusa/server && npm install && npm run start",
+    "startCommand": "cd .medusa/server && npm install && npm run predeploy && npm run start",
     "healthcheckPath": "/health",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
