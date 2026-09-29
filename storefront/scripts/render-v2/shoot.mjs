@@ -13,9 +13,11 @@
 // index.html in headless Chromium, and writes to public/products/:
 //   stills     kebe-v2-{hero,ports,top,glow}.jpg, 2400 x 1800
 //   glb        kebe-v2.glb, the model at true size in metres (the 3D viewer)
-//   turntable  kebe-v2-turntable.mp4 + .jpg poster: one lit revolution,
-//              1920 x 1080, 8 s at 30 fps, looping (the homepage backdrop);
-//              needs ffmpeg on PATH or FFMPEG=<path>
+//   turntable  kebe-v2-turntable.webm (VP9) + .mp4 (H.264) + .jpg poster: one
+//              lit revolution, 1920 x 1080, 8 s at 30 fps, looping (the
+//              homepage backdrop). Both codecs because Chromium builds without
+//              licensed codecs cannot play H.264. Needs ffmpeg on PATH or
+//              FFMPEG=<path>
 //
 // Needs Playwright with its Chromium (npm i -g playwright && npx playwright
 // install chromium; NODE_PATH pointing at the global modules) and network
@@ -25,7 +27,7 @@
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
-import { copyFile, mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
+import { copyFile, mkdir, mkdtemp, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -143,14 +145,18 @@ async function turntable() {
   await page.close();
   await sharp(path.join(frames, "f0000.png")).jpeg({ quality: 82, mozjpeg: true })
     .toFile(path.join(OUT, "kebe-v2-turntable.jpg"));
-  const out = path.join(OUT, "kebe-v2-turntable.mp4");
-  const ff = spawnSync(process.env.FFMPEG ?? "ffmpeg", [
-    "-y", "-loglevel", "error", "-framerate", "30", "-i", path.join(frames, "f%04d.png"),
-    "-c:v", "libx264", "-preset", "slow", "-crf", "24", "-pix_fmt", "yuv420p",
-    "-movflags", "+faststart", "-an", out,
-  ], { stdio: "inherit" });
-  if (ff.status !== 0) throw new Error(`ffmpeg failed (${ff.status ?? ff.error})`);
-  console.log(`wrote ${path.relative(process.cwd(), out)}`);
+  const input = ["-y", "-loglevel", "error", "-framerate", "30", "-i", path.join(frames, "f%04d.png")];
+  const encodes = {
+    "kebe-v2-turntable.mp4": ["-c:v", "libx264", "-preset", "slow", "-crf", "24", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an"],
+    "kebe-v2-turntable.webm": ["-c:v", "libvpx-vp9", "-crf", "36", "-b:v", "0", "-row-mt", "1", "-pix_fmt", "yuv420p", "-an"],
+  };
+  for (const [name, args] of Object.entries(encodes)) {
+    const out = path.join(OUT, name);
+    const ff = spawnSync(process.env.FFMPEG ?? "ffmpeg", [...input, ...args, out], { stdio: "inherit" });
+    if (ff.status !== 0) throw new Error(`ffmpeg failed on ${name} (${ff.status ?? ff.error})`);
+    console.log(`wrote ${path.relative(process.cwd(), out)}`);
+  }
+  await rm(frames, { recursive: true, force: true });
 }
 
 async function glb() {
@@ -176,4 +182,5 @@ try {
 } finally {
   await browser.close();
   server.close();
+  await rm(dir, { recursive: true, force: true });
 }

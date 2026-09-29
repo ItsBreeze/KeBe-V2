@@ -114,6 +114,7 @@ export default async function Home(props: {
           poster="/products/kebe-v2-turntable.jpg"
           className="absolute inset-0 h-full w-full object-cover opacity-40 motion-reduce:hidden"
         >
+          <source src="/products/kebe-v2-turntable.webm" type="video/webm" />
           <source src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
         </video>
         <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] py-24 text-center small:px-[4vw]">

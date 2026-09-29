@@ -49,7 +49,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         </div>
         <div className="block w-full relative">
           {model && (
-            <div className="mb-4">
+            <div className="mb-4 small:mx-16">
               <ProductModel
                 src={model}
                 poster={images[0]?.url}
