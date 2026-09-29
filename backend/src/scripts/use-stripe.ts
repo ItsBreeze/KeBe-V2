@@ -8,7 +8,7 @@ import { updateRegionsWorkflow } from "@medusajs/medusa/core-flows";
 //
 //   medusa exec ./src/scripts/use-stripe.ts
 //
-// Needs STRIPE_API_KEY on the service and a deploy since, so that
+// Needs STRIPE_SECRET_KEY on medusa-backend and a deploy since, so that
 // medusa-config.ts has registered the provider this points the region at.
 
 const STRIPE = "pp_stripe_stripe";
@@ -21,7 +21,7 @@ export default async function useStripe({ container }: ExecArgs) {
   const providers = await paymentService.listPaymentProviders({ id: STRIPE });
   if (!providers.length) {
     throw new Error(
-      `${STRIPE} is not registered. Set STRIPE_API_KEY on medusa-backend and redeploy first.`
+      `${STRIPE} is not registered. Set STRIPE_SECRET_KEY on medusa-backend and redeploy first.`
     );
   }
 

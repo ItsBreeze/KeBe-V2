@@ -3,12 +3,16 @@ import { loadEnv, defineConfig } from '@medusajs/framework/utils'
 loadEnv(process.env.NODE_ENV || 'development', process.cwd())
 
 // Stripe is the only way to pay (no PayPal: see the storefront README). The
-// provider refuses to start without a key, so it is registered only once
-// STRIPE_API_KEY is on the service; until then the backend boots as before.
+// provider refuses to start without a key, so it is registered only once the
+// secret key is on THIS service (medusa-backend, not the storefront); until
+// then the backend boots as before. STRIPE_SECRET_KEY is the name every other
+// service on the account uses; STRIPE_API_KEY is Medusa's own, also accepted.
+const stripeKey = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY
+
 // capture: true takes the money when the order is placed. Left manual, every
 // order would need capturing in Admin within Stripe's seven-day authorization
 // window or be lost.
-const stripeProvider = process.env.STRIPE_API_KEY
+const stripeProvider = stripeKey
   ? [{
       resolve: "@medusajs/medusa/payment",
       options: {
@@ -17,7 +21,7 @@ const stripeProvider = process.env.STRIPE_API_KEY
             resolve: "@medusajs/medusa/payment-stripe",
             id: "stripe",
             options: {
-              apiKey: process.env.STRIPE_API_KEY,
+              apiKey: stripeKey,
               webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
               capture: true,
             },

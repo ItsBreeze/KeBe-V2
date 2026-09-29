@@ -27,7 +27,7 @@ const EVENTS = [
   'payment_intent.partially_funded',
 ];
 
-const key = process.env.STRIPE_API_KEY || '';
+const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
 const base = (process.env.MEDUSA_BACKEND_URL || '').replace(/\/+$/, '');
 
 function formEncode(obj, prefix, out = new URLSearchParams()) {
@@ -65,7 +65,7 @@ function setRailwayVariable(name, value) {
 
 (async () => {
   if (!key) {
-    console.error('STRIPE_API_KEY is not set on medusa-backend. Add it there first, then run this through `railway run`.');
+    console.error('STRIPE_SECRET_KEY is not set on medusa-backend. Add it there first, then run this through `railway run`.');
     process.exit(1);
   }
   if (!/^https:\/\//.test(base)) {

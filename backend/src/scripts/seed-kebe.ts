@@ -119,7 +119,7 @@ export default async function seedKebeData({ container }: ExecArgs) {
           // is "Manual Payment": orders with no money taken, only for a store
           // that cannot charge yet. See use-stripe.ts for an existing database.
           payment_providers: [
-            process.env.STRIPE_API_KEY ? "pp_stripe_stripe" : "pp_system_default",
+            (process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY) ? "pp_stripe_stripe" : "pp_system_default",
           ],
         },
       ],
