@@ -10,6 +10,7 @@ import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
+import { presaleShipsBy } from "@lib/util/presale"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 
@@ -116,6 +117,9 @@ export default function ProductActions({
     return false
   }, [selectedVariant])
 
+  const shipsBy = presaleShipsBy(product)
+  const buyLabel = shipsBy ? "Pre-order" : "Add to cart"
+
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
@@ -180,8 +184,17 @@ export default function ProductActions({
             ? "Select variant"
             : !inStock || !isValidVariant
             ? "Out of stock"
-            : "Add to cart"}
+            : buyLabel}
         </Button>
+        {shipsBy && inStock && (
+          <p
+            className="text-small-regular text-ui-fg-subtle"
+            data-testid="presale-note"
+          >
+            Pre-order: charged in full at checkout, ships by {shipsBy}. Ships
+            within Canada.
+          </p>
+        )}
         <MobileActions
           product={product}
           variant={selectedVariant}
@@ -189,6 +202,7 @@ export default function ProductActions({
           updateOptions={setOptionValue}
           inStock={inStock}
           handleAddToCart={handleAddToCart}
+          buyLabel={buyLabel}
           isAdding={isAdding}
           show={!inView}
           optionsDisabled={!!disabled || isAdding}

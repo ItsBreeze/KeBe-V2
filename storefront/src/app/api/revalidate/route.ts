@@ -1,26 +1,24 @@
 import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 
-// Clears the Next cache for catalog pages so an edit in Medusa Admin shows up
-// without redeploying the storefront.
+// Clears the Next cache so an edit in Medusa Admin, or stock moving (the
+// presale's boards-left count), shows up without redeploying the storefront.
 //
 //   POST /api/revalidate?secret=<REVALIDATE_SECRET>
 //
-// Called automatically by the backend's product-changed subscriber, and safe to
-// curl by hand if a change ever looks stuck.
+// Called automatically by the backend's revalidate-storefront subscriber, and
+// safe to curl by hand if a change ever looks stuck.
 //
 // revalidatePath rather than revalidateTag on purpose: this storefront builds
 // its cache tags per visitor (`products-${_medusa_cache_id}` -- see
 // lib/data/cookies.ts), so there is no single product tag a webhook could
 // invalidate for everyone. Paths are global.
-
-const PATHS: Array<[string, "page" | "layout"]> = [
-  ["/[countryCode]/products/[handle]", "page"],
-  ["/[countryCode]/store", "page"],
-  ["/[countryCode]/categories/[...category]", "page"],
-  ["/[countryCode]/collections/[handle]", "page"],
-  ["/[countryCode]", "page"],
-]
+//
+// The root layout, not a list of pages: a page's cache tag keeps its route
+// group (`/[countryCode]/(main)/page`), so the old list without `(main)`
+// matched nothing and no page ever refreshed. Every route sits under the root
+// layout, so this reaches them all; it also drops per-visitor cart entries,
+// which cost one refetch each.
 
 export async function POST(req: NextRequest) {
   const expected = process.env.REVALIDATE_SECRET
@@ -38,9 +36,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid secret." }, { status: 401 })
   }
 
-  for (const [path, type] of PATHS) {
-    revalidatePath(path, type)
-  }
+  revalidatePath("/", "layout")
 
-  return NextResponse.json({ revalidated: PATHS.map(([p]) => p) })
+  return NextResponse.json({ revalidated: ["/ (layout)"] })
 }
