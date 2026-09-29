@@ -27,7 +27,7 @@ import {
 // still on, a presale order would reserve a board and take no money.
 //
 // Safe to re-run. It creates the product once; afterwards it only brings the
-// status, description, pictures and 3D model up to date, and keeps a ships-by
+// status, description, pictures, 3D model and clip up to date, and keeps a ships-by
 // date already set in Admin. It never changes price or existing stock: orders
 // reserve against stocked_quantity, so resetting it would oversell. The one
 // stock write is the first batch, made only while the variant has no stock
@@ -42,9 +42,12 @@ const FIRST_BATCH = 5;
 // the ships-by line; editing it in Admin moves the date without a deploy.
 const SHIPS_BY = "2026-10-31";
 const STRIPE = "pp_stripe_stripe";
-// model_glb puts the 3D viewer on the product page (storefront, product
-// template), from storefront/scripts/render-v2.
+// model_glb puts the 3D viewer on the product page and video a looping clip
+// (a path without extension: .webm, .mp4 and a .jpg poster), both from
+// storefront/scripts/render-v2 and read by the storefront's product template.
 const MODEL_GLB = "/products/kebe-v2.glb";
+const MODEL_POSTER = "/products/kebe-v2-hero.jpg"; // a plain render, not a scene
+const VIDEO = "/products/kebe-v2-desk-clip";
 
 const DESCRIPTION =
   "KeBe v2 is v1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
@@ -58,24 +61,53 @@ const DESCRIPTION =
   "a v1 keymap carries straight over.\n\n" +
   "It is all black. The plate is FR4 with black soldermask, and the keycaps " +
   "are black with shine-through legends, so each key's LED lights its " +
-  "legend. The Fn-layer legend sits below the main one.\n\n" +
-  "The first batch is five boards, assembled by hand in Canada. The pictures, " +
-  "video and 3D model are made from v2's CAD, not photographs.";
+  "legend. Where a key has an Fn-layer legend, it sits below the main one.\n\n" +
+  "The first batch is five boards, assembled by hand in Canada. None of the " +
+  "pictures or the clip are photographs: the plain renders and the 3D model " +
+  "come straight from v2's CAD, and the desk, studio and night pictures and " +
+  "the clip set that CAD model in AI-generated scenes.";
 
 // From storefront/scripts/render-v2. desk, studio and night are the CAD
-// keyboard composited into AI-generated scenes; cable is AI-generated from the
-// CAD ports render and checked against it; the rest are straight renders.
+// keyboard composited into AI-generated scenes; the rest are straight renders.
+// The desk scene is the thumbnail (store grid, cart) and ends the gallery,
+// since the product page's clip, above the gallery, is that same scene.
+const THUMBNAIL = "/products/kebe-v2-desk.jpg";
 const IMAGES = [
-  { url: "/products/kebe-v2-desk.jpg" },
   { url: "/products/kebe-v2-hero.jpg" },
   { url: "/products/kebe-v2-top.jpg" },
   { url: "/products/kebe-v2-ports.jpg" },
-  { url: "/products/kebe-v2-cable.jpg" },
   { url: "/products/kebe-v2-night.jpg" },
   { url: "/products/kebe-v2-studio.jpg" },
+  { url: THUMBNAIL },
 ];
 
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+// The storefront's rule (lib/util/presale.ts): a real calendar date, so a
+// re-run replaces an Admin typo like 2026-11-31 rather than keeping it.
+const validDate = (v: unknown): v is string => {
+  if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
+  const d = new Date(`${v}T12:00:00Z`);
+  return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
+};
+
+// medusa exec calls process.exit() as soon as this script returns, which cuts
+// off the revalidate-storefront subscriber's un-awaited fetch. So once the
+// stock exists, flush the storefront here and wait for it.
+const revalidateStorefront = async (logger: { info: (m: string) => void; warn: (m: string) => void }) => {
+  const base = process.env.STOREFRONT_URL;
+  const secret = process.env.REVALIDATE_SECRET;
+  const byHand = "POST <storefront>/api/revalidate?secret=<REVALIDATE_SECRET> by hand, or the site keeps its cached state.";
+  if (!base || !secret) {
+    logger.warn(`STOREFRONT_URL or REVALIDATE_SECRET is not set here: ${byHand}`);
+    return;
+  }
+  try {
+    const res = await fetch(`${base.replace(/\/$/, "")}/api/revalidate?secret=${encodeURIComponent(secret)}`, { method: "POST" });
+    if (res.ok) logger.info("Storefront revalidated.");
+    else logger.warn(`Storefront revalidation returned ${res.status}: ${byHand}`);
+  } catch (e) {
+    logger.warn(`Storefront revalidation failed (${e}): ${byHand}`);
+  }
+};
 
 export default async function startPresale({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -157,26 +189,33 @@ export default async function startPresale({ container }: ExecArgs) {
   if (existing.length) {
     const product = existing[0];
     const current = product.metadata?.ships_by;
-    const shipsBy = typeof current === "string" && DATE.test(current) ? current : SHIPS_BY;
+    const shipsBy = validDate(current) ? current : SHIPS_BY;
+    if (current !== undefined && current !== shipsBy) {
+      logger.warn(`ships_by "${String(current)}" is not a real date; set back to ${SHIPS_BY}.`);
+    }
     await updateProductsWorkflow(container).run({
       input: {
         selector: { id: product.id },
         update: {
           status: ProductStatus.PUBLISHED,
           description: DESCRIPTION,
+          thumbnail: THUMBNAIL,
           images: IMAGES,
           metadata: {
             ...(product.metadata ?? {}),
             presale: "true",
             ships_by: shipsBy,
             model_glb: MODEL_GLB,
+            model_poster: MODEL_POSTER,
+            video: VIDEO,
           },
         },
       },
     });
     const stocked = await ensureFirstBatch(product.id);
+    await revalidateStorefront(logger);
     logger.info(
-      `${HANDLE} already exists: published, ships by ${shipsBy}, pictures, description and model updated. ` +
+      `${HANDLE} already exists: published, ships by ${shipsBy}, pictures, description, model and clip updated. ` +
         (stocked
           ? `It had no stock level, so ${FIRST_BATCH} are now in stock at ${location.name}.`
           : "Price and stock left as they are; change them in Admin.")
@@ -212,7 +251,14 @@ export default async function startPresale({ container }: ExecArgs) {
           description: DESCRIPTION,
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
-          metadata: { presale: "true", ships_by: SHIPS_BY, model_glb: MODEL_GLB },
+          thumbnail: THUMBNAIL,
+          metadata: {
+            presale: "true",
+            ships_by: SHIPS_BY,
+            model_glb: MODEL_GLB,
+            model_poster: MODEL_POSTER,
+            video: VIDEO,
+          },
           images: IMAGES,
           options: [{ title: "Colour", values: ["Black"] }],
           variants: [
@@ -232,6 +278,7 @@ export default async function startPresale({ container }: ExecArgs) {
   });
 
   await ensureFirstBatch(result[0].id);
+  await revalidateStorefront(logger);
 
   logger.info(
     `Presale open: ${HANDLE} at CA$${PRICE_CAD}, ${FIRST_BATCH} in stock at ${location.name}, ships by ${SHIPS_BY}.`

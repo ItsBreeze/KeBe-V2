@@ -2,6 +2,7 @@ import React, { Suspense } from "react"
 
 import ImageGallery from "@modules/products/components/image-gallery"
 import ProductModel from "@modules/products/components/product-model"
+import ProductVideo from "@modules/products/components/product-video"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
@@ -30,12 +31,21 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     return notFound()
   }
 
-  // A product with a 3D model (metadata.model_glb, set by the backend's
-  // start-presale script) shows it above its pictures.
+  // A product with a 3D model (metadata.model_glb) or a clip (metadata.video,
+  // a path without extension), both set by the backend's start-presale
+  // script, shows them above its pictures.
   const model =
     typeof product.metadata?.model_glb === "string"
       ? product.metadata.model_glb
       : null
+  const video =
+    typeof product.metadata?.video === "string" ? product.metadata.video : null
+  // The viewer's poster is a plain render (metadata.model_poster), not the
+  // first gallery picture, which may be a composite scene.
+  const modelPoster =
+    typeof product.metadata?.model_poster === "string"
+      ? product.metadata.model_poster
+      : images[0]?.url
 
   return (
     <>
@@ -52,8 +62,17 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             <div className="mb-4 small:mx-16">
               <ProductModel
                 src={model}
-                poster={images[0]?.url}
+                poster={modelPoster}
                 alt={`${product.title}, a 3D model you can turn`}
+              />
+            </div>
+          )}
+          {video && (
+            <div className="mb-4 small:mx-16">
+              <ProductVideo
+                stem={video}
+                poster={`${video}.jpg`}
+                caption="The CAD model in an AI-generated scene"
               />
             </div>
           )}

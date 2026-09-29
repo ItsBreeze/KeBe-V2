@@ -12,7 +12,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import WaitlistForm from "@modules/home/components/waitlist-form"
 
 const DESCRIPTION =
-  "Pre-order KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Hand-built in Canada."
+  "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Hand-built in Canada."
 
 export const metadata: Metadata = {
   title: "KeBe",
@@ -28,8 +28,8 @@ export const metadata: Metadata = {
 }
 
 // The board the kebe repo calls v3 (PCBs/v3/README.md, Case_Files/v3/README.md):
-// v1 plus a CH334F hub. The wireless design, the repo's own v2, stays a
-// prototype; nothing here may promise a battery or a radio.
+// v1 plus a CH334F hub. The wireless design, the repo's own v2, is not for
+// sale; nothing here may promise a battery or a radio.
 const V2_SPECS = [
   {
     title: "Four USB-C ports",
@@ -37,7 +37,7 @@ const V2_SPECS = [
   },
   {
     title: "The same layout",
-    body: "Sixty-eight keys on the same Matrix-Dvorak grid as v1. Nothing you learn on one is wasted on the other. Each key's Fn-layer legend sits below its main one.",
+    body: "Sixty-eight keys on the same Matrix-Dvorak grid as v1. Nothing you learn on one is wasted on the other. Where a key has an Fn-layer legend, it sits below its main one.",
   },
   {
     title: "Lower, and no screws",
@@ -100,7 +100,7 @@ export default async function Home(props: {
           fill
           priority
           sizes="100vw"
-          className="object-cover opacity-40"
+          className="object-cover opacity-40 motion-safe:hidden"
         />
         {/* One lit revolution of the CAD model (scripts/render-v2), looping;
             the still above stands in for it when motion is reduced. */}
@@ -114,8 +114,9 @@ export default async function Home(props: {
           poster="/products/kebe-v2-turntable.jpg"
           className="absolute inset-0 h-full w-full object-cover opacity-40 motion-reduce:hidden"
         >
-          <source src="/products/kebe-v2-turntable.webm" type="video/webm" />
-          <source src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
+          {/* media: with reduced motion no source matches, so nothing downloads */}
+          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.webm" type="video/webm" />
+          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
         </video>
         <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] py-24 text-center small:px-[4vw]">
           <p className="mb-6 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
@@ -171,6 +172,30 @@ export default async function Home(props: {
           <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
             What changes
           </h2>
+          {/* An AI camera move over the night scene, with the CAD keyboard
+              tracked back into every frame (scripts/render-v2). */}
+          <div className="relative mt-10 aspect-[4/3] w-full max-w-3xl overflow-hidden rounded-sm">
+            <Image
+              src="/products/kebe-v2-night-clip.jpg"
+              alt="KeBe v2 on a desk at night, its legends lit in a rainbow by the per-key RGB."
+              fill
+              sizes="(max-width: 768px) 100vw, 768px"
+              className="object-cover"
+            />
+            <video
+              aria-hidden
+              autoPlay
+              muted
+              loop
+              playsInline
+              preload="metadata"
+              poster="/products/kebe-v2-night-clip.jpg"
+              className="absolute inset-0 h-full w-full object-cover motion-reduce:hidden"
+            >
+              <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-night-clip.webm" type="video/webm" />
+              <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-night-clip.mp4" type="video/mp4" />
+            </video>
+          </div>
           <div className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {V2_SPECS.map((s) => (
               <div key={s.title}>
@@ -184,10 +209,13 @@ export default async function Home(props: {
             ))}
           </div>
           <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
-            v2 is wired: the battery-and-Bluetooth design is still a prototype,
-            and this is the board that ships. Every v2 picture, the video and
-            the 3D model are computer-generated from its CAD, not photographs;
-            the photos below are of v1, whose layout and form v2 keeps.
+            v2 is wired: the battery-and-Bluetooth design is not for sale, and
+            this is the board that ships. None of the v2 pictures or videos are
+            photographs. The turning keyboard at the top, the 3D model and the
+            plain renders come straight from its CAD; the desk, studio and
+            night scenes, the clip above included, set that CAD model in
+            AI-generated surroundings. The photos below are of v1, whose layout
+            and form v2 keeps.
           </p>
         </div>
       </section>

@@ -22,6 +22,9 @@
 //              on a transparent background, put into the AI-generated scenes
 //              in backplates/ (composite.py; needs python3 with
 //              opencv-python-headless). Runs after stills, which it aligns to.
+//              Then kebe-v2-{desk,night}-clip.{webm,mp4}: the AI camera moves
+//              in backplates/*-clip.mp4 with the exact keyboard tracked back
+//              in (composite_video.py; also needs ffmpeg).
 //
 // Needs Playwright with its Chromium (npm i -g playwright && npx playwright
 // install chromium; NODE_PATH pointing at the global modules) and network
@@ -44,11 +47,12 @@ const ROOT =
 const VIEWS = ["hero", "ports", "top", "glow"];
 const W = 2400, H = 1800;
 const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb", "turntable", "composites"];
-// [output, backplate, the still the backplate was generated from, render, mode]
+// [output, backplate, the still the backplate was generated from, render, mode,
+//  the AI clip generated from the output, if any]
 const COMPOSITES = [
-  ["kebe-v2-desk.jpg", "desk.jpg", "kebe-v2-hero.jpg", "hero&alpha=1&light=window", ""],
-  ["kebe-v2-studio.jpg", "studio.jpg", "kebe-v2-hero.jpg", "hero&alpha=1", ""],
-  ["kebe-v2-night.jpg", "night.jpg", "kebe-v2-glow.jpg", "glow&alpha=1", "lit"],
+  ["kebe-v2-desk.jpg", "desk.jpg", "kebe-v2-hero.jpg", "hero&alpha=1&light=window", "", "desk-clip.mp4"],
+  ["kebe-v2-studio.jpg", "studio.jpg", "kebe-v2-hero.jpg", "hero&alpha=1", "", null],
+  ["kebe-v2-night.jpg", "night.jpg", "kebe-v2-glow.jpg", "glow&alpha=1", "lit", "night-clip.mp4"],
 ];
 
 // The legend list quotes fields that contain commas.
@@ -73,6 +77,15 @@ function parseCsv(text) {
 
 async function stage() {
   const dir = await mkdtemp(path.join(tmpdir(), "kebe-render-"));
+  try {
+    return await fill(dir);
+  } catch (e) {
+    await rm(dir, { recursive: true, force: true });
+    throw e;
+  }
+}
+
+async function fill(dir) {
   await mkdir(path.join(dir, "assets", "caps"), { recursive: true });
   await copyFile(path.join(ROOT, "Case_Files/v3/KEBE-V3-BOTTOM.stl"), path.join(dir, "assets/KEBE-V3-BOTTOM.stl"));
   const caps = path.join(ROOT, "Keycaps/print/per-cap");
@@ -91,10 +104,12 @@ async function stage() {
 
 const TYPES = { ".html": "text/html", ".json": "application/json", ".svg": "image/svg+xml" };
 
-const dir = await stage();
+// Set up below, inside the try whose finally takes them down again.
+let dir, server, browser, port;
+
 // Loopback only, and nothing outside the staging directory: while it runs
 // this serves files, so it must not serve the rest of the disk.
-const server = createServer(async (req, res) => {
+const serve = () => createServer(async (req, res) => {
   try {
     const p = path.resolve(dir, "." + decodeURIComponent(req.url.split("?")[0]));
     if (!p.startsWith(dir + path.sep)) throw new Error("outside the staging dir");
@@ -106,8 +121,6 @@ const server = createServer(async (req, res) => {
     res.end();
   }
 });
-await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
-const port = server.address().port;
 
 // require, not import: NODE_PATH reaches a global Playwright only through it.
 const require = createRequire(import.meta.url);
@@ -119,14 +132,10 @@ const CDN = "https://cdn.jsdelivr.net/npm/three@0.170.0";
 let localThree = null;
 try {
   // three does not export its package.json; its main entry is build/three.cjs.
-  const dir = path.resolve(path.dirname(require.resolve("three")), "..");
-  const { version } = JSON.parse(await readFile(path.join(dir, "package.json"), "utf8"));
-  if (version === "0.170.0") localThree = dir;
+  const threeDir = path.resolve(path.dirname(require.resolve("three")), "..");
+  const { version } = JSON.parse(await readFile(path.join(threeDir, "package.json"), "utf8"));
+  if (version === "0.170.0") localThree = threeDir;
 } catch {}
-const browser = await chromium.launch({
-  args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
-});
-await mkdir(OUT, { recursive: true });
 
 async function open(view, w, h) {
   const page = await browser.newPage({ viewport: { width: w, height: h } });
@@ -146,6 +155,14 @@ async function open(view, w, h) {
 async function turntable() {
   const FRAMES = 240, TW = 1920, TH = 1080;
   const frames = await mkdtemp(path.join(tmpdir(), "kebe-turn-"));
+  try {
+    await shootTurntable(frames, FRAMES, TW, TH);
+  } finally {
+    await rm(frames, { recursive: true, force: true });
+  }
+}
+
+async function shootTurntable(frames, FRAMES, TW, TH) {
   const page = await open("glowturn", TW, TH);
   const canvas = page.locator("canvas");
   for (let i = 0; i < FRAMES; i++) {
@@ -166,7 +183,6 @@ async function turntable() {
     if (ff.status !== 0) throw new Error(`ffmpeg failed on ${name} (${ff.status ?? ff.error})`);
     console.log(`wrote ${path.relative(process.cwd(), out)}`);
   }
-  await rm(frames, { recursive: true, force: true });
 }
 
 async function glb() {
@@ -181,7 +197,7 @@ async function glb() {
 async function composites() {
   const layers = await mkdtemp(path.join(tmpdir(), "kebe-layers-"));
   try {
-    for (const [name, plate, ref, view, mode] of COMPOSITES) {
+    for (const [name, plate, ref, view, mode, clip] of COMPOSITES) {
       const page = await open(view, W, H);
       const layer = path.join(layers, name.replace(/\.jpg$/, ".png"));
       await page.locator("canvas").screenshot({ path: layer, omitBackground: true });
@@ -191,6 +207,13 @@ async function composites() {
         path.join(OUT, ref), layer, path.join(OUT, name), ...(mode ? [mode] : []),
       ], { stdio: "inherit" });
       if (py.status !== 0) throw new Error(`composite.py failed on ${name} (${py.status ?? py.error})`);
+      if (!clip) continue;
+      const vid = spawnSync(process.env.PYTHON ?? "python3", [
+        "composite_video.py", path.join(HERE, "backplates", clip), path.join(OUT, name),
+        path.join(HERE, "backplates", plate), path.join(OUT, ref), layer,
+        path.join(OUT, name.replace(/\.jpg$/, "-clip")), ...(mode ? [mode] : []),
+      ], { stdio: "inherit", cwd: HERE });
+      if (vid.status !== 0) throw new Error(`composite_video.py failed on ${clip} (${vid.status ?? vid.error})`);
     }
   } finally {
     await rm(layers, { recursive: true, force: true });
@@ -198,6 +221,15 @@ async function composites() {
 }
 
 try {
+  dir = await stage();
+  server = serve();
+  await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
+  port = server.address().port;
+  browser = await chromium.launch({
+    args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
+  });
+  await mkdir(OUT, { recursive: true });
+
   if (JOBS.includes("glb")) await glb();
   if (JOBS.includes("turntable")) await turntable();
   for (const view of JOBS.includes("stills") ? VIEWS : []) {
@@ -210,7 +242,7 @@ try {
   }
   if (JOBS.includes("composites")) await composites();
 } finally {
-  await browser.close();
-  server.close();
-  await rm(dir, { recursive: true, force: true });
+  await browser?.close();
+  server?.close();
+  if (dir) await rm(dir, { recursive: true, force: true });
 }

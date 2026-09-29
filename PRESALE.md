@@ -27,7 +27,10 @@ in Stripe (API keys → ⋯ → Roll key) and use the new one on `medusa-backend
 While you are in `medusa-backend`'s variables, check that `STOREFRONT_URL`
 (`https://kebe.grounders.app`) and `REVALIDATE_SECRET` (the same value as on
 `storefront`) are set. They are what flips the site to Sold Out after the fifth
-order.
+order. Also check `MEDUSA_BACKEND_URL` there: the backend's own public https
+address, the one the storefront's `MEDUSA_BACKEND_URL` points at. The webhook
+script in step 2 registers `<that>/hooks/payment/stripe_stripe` (it falls back to
+the service's Railway public domain if it has one).
 
 Redeploy both services. The storefront has to be rebuilt, not just restarted:
 `NEXT_PUBLIC_` values are fixed at build time.
@@ -60,6 +63,14 @@ and 3D model, keeps a `ships_by` date you set in Admin, and never changes price
 or existing stock (it sets the first 5 only if stock was never set). The title,
 colour and SKU are fixed when the product is first created; change those in
 Admin.
+
+It revalidates the storefront itself when it finishes. If it warns that it
+could not (it needs `STOREFRONT_URL` and `REVALIDATE_SECRET` where it runs), do
+it by hand:
+
+```
+curl -X POST "https://kebe.grounders.app/api/revalidate?secret=$REVALIDATE_SECRET"
+```
 
 ## 4. Check it
 

@@ -7,7 +7,8 @@
  *
  *   railway run --service medusa-backend node scripts/stripe-webhook.js
  *
- * The endpoint is <MEDUSA_BACKEND_URL>/hooks/payment/stripe_stripe, which is
+ * The endpoint is <backend URL>/hooks/payment/stripe_stripe -- MEDUSA_BACKEND_URL
+ * on medusa-backend, else the https domain Railway gives the service -- which is
  * where Medusa routes events for the provider registered with id "stripe"
  * (medusa-config.ts). Safe to re-run: an existing endpoint keeps its secret
  * when Railway already has it and is replaced when it doesn't, because Stripe
@@ -28,7 +29,10 @@ const EVENTS = [
 ];
 
 const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || '';
-const base = (process.env.MEDUSA_BACKEND_URL || '').replace(/\/+$/, '');
+const base = (
+  process.env.MEDUSA_BACKEND_URL ||
+  (process.env.RAILWAY_PUBLIC_DOMAIN ? `https://${process.env.RAILWAY_PUBLIC_DOMAIN}` : '')
+).replace(/\/+$/, '');
 
 function formEncode(obj, prefix, out = new URLSearchParams()) {
   for (const [k, v] of Object.entries(obj)) {
@@ -69,7 +73,7 @@ function setRailwayVariable(name, value) {
     process.exit(1);
   }
   if (!/^https:\/\//.test(base)) {
-    console.error('MEDUSA_BACKEND_URL is not an https address; the webhook needs the public one.');
+    console.error('No public https address for medusa-backend: set MEDUSA_BACKEND_URL on it (or give it a Railway public domain); the webhook needs it.');
     process.exit(1);
   }
   const url = `${base}/hooks/payment/stripe_stripe`;
