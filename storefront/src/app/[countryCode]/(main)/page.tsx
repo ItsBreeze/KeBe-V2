@@ -12,7 +12,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import WaitlistForm from "@modules/home/components/waitlist-form"
 
 const DESCRIPTION =
-  "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Hand-built in Canada."
+  "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Assembled by hand in Canada."
 
 export const metadata: Metadata = {
   title: "KeBe",
@@ -148,7 +148,7 @@ export default async function Home(props: {
                   href={`/products/${PRESALE_HANDLE}`}
                   className="rounded-[7px] bg-white px-8 py-3 text-base text-black transition-opacity hover:opacity-80"
                 >
-                  Pre-order{presale.price ? ` — ${presale.price}` : ""}
+                  Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
                 </LocalizedClientLink>
                 <p className="mt-4 text-sm text-[#E0E0DB]/60">
                   {presale.left === null
@@ -156,7 +156,8 @@ export default async function Home(props: {
                     : presale.left === 1
                     ? "1 board left · "
                     : `${presale.left} boards left · `}
-                  charged in full at checkout · ships within Canada
+                  shipping calculated at checkout · charged in full ·
+                  ships within Canada
                 </p>
               </>
             ) : (

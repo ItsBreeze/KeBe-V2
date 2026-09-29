@@ -36,7 +36,7 @@ import {
 // title, colour option, variant and SKU are set once, at creation.
 
 const HANDLE = "kebe-v2-keyboard";
-const PRICE_CAD = 399;
+const PRICE_CAD = 386.89; // plus shipping, calculated at checkout
 const FIRST_BATCH = 5;
 // Read by the storefront (lib/util/presale.ts) for the pre-order button and
 // the ships-by line; editing it in Admin moves the date without a deploy.
