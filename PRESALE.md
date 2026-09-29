@@ -3,8 +3,11 @@
 KeBe v2 is the board the `kebe` repo calls v3: v1 plus a USB 2.0 hub and three
 more USB-C ports, in a screwless case, sold all black: MJF PA12 case dyed black,
 black-soldermask FR4 plate, black caps with shine-through legends (Fn legend
-below the main one). CA$399, charged in full at checkout, first batch of 5,
-ships by 31 October 2026. The wireless design is not this product.
+below the main one). CA$386.89 plus shipping, both charged in full at checkout,
+first batch of 5, ships by 31 October 2026. Say "plus shipping" wherever the
+price appears, ads included, and only while shipping really is calculated per
+order: a flat fee every buyer pays belongs in the advertised price.
+The wireless design is not this product.
 
 The presale cannot open until Stripe takes the money: `start-presale.ts` refuses
 to run otherwise. Do the steps in order.
@@ -57,7 +60,7 @@ npx medusa exec ./src/scripts/start-presale.ts
 ```
 
 `start-presale.ts` checks that the key is live, the webhook secret is set and
-Canada pays through Stripe alone, then publishes `kebe-v2-keyboard` at CA$399
+Canada pays through Stripe alone, then publishes `kebe-v2-keyboard` at CA$386.89
 with 5 in stock. Re-running it is safe: it refreshes the description, pictures
 and 3D model, keeps a `ships_by` date you set in Admin, and never changes price
 or existing stock (it sets the first 5 only if stock was never set). The title,

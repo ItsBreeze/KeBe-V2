@@ -191,8 +191,8 @@ export default function ProductActions({
             className="text-small-regular text-ui-fg-subtle"
             data-testid="presale-note"
           >
-            Pre-order: charged in full at checkout, ships by {shipsBy}. Ships
-            within Canada.
+            Pre-order: plus shipping, calculated at checkout, and charged in
+            full there. Ships by {shipsBy}, within Canada.
           </p>
         )}
         <MobileActions
