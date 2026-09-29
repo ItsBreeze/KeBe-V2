@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "KeBe",
     description: DESCRIPTION,
-    images: ["/products/og-image.jpg"],
+    images: ["/products/kebe-v2-og.jpg"],
   },
 }
 

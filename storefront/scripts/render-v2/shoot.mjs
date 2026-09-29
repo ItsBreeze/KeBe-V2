@@ -2,9 +2,9 @@
 // hardware project's CAD, so the store shows the board that ships rather than
 // v1 photos:
 //
-//   KEBE_ROOT=<kebe repo> node scripts/render-v2/shoot.mjs [stills] [glb] [turntable]
+//   KEBE_ROOT=<kebe repo> node scripts/render-v2/shoot.mjs [stills] [glb] [turntable] [composites]
 //
-// (no arguments = all three)
+// (no arguments = all four)
 //
 // Reads Case_Files/v3/KEBE-V3-BOTTOM.stl (the printed case's geometry),
 // Keycaps/print/per-cap/*.svg (each cap's legend, drawn black; the renderer
@@ -18,6 +18,10 @@
 //              homepage backdrop). Both codecs because Chromium builds without
 //              licensed codecs cannot play H.264. Needs ffmpeg on PATH or
 //              FFMPEG=<path>
+//   composites kebe-v2-{desk,studio,night}.jpg: the exact keyboard, rendered
+//              on a transparent background, put into the AI-generated scenes
+//              in backplates/ (composite.py; needs python3 with
+//              opencv-python-headless). Runs after stills, which it aligns to.
 //
 // Needs Playwright with its Chromium (npm i -g playwright && npx playwright
 // install chromium; NODE_PATH pointing at the global modules) and network
@@ -39,7 +43,13 @@ const ROOT =
   process.env.KEBE_ROOT ?? "C:/Users/brise/OneDrive/Documents/Projects/KeBe";
 const VIEWS = ["hero", "ports", "top", "glow"];
 const W = 2400, H = 1800;
-const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb", "turntable"];
+const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb", "turntable", "composites"];
+// [output, backplate, the still the backplate was generated from, render, mode]
+const COMPOSITES = [
+  ["kebe-v2-desk.jpg", "desk.jpg", "kebe-v2-hero.jpg", "hero&alpha=1&light=window", ""],
+  ["kebe-v2-studio.jpg", "studio.jpg", "kebe-v2-hero.jpg", "hero&alpha=1", ""],
+  ["kebe-v2-night.jpg", "night.jpg", "kebe-v2-glow.jpg", "glow&alpha=1", "lit"],
+];
 
 // The legend list quotes fields that contain commas.
 function parseCsv(text) {
@@ -168,6 +178,25 @@ async function glb() {
   console.log(`wrote ${path.relative(process.cwd(), out)}`);
 }
 
+async function composites() {
+  const layers = await mkdtemp(path.join(tmpdir(), "kebe-layers-"));
+  try {
+    for (const [name, plate, ref, view, mode] of COMPOSITES) {
+      const page = await open(view, W, H);
+      const layer = path.join(layers, name.replace(/\.jpg$/, ".png"));
+      await page.locator("canvas").screenshot({ path: layer, omitBackground: true });
+      await page.close();
+      const py = spawnSync(process.env.PYTHON ?? "python3", [
+        path.join(HERE, "composite.py"), path.join(HERE, "backplates", plate),
+        path.join(OUT, ref), layer, path.join(OUT, name), ...(mode ? [mode] : []),
+      ], { stdio: "inherit" });
+      if (py.status !== 0) throw new Error(`composite.py failed on ${name} (${py.status ?? py.error})`);
+    }
+  } finally {
+    await rm(layers, { recursive: true, force: true });
+  }
+}
+
 try {
   if (JOBS.includes("glb")) await glb();
   if (JOBS.includes("turntable")) await turntable();
@@ -179,6 +208,7 @@ try {
     console.log(`wrote ${path.relative(process.cwd(), out)}`);
     await page.close();
   }
+  if (JOBS.includes("composites")) await composites();
 } finally {
   await browser.close();
   server.close();

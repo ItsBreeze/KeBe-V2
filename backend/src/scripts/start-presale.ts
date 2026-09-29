@@ -62,12 +62,17 @@ const DESCRIPTION =
   "The first batch is five boards, assembled by hand in Canada. The pictures, " +
   "video and 3D model are made from v2's CAD, not photographs.";
 
-// Renders from storefront/scripts/render-v2 (the real case STL and legends).
+// From storefront/scripts/render-v2. desk, studio and night are the CAD
+// keyboard composited into AI-generated scenes; cable is AI-generated from the
+// CAD ports render and checked against it; the rest are straight renders.
 const IMAGES = [
+  { url: "/products/kebe-v2-desk.jpg" },
   { url: "/products/kebe-v2-hero.jpg" },
-  { url: "/products/kebe-v2-ports.jpg" },
   { url: "/products/kebe-v2-top.jpg" },
-  { url: "/products/kebe-v2-glow.jpg" },
+  { url: "/products/kebe-v2-ports.jpg" },
+  { url: "/products/kebe-v2-cable.jpg" },
+  { url: "/products/kebe-v2-night.jpg" },
+  { url: "/products/kebe-v2-studio.jpg" },
 ];
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
