@@ -115,7 +115,12 @@ export default async function seedKebeData({ container }: ExecArgs) {
           name: "Canada",
           currency_code: "cad",
           countries,
-          payment_providers: ["pp_system_default"],
+          // Stripe once it is configured (medusa-config.ts). pp_system_default
+          // is "Manual Payment": orders with no money taken, only for a store
+          // that cannot charge yet. See use-stripe.ts for an existing database.
+          payment_providers: [
+            process.env.STRIPE_API_KEY ? "pp_stripe_stripe" : "pp_system_default",
+          ],
         },
       ],
     },
