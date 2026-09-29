@@ -1,13 +1,21 @@
-// Renders the KeBe v2 product pictures from the hardware project's CAD, so the
-// store shows the board that ships rather than v1 photos:
+// Renders the KeBe v2 product pictures, 3D model and turntable video from the
+// hardware project's CAD, so the store shows the board that ships rather than
+// v1 photos:
 //
-//   KEBE_ROOT=<kebe repo on its kebe-v2 branch> node scripts/render-v2/shoot.mjs
+//   KEBE_ROOT=<kebe repo> node scripts/render-v2/shoot.mjs [stills] [glb] [turntable]
 //
-// Reads Case_Files/v3/KEBE-V3-BOTTOM.stl (the printed case as ordered),
-// Keycaps/print/per-cap/*.svg (each cap's printed legend) and
+// (no arguments = all three)
+//
+// Reads Case_Files/v3/KEBE-V3-BOTTOM.stl (the printed case's geometry),
+// Keycaps/print/per-cap/*.svg (each cap's legend, drawn black; the renderer
+// uses only its shape) and
 // Keycaps/print/kebe-legend-list.csv (cap sizes and positions), renders
-// index.html in headless Chromium, and writes
-// public/products/kebe-v2-{hero,ports,top,glow}.jpg at 2400 x 1800.
+// index.html in headless Chromium, and writes to public/products/:
+//   stills     kebe-v2-{hero,ports,top,glow}.jpg, 2400 x 1800
+//   glb        kebe-v2.glb, the model at true size in metres (the 3D viewer)
+//   turntable  kebe-v2-turntable.mp4 + .jpg poster: one lit revolution,
+//              1920 x 1080, 8 s at 30 fps, looping (the homepage backdrop);
+//              needs ffmpeg on PATH or FFMPEG=<path>
 //
 // Needs Playwright with its Chromium (npm i -g playwright && npx playwright
 // install chromium; NODE_PATH pointing at the global modules) and network
@@ -16,6 +24,7 @@
 
 import { createServer } from "node:http";
 import { createRequire } from "node:module";
+import { spawnSync } from "node:child_process";
 import { copyFile, mkdir, mkdtemp, readdir, readFile, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -28,6 +37,7 @@ const ROOT =
   process.env.KEBE_ROOT ?? "C:/Users/brise/OneDrive/Documents/Projects/KeBe";
 const VIEWS = ["hero", "ports", "top", "glow"];
 const W = 2400, H = 1800;
+const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb", "turntable"];
 
 // The legend list quotes fields that contain commas.
 function parseCsv(text) {
@@ -70,9 +80,12 @@ async function stage() {
 const TYPES = { ".html": "text/html", ".json": "application/json", ".svg": "image/svg+xml" };
 
 const dir = await stage();
+// Loopback only, and nothing outside the staging directory: while it runs
+// this serves files, so it must not serve the rest of the disk.
 const server = createServer(async (req, res) => {
   try {
-    const p = path.join(dir, decodeURIComponent(req.url.split("?")[0]));
+    const p = path.resolve(dir, "." + decodeURIComponent(req.url.split("?")[0]));
+    if (!p.startsWith(dir + path.sep)) throw new Error("outside the staging dir");
     const body = await readFile(p);
     res.writeHead(200, { "Content-Type": TYPES[path.extname(p)] ?? "application/octet-stream" });
     res.end(body);
@@ -80,7 +93,8 @@ const server = createServer(async (req, res) => {
     res.writeHead(404);
     res.end();
   }
-}).listen(0);
+});
+await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
 const port = server.address().port;
 
 // require, not import: NODE_PATH reaches a global Playwright only through it.
@@ -101,19 +115,58 @@ const browser = await chromium.launch({
   args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
 });
 await mkdir(OUT, { recursive: true });
+
+async function open(view, w, h) {
+  const page = await browser.newPage({ viewport: { width: w, height: h } });
+  page.on("pageerror", (e) => console.error(`${view}: ${e.message}`));
+  page.on("console", (m) => m.type() === "error" && console.error(`${view}: ${m.text()}`));
+  page.on("requestfailed", (r) => console.error(`${view}: could not load ${r.url()}`));
+  if (localThree) {
+    await page.route(`${CDN}/**`, (route) =>
+      route.fulfill({ path: path.join(localThree, route.request().url().slice(CDN.length)) })
+    );
+  }
+  await page.goto(`http://127.0.0.1:${port}/index.html?view=${view}&w=${w}&h=${h}`);
+  await page.waitForFunction("window.__done === true", null, { timeout: 120000 });
+  return page;
+}
+
+async function turntable() {
+  const FRAMES = 240, TW = 1920, TH = 1080;
+  const frames = await mkdtemp(path.join(tmpdir(), "kebe-turn-"));
+  const page = await open("glowturn", TW, TH);
+  const canvas = page.locator("canvas");
+  for (let i = 0; i < FRAMES; i++) {
+    await page.evaluate((t) => window.__frame(t), i / FRAMES);
+    await canvas.screenshot({ path: path.join(frames, `f${String(i).padStart(4, "0")}.png`) });
+  }
+  await page.close();
+  await sharp(path.join(frames, "f0000.png")).jpeg({ quality: 82, mozjpeg: true })
+    .toFile(path.join(OUT, "kebe-v2-turntable.jpg"));
+  const out = path.join(OUT, "kebe-v2-turntable.mp4");
+  const ff = spawnSync(process.env.FFMPEG ?? "ffmpeg", [
+    "-y", "-loglevel", "error", "-framerate", "30", "-i", path.join(frames, "f%04d.png"),
+    "-c:v", "libx264", "-preset", "slow", "-crf", "24", "-pix_fmt", "yuv420p",
+    "-movflags", "+faststart", "-an", out,
+  ], { stdio: "inherit" });
+  if (ff.status !== 0) throw new Error(`ffmpeg failed (${ff.status ?? ff.error})`);
+  console.log(`wrote ${path.relative(process.cwd(), out)}`);
+}
+
+async function glb() {
+  const page = await open("glb", 64, 64);
+  const b64 = await page.evaluate(() => window.__glb);
+  await page.close();
+  const out = path.join(OUT, "kebe-v2.glb");
+  await writeFile(out, Buffer.from(b64, "base64"));
+  console.log(`wrote ${path.relative(process.cwd(), out)}`);
+}
+
 try {
-  for (const view of VIEWS) {
-    const page = await browser.newPage({ viewport: { width: W, height: H } });
-    page.on("pageerror", (e) => console.error(`${view}: ${e.message}`));
-    page.on("console", (m) => m.type() === "error" && console.error(`${view}: ${m.text()}`));
-    page.on("requestfailed", (r) => console.error(`${view}: could not load ${r.url()}`));
-    if (localThree) {
-      await page.route(`${CDN}/**`, (route) =>
-        route.fulfill({ path: path.join(localThree, route.request().url().slice(CDN.length)) })
-      );
-    }
-    await page.goto(`http://localhost:${port}/index.html?view=${view}&w=${W}&h=${H}`);
-    await page.waitForFunction("window.__done === true", null, { timeout: 120000 });
+  if (JOBS.includes("glb")) await glb();
+  if (JOBS.includes("turntable")) await turntable();
+  for (const view of JOBS.includes("stills") ? VIEWS : []) {
+    const page = await open(view, W, H);
     const png = await page.locator("canvas").screenshot();
     const out = path.join(OUT, `kebe-v2-${view}.jpg`);
     await sharp(png).jpeg({ quality: 84, mozjpeg: true }).toFile(out);

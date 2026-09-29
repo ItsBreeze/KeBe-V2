@@ -1,6 +1,7 @@
 import React, { Suspense } from "react"
 
 import ImageGallery from "@modules/products/components/image-gallery"
+import ProductModel from "@modules/products/components/product-model"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
@@ -29,6 +30,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     return notFound()
   }
 
+  // A product with a 3D model (metadata.model_glb, set by the backend's
+  // start-presale script) shows it above its pictures.
+  const model =
+    typeof product.metadata?.model_glb === "string"
+      ? product.metadata.model_glb
+      : null
+
   return (
     <>
       <div
@@ -40,6 +48,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <ProductTabs product={product} />
         </div>
         <div className="block w-full relative">
+          {model && (
+            <div className="mb-4">
+              <ProductModel
+                src={model}
+                poster={images[0]?.url}
+                alt={`${product.title}, a 3D model you can turn`}
+              />
+            </div>
+          )}
           <ImageGallery images={images} />
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">

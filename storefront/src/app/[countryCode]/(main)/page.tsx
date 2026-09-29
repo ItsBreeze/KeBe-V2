@@ -3,12 +3,16 @@ import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
-import { PRESALE_HANDLE, presaleShipsBy, unitsLeft } from "@lib/util/presale"
+import {
+  PRESALE_HANDLE,
+  presaleAvailability,
+  presaleShipsBy,
+} from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import WaitlistForm from "@modules/home/components/waitlist-form"
 
 const DESCRIPTION =
-  "Pre-order KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. Hot-swappable, RGB backlit, hand-built in Canada."
+  "Pre-order KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Hand-built in Canada."
 
 export const metadata: Metadata = {
   title: "KeBe",
@@ -33,21 +37,26 @@ const V2_SPECS = [
   },
   {
     title: "The same layout",
-    body: "Sixty-eight keys on the same Matrix-Dvorak grid as v1. Nothing you learn on one is wasted on the other.",
+    body: "Sixty-eight keys on the same Matrix-Dvorak grid as v1. Nothing you learn on one is wasted on the other. Each key's Fn-layer legend sits below its main one.",
   },
   {
     title: "Lower, and no screws",
-    body: "One piece of white nylon, 8.65 mm tall against v1's 9.45, that snaps around the board, switches and plate.",
+    body: "One piece of black nylon, 8.65 mm tall against v1's 9.45, that snaps around the board, switches and black plate.",
   },
   {
     title: "Still yours to change",
-    body: "Kailh Choc hot-swap sockets, per-key RGB, and QMK on v1's STM32 controller, so a v1 keymap carries straight over.",
+    body: "Kailh Choc hot-swap sockets, per-key RGB that lights each legend through the black caps, and QMK on v1's STM32 controller, so a v1 keymap carries straight over.",
   },
 ]
 
 type Presale =
   | { state: "none" }
-  | { state: "open" | "sold-out"; price?: string; shipsBy: string; left: number }
+  | {
+      state: "open" | "sold-out"
+      price?: string
+      shipsBy: string
+      left: number | null
+    }
 
 // The homepage must render with the backend down, so any failure reads as
 // "no presale yet" and falls back to the waitlist.
@@ -65,9 +74,9 @@ async function getPresale(countryCode: string): Promise<Presale> {
   const shipsBy = product && presaleShipsBy(product)
   if (!product || !shipsBy) return { state: "none" }
 
-  const left = unitsLeft(product)
+  const { open, left } = presaleAvailability(product)
   return {
-    state: left > 0 ? "open" : "sold-out",
+    state: open ? "open" : "sold-out",
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
     shipsBy,
     left,
@@ -85,7 +94,7 @@ export default async function Home(props: {
       {/* Hero */}
       <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-black">
         <Image
-          src="/products/kebe-v2-glow.jpg"
+          src="/products/kebe-v2-turntable.jpg"
           alt=""
           aria-hidden
           fill
@@ -93,6 +102,20 @@ export default async function Home(props: {
           sizes="100vw"
           className="object-cover opacity-40"
         />
+        {/* One lit revolution of the CAD model (scripts/render-v2), looping;
+            the still above stands in for it when motion is reduced. */}
+        <video
+          aria-hidden
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+          poster="/products/kebe-v2-turntable.jpg"
+          className="absolute inset-0 h-full w-full object-cover opacity-40 motion-reduce:hidden"
+        >
+          <source src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
+        </video>
         <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] py-24 text-center small:px-[4vw]">
           <p className="mb-6 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
             {presale.state === "open"
@@ -108,7 +131,7 @@ export default async function Home(props: {
             Mindless Mastery, now with a hub
           </p>
           <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#E0E0DB]/80">
-            The v1 layout in a lower, screwless case, with three more USB-C
+            The v1 layout, all in black, in a lower, screwless case, with three more USB-C
             ports on the back.{" "}
             {presale.state === "open"
               ? `The first batch ships by ${presale.shipsBy}.`
@@ -126,10 +149,12 @@ export default async function Home(props: {
                   Pre-order{presale.price ? ` — ${presale.price}` : ""}
                 </LocalizedClientLink>
                 <p className="mt-4 text-sm text-[#E0E0DB]/60">
-                  {presale.left === 1
-                    ? "1 board left"
-                    : `${presale.left} boards left`}{" "}
-                  · charged in full at checkout · ships within Canada
+                  {presale.left === null
+                    ? ""
+                    : presale.left === 1
+                    ? "1 board left · "
+                    : `${presale.left} boards left · `}
+                  charged in full at checkout · ships within Canada
                 </p>
               </>
             ) : (
@@ -159,8 +184,9 @@ export default async function Home(props: {
           </div>
           <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
             v2 is wired: the battery-and-Bluetooth design is still a prototype,
-            and this is the board that ships. The v2 pictures are renders of
-            its CAD; the photos below are of v1, whose layout and form v2 keeps.
+            and this is the board that ships. Every v2 picture, the video and
+            the 3D model are computer-generated from its CAD, not photographs;
+            the photos below are of v1, whose layout and form v2 keeps.
           </p>
         </div>
       </section>

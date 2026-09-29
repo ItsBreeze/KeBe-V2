@@ -17,6 +17,11 @@ import * as THREE from "three";
 import { STLLoader } from "three/addons/loaders/STLLoader.js";
 import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
 import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { GLTFExporter } from "three/addons/exporters/GLTFExporter.js";
 
 // Everything is built in the case frame of Case_Files/v3/v3-report.json:
 // mm, origin at the outer front-left bottom corner, +y to the rear, +z up.
@@ -32,7 +37,8 @@ const PORT = { w: 8.94, h: 3.26, zc: 3.35, y0: 81.35, y1: 88.65 };
 const params = new URLSearchParams(location.search);
 const view = params.get("view") || "hero";
 const W = +params.get("w") || 2400, H = +params.get("h") || 1600;
-const dark = view === "glow";
+const dark = view === "glow" || view === "glowturn";
+const exporting = view === "glb"; // the 3D model for the product page's viewer
 
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1);
@@ -50,23 +56,29 @@ scene.background = new THREE.Color(BG);
 scene.fog = new THREE.Fog(BG, 900, 2200);
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
-scene.environmentIntensity = dark ? 0.12 : 0.55;
+scene.environmentIntensity = dark ? 0.3 : 0.6;
 
-// The model: case frame (z up) turned into three's y-up frame, centred.
+// The model: case frame (z up) turned into three's y-up frame, centred, on
+// a turntable (spin) for the video views.
+const spin = new THREE.Group();
+scene.add(spin);
 const model = new THREE.Group();
 model.rotation.x = -Math.PI / 2;
 model.position.set(-CASE_W / 2, 0, CASE_D / 2);
-scene.add(model);
+spin.add(model);
 
 const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
 
-// ---- case: the real STL, SLS PA12 white, bead blasted
-const nylon = new THREE.MeshStandardMaterial({ color: 0xf4f2ec, roughness: 0.9, metalness: 0 });
+// The black build: MJF PA12 dyed black (Case_Files/v3/README.md's
+// alternative to white SLS), black-soldermask FR4 plate, black caps with
+// shine-through legends.
+// ---- case: the real STL, MJF PA12 dyed black, matte
+const nylon = new THREE.MeshStandardMaterial({ color: 0x1d1d1c, roughness: 0.84, metalness: 0 });
 const stl = await new STLLoader().loadAsync("./assets/KEBE-V3-BOTTOM.stl");
 stl.computeVertexNormals();
 model.add(shadowy(new THREE.Mesh(stl, nylon)));
 
-// ---- plate: white FR4, 68 Choc apertures (13.95 sq R0.5)
+// ---- plate: black-soldermask FR4, 68 Choc apertures (13.95 sq R0.5)
 const keys = await (await fetch("./assets/keys.json")).json();
 // Switch centres: CH1 (top-left) is at board (9.005, 76.5); the legend list
 // gives every key's offset from it, 2U keys included.
@@ -85,7 +97,7 @@ for (const k of keys) {
   plateShape.holes.push(roundRect(new THREE.Path(), cx - 6.975, cy - 6.975, 13.95, 13.95, 0.5));
 }
 const plateGeo = new THREE.ExtrudeGeometry(plateShape, { depth: PLATE.t, bevelEnabled: false, curveSegments: 6 });
-const fr4 = new THREE.MeshStandardMaterial({ color: 0xf7f7f4, roughness: 0.45 });
+const fr4 = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.38 });
 const plate = shadowy(new THREE.Mesh(plateGeo, fr4));
 plate.position.z = PLATE.z0;
 model.add(plate);
@@ -96,27 +108,62 @@ const housingMat = new THREE.MeshStandardMaterial({ color: 0x3b3a38, roughness: 
 const stemGeo = new THREE.BoxGeometry(10, 4.5, CAP_Z0 - SW_TOP + 0.4);
 const stemMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.5 });
 
-// ---- keycaps: Chosfox CFX frosted 1U with the printed legends, MBK white 2U
-const frosted = new THREE.MeshPhysicalMaterial({
-  color: 0xf6f6f3, roughness: 0.55, transmission: 0.0, sheen: 0.3, sheenColor: 0xffffff,
-});
-const mbk = new THREE.MeshStandardMaterial({ color: 0xf3f2ee, roughness: 0.5 });
+// ---- keycaps: black, with shine-through legends: the legend is the frosted
+// cap showing through, so it reads near-white by day and takes the key's LED
+// colour when lit.
+const CAP = "#141414", LEGEND = "#e4e3dd";
+const capMat = new THREE.MeshStandardMaterial({ color: CAP, roughness: 0.62 });
 
-async function legendTexture(ref) {
+// Each 1U cap's top face carries its legend (Keycaps/print/per-cap/<ref>.svg,
+// 1:1 mm over the 17.5 x 16.5 cap): `map` is the cap with the legend let
+// through, `mask` is the legend alone, which the lit views use as emission.
+async function legendMaps(ref) {
   const img = new Image();
   img.src = `./assets/caps/${ref}.svg`;
   await img.decode();
-  const s = 40; // px per mm
-  const c = document.createElement("canvas");
-  c.width = 17.5 * s; c.height = 16.5 * s;
-  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.anisotropy = 8;
-  return t;
+  const px = exporting ? 24 : 40; // per mm
+  const layer = (ink, ground) => {
+    const c = document.createElement("canvas");
+    c.width = 17.5 * px; c.height = 16.5 * px;
+    const g = c.getContext("2d");
+    g.drawImage(img, 0, 0, c.width, c.height);
+    // The art is drawn as black ink; only its shape is used here.
+    g.globalCompositeOperation = "source-in";
+    g.fillStyle = ink;
+    g.fillRect(0, 0, c.width, c.height);
+    g.globalCompositeOperation = "destination-over";
+    g.fillStyle = ground;
+    g.fillRect(0, 0, c.width, c.height);
+    const t = new THREE.CanvasTexture(c);
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.anisotropy = 8;
+    return t;
+  };
+  return { map: layer(LEGEND, CAP), mask: layer("#ffffff", "#000000") };
 }
 
-const hue = (x) => new THREE.Color().setHSL(((x / CASE_W) * 0.85 + 0.55) % 1, 0.9, 0.55);
+const hue = (x) => new THREE.Color().setHSL(((x / CASE_W) * 0.85 + 0.55) % 1, 0.95, 0.55);
+
+// A soft square falloff: bright under the cap, fading out past its edge.
+const glowMap = (() => {
+  const c = document.createElement("canvas");
+  c.width = c.height = 128;
+  const g = c.getContext("2d");
+  g.filter = "blur(10px)";
+  g.fillStyle = "#fff";
+  g.fillRect(22, 22, 84, 84);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
+})();
+
+// One geometry per cap size, shared, so the exported model stays small.
+const capGeos = new Map();
+const capGeo = (w, d) => {
+  const key = `${w}x${d}`;
+  if (!capGeos.has(key)) capGeos.set(key, new RoundedBoxGeometry(w - 0.2, d - 0.2, CAP_H, 4, 1.0));
+  return capGeos.get(key);
+};
 
 for (const k of keys) {
   const [cx, cy] = centre(k);
@@ -127,35 +174,25 @@ for (const k of keys) {
   stem.position.set(cx, cy, (SW_TOP + CAP_Z0) / 2);
   model.add(stem);
 
-  const wide = k.w > 20;
-  let mat = wide ? mbk : frosted;
-  if (dark) {
-    mat = mat.clone();
-    mat.emissive = hue(cx);
-    mat.emissiveIntensity = wide ? 0.35 : 0.55;
+  // Box face groups run +x, -x, +y, -y, +z, -z: index 4 is the cap's top.
+  let mats = capMat;
+  if (k.svg) {
+    const { map, mask } = await legendMaps(k.ref);
+    const top = new THREE.MeshStandardMaterial({ map, roughness: 0.62 });
+    if (dark) Object.assign(top, { emissive: hue(cx), emissiveMap: mask, emissiveIntensity: 1.6 });
+    mats = [capMat, capMat, capMat, capMat, top, capMat];
   }
-  const cap = shadowy(new THREE.Mesh(new RoundedBoxGeometry(k.w - 0.2, k.d - 0.2, CAP_H, 4, 1.0), mat));
+  const cap = shadowy(new THREE.Mesh(capGeo(k.w, k.d), mats));
   cap.position.set(cx, cy, CAP_Z0 + CAP_H / 2);
   model.add(cap);
-
-  if (k.svg) {
-    const decal = new THREE.Mesh(
-      new THREE.PlaneGeometry(17.5, 16.5),
-      new THREE.MeshStandardMaterial({
-        map: await legendTexture(k.ref), transparent: true, roughness: 0.7,
-        polygonOffset: true, polygonOffsetFactor: -2,
-      })
-    );
-    decal.position.set(cx, cy, CAP_Z0 + CAP_H + 0.01);
-    model.add(decal);
-  }
   if (dark) {
-    // The SK6812MINI-E under each key lights the underside of its cap.
+    // The SK6812MINI-E under each key shines up into an opaque cap, so what
+    // shows is the light it spills onto the plate round the cap's edges.
     const glow = new THREE.Mesh(
-      new THREE.PlaneGeometry(16, 15),
-      new THREE.MeshBasicMaterial({ color: hue(cx), transparent: true, opacity: 0.55 })
+      new THREE.PlaneGeometry(k.w + 1.2, k.d + 1.2),
+      new THREE.MeshBasicMaterial({ color: hue(cx), map: glowMap, transparent: true, opacity: 0.45, depthWrite: false })
     );
-    glow.position.set(cx, cy, SW_TOP + 0.05);
+    glow.position.set(cx, cy, PLATE.z0 + PLATE.t + 0.02);
     model.add(glow);
   }
 }
@@ -213,11 +250,11 @@ scene.add(fill);
   const t = new THREE.CanvasTexture(c);
   const m = new THREE.Mesh(
     new THREE.PlaneGeometry(CASE_W * 1.28, CASE_D * 1.6),
-    new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: dark ? 0.6 : 0.32, depthWrite: false })
+    new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: dark ? 0.22 : 0.32, depthWrite: false })
   );
   m.rotation.x = -Math.PI / 2;
   m.position.y = 0.05;
-  scene.add(m);
+  spin.add(m);
 }
 
 // ---- cameras
@@ -227,13 +264,41 @@ const cams = {
   top:   { fov: 22.5, pos: [0, 600, 1], look: [0, 0, 0] },
   glow:  { fov: 28, pos: [-190, 215, 390], look: [-2, 0, 4] },
   ports: { fov: 13, pos: [150, 95, -330], look: [-78, 2, -38] },
+  turn:  { fov: 17, pos: [0, 205, 530], look: [0, -8, 0] },
+  glowturn: { fov: 17, pos: [0, 205, 530], look: [0, -8, 0] },
 };
-const c = cams[view];
+const c = cams[view] ?? cams.hero;
 const camera = new THREE.PerspectiveCamera(c.fov, W / H, 10, 5000);
 camera.position.set(...c.pos);
 camera.lookAt(...c.look);
 
-renderer.render(scene, camera);
+let draw = () => renderer.render(scene, camera);
+if (dark) {
+  const composer = new EffectComposer(renderer);
+  composer.setPixelRatio(1);
+  composer.setSize(W, H);
+  composer.addPass(new RenderPass(scene, camera));
+  composer.addPass(new UnrealBloomPass(new THREE.Vector2(W, H), 0.75, 0.5, 0.2));
+  composer.addPass(new OutputPass());
+  draw = () => composer.render();
+}
+
+if (exporting) {
+  // glTF is in metres: 0.001 makes the model its real 257 mm, which also
+  // puts it at true size in AR.
+  const root = new THREE.Group();
+  root.scale.setScalar(0.001);
+  root.add(model);
+  const glb = await new GLTFExporter().parseAsync(root, { binary: true });
+  const bytes = new Uint8Array(glb);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  window.__glb = btoa(bin);
+} else {
+  // Turntable views: shoot.mjs calls __frame(t) for t in [0, 1).
+  window.__frame = (t) => { spin.rotation.y = t * 2 * Math.PI; draw(); };
+  draw();
+}
 window.__done = true;
 </script>
 </body>

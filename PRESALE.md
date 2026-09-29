@@ -1,9 +1,10 @@
 # KeBe v2 presale — linking Stripe and opening it
 
 KeBe v2 is the board the `kebe` repo calls v3: v1 plus a USB 2.0 hub and three
-more USB-C ports, in a screwless white nylon case. CA$399, charged in full at
-checkout, first batch of 5, ships by 31 October 2026. The wireless design is not
-this product.
+more USB-C ports, in a screwless case, sold all black: MJF PA12 case dyed black,
+black-soldermask FR4 plate, black caps with shine-through legends (Fn legend
+below the main one). CA$399, charged in full at checkout, first batch of 5,
+ships by 31 October 2026. The wireless design is not this product.
 
 The presale cannot open until Stripe takes the money: `start-presale.ts` refuses
 to run otherwise. Do the steps in order.
@@ -54,7 +55,11 @@ npx medusa exec ./src/scripts/start-presale.ts
 
 `start-presale.ts` checks that the key is live, the webhook secret is set and
 Canada pays through Stripe alone, then publishes `kebe-v2-keyboard` at CA$399
-with 5 in stock. Re-running it is safe and never touches stock.
+with 5 in stock. Re-running it is safe: it refreshes the description, pictures
+and 3D model, keeps a `ships_by` date you set in Admin, and never changes price
+or existing stock (it sets the first 5 only if stock was never set). The title,
+colour and SKU are fixed when the product is first created; change those in
+Admin.
 
 ## 4. Check it
 
@@ -65,7 +70,7 @@ with 5 in stock. Re-running it is safe and never touches stock.
 
 ## After
 
-* **More boards:** Admin → Inventory → `KEBE-V2-WHT` → raise the stocked
+* **More boards:** Admin → Inventory → `KEBE-V2-BLK-SHINE` → raise the stocked
   quantity. When the batch sells out the homepage switches to the waitlist, and
   those sign-ups (source `v2`) are the demand for the next order.
 * **Moving the date:** Admin → Products → KeBe v2 → Metadata → `ships_by`
