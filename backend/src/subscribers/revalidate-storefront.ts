@@ -1,7 +1,8 @@
 import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
 
 // Tells the storefront to drop its cached catalog pages whenever a product
-// changes, so an edit in Admin appears on the site without a redeploy.
+// changes or an order takes stock, so an edit in Admin -- or a presale selling
+// out -- appears on the site without a redeploy.
 //
 // Needs two variables on this service:
 //   STOREFRONT_URL     e.g. https://kebe.grounders.app
@@ -51,5 +52,8 @@ export const config: SubscriberConfig = {
     "product-variant.created",
     "product-variant.updated",
     "product-variant.deleted",
+    // An order reserves stock without touching the product, so without this a
+    // presale that has sold its last board keeps showing "Pre-order".
+    "order.placed",
   ],
 };
