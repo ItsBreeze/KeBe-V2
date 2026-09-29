@@ -25,8 +25,9 @@ import {
 // still on, a presale order would reserve a board and take no money.
 //
 // Safe to re-run: it creates the product once, and afterwards only brings the
-// ships-by date and status up to date. It never touches stock on a re-run --
-// orders reserve against stocked_quantity, so resetting it would oversell.
+// ships-by date, status, description and pictures up to date. It never
+// touches price or stock on a re-run: orders reserve against stocked_quantity,
+// so resetting it would oversell.
 // Raise the batch in Admin (Inventory) when more boards are ordered.
 
 const HANDLE = "kebe-v2-keyboard";
@@ -47,8 +48,16 @@ const DESCRIPTION =
   "screws. Kailh Choc low-profile switches sit in hot-swap sockets, sixty-eight " +
   "SK6812MINI-E LEDs light the keys one by one, and the STM32F072 runs QMK, so " +
   "a v1 keymap carries straight over.\n\n" +
-  "The first batch is five boards, assembled by hand in Canada. Photos show " +
-  "v1, whose layout and form v2 keeps.";
+  "The first batch is five boards, assembled by hand in Canada. The pictures " +
+  "are renders of v2's CAD: the case, plate, switches and printed keycaps.";
+
+// Renders from storefront/scripts/render-v2 (the real case STL and legends).
+const IMAGES = [
+  { url: "/products/kebe-v2-hero.jpg" },
+  { url: "/products/kebe-v2-ports.jpg" },
+  { url: "/products/kebe-v2-top.jpg" },
+  { url: "/products/kebe-v2-glow.jpg" },
+];
 
 export default async function startPresale({ container }: ExecArgs) {
   const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
@@ -95,12 +104,14 @@ export default async function startPresale({ container }: ExecArgs) {
         selector: { id: product.id },
         update: {
           status: ProductStatus.PUBLISHED,
+          description: DESCRIPTION,
+          images: IMAGES,
           metadata: { ...(product.metadata ?? {}), presale: "true", ships_by: SHIPS_BY },
         },
       },
     });
     logger.info(
-      `${HANDLE} already exists: published, ships by ${SHIPS_BY}. Stock left as it is; change it in Admin.`
+      `${HANDLE} already exists: published, ships by ${SHIPS_BY}, pictures and description updated. Price and stock left as they are; change them in Admin.`
     );
     return;
   }
@@ -141,11 +152,7 @@ export default async function startPresale({ container }: ExecArgs) {
           status: ProductStatus.PUBLISHED,
           shipping_profile_id: shippingProfile.id,
           metadata: { presale: "true", ships_by: SHIPS_BY },
-          images: [
-            { url: "/products/kebe-v1-hero.jpg" },
-            { url: "/products/kebe-v1-angle.jpg" },
-            { url: "/products/kebe-v1-rgb.jpg" },
-          ],
+          images: IMAGES,
           options: [{ title: "Colour", values: ["White"] }],
           variants: [
             {

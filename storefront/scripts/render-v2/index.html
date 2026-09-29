@@ -1,0 +1,240 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- KeBe v2 product renders. Driven by shoot.mjs; see its header. -->
+<style>html,body{margin:0;background:#000}canvas{display:block}</style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<script type="module">
+import * as THREE from "three";
+import { STLLoader } from "three/addons/loaders/STLLoader.js";
+import { RoundedBoxGeometry } from "three/addons/geometries/RoundedBoxGeometry.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
+
+// Everything is built in the case frame of Case_Files/v3/v3-report.json:
+// mm, origin at the outer front-left bottom corner, +y to the rear, +z up.
+// x_case = x_board + 2.35; the plate sheet sits at x_board - 0.1.
+const B2C = 2.35;
+const CASE_W = 256.71, CASE_D = 89.69;
+const PLATE = { x0: 2.25, y0: 2.25, w: 252.21, d: 85.19, r: 3.1, z0: 7.45, t: 1.2 };
+const SW_TOP = 11.0;             // Choc housing top (plate top 8.65 + 2.35)
+const CAP_Z0 = 11.7, CAP_H = 3.4; // stem top 14.45 sits inside the cap
+const PORTS_X = [17.959, 35.959, 53.959, 71.959];
+const PORT = { w: 8.94, h: 3.26, zc: 3.35, y0: 81.35, y1: 88.65 };
+
+const params = new URLSearchParams(location.search);
+const view = params.get("view") || "hero";
+const W = +params.get("w") || 2400, H = +params.get("h") || 1600;
+const dark = view === "glow";
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1);
+renderer.setSize(W, H);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = dark ? 1.0 : 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+const BG = dark ? 0x0e110e : 0xd9d6cf;
+scene.background = new THREE.Color(BG);
+scene.fog = new THREE.Fog(BG, 900, 2200);
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+scene.environmentIntensity = dark ? 0.12 : 0.55;
+
+// The model: case frame (z up) turned into three's y-up frame, centred.
+const model = new THREE.Group();
+model.rotation.x = -Math.PI / 2;
+model.position.set(-CASE_W / 2, 0, CASE_D / 2);
+scene.add(model);
+
+const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
+
+// ---- case: the real STL, SLS PA12 white, bead blasted
+const nylon = new THREE.MeshStandardMaterial({ color: 0xf4f2ec, roughness: 0.9, metalness: 0 });
+const stl = await new STLLoader().loadAsync("./assets/KEBE-V3-BOTTOM.stl");
+stl.computeVertexNormals();
+model.add(shadowy(new THREE.Mesh(stl, nylon)));
+
+// ---- plate: white FR4, 68 Choc apertures (13.95 sq R0.5)
+const keys = await (await fetch("./assets/keys.json")).json();
+// Switch centres: CH1 (top-left) is at board (9.005, 76.5); the legend list
+// gives every key's offset from it, 2U keys included.
+const centre = (k) => [9.005 + k.dx + B2C, 76.5 - k.dy + B2C];
+function roundRect(shape, x, y, w, h, r) {
+  shape.moveTo(x + r, y);
+  shape.lineTo(x + w - r, y); shape.quadraticCurveTo(x + w, y, x + w, y + r);
+  shape.lineTo(x + w, y + h - r); shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  shape.lineTo(x + r, y + h); shape.quadraticCurveTo(x, y + h, x, y + h - r);
+  shape.lineTo(x, y + r); shape.quadraticCurveTo(x, y, x + r, y);
+  return shape;
+}
+const plateShape = roundRect(new THREE.Shape(), PLATE.x0, PLATE.y0, PLATE.w, PLATE.d, PLATE.r);
+for (const k of keys) {
+  const [cx, cy] = centre(k);
+  plateShape.holes.push(roundRect(new THREE.Path(), cx - 6.975, cy - 6.975, 13.95, 13.95, 0.5));
+}
+const plateGeo = new THREE.ExtrudeGeometry(plateShape, { depth: PLATE.t, bevelEnabled: false, curveSegments: 6 });
+const fr4 = new THREE.MeshStandardMaterial({ color: 0xf7f7f4, roughness: 0.45 });
+const plate = shadowy(new THREE.Mesh(plateGeo, fr4));
+plate.position.z = PLATE.z0;
+model.add(plate);
+
+// ---- switches: Kailh Choc v1 housings and white stems
+const housingGeo = new RoundedBoxGeometry(15.0, 15.0, SW_TOP - 8.65, 2, 0.4);
+const housingMat = new THREE.MeshStandardMaterial({ color: 0x3b3a38, roughness: 0.55 });
+const stemGeo = new THREE.BoxGeometry(10, 4.5, CAP_Z0 - SW_TOP + 0.4);
+const stemMat = new THREE.MeshStandardMaterial({ color: 0xf5f5f5, roughness: 0.5 });
+
+// ---- keycaps: Chosfox CFX frosted 1U with the printed legends, MBK white 2U
+const frosted = new THREE.MeshPhysicalMaterial({
+  color: 0xf6f6f3, roughness: 0.55, transmission: 0.0, sheen: 0.3, sheenColor: 0xffffff,
+});
+const mbk = new THREE.MeshStandardMaterial({ color: 0xf3f2ee, roughness: 0.5 });
+
+async function legendTexture(ref) {
+  const img = new Image();
+  img.src = `./assets/caps/${ref}.svg`;
+  await img.decode();
+  const s = 40; // px per mm
+  const c = document.createElement("canvas");
+  c.width = 17.5 * s; c.height = 16.5 * s;
+  c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+  const t = new THREE.CanvasTexture(c);
+  t.colorSpace = THREE.SRGBColorSpace;
+  t.anisotropy = 8;
+  return t;
+}
+
+const hue = (x) => new THREE.Color().setHSL(((x / CASE_W) * 0.85 + 0.55) % 1, 0.9, 0.55);
+
+for (const k of keys) {
+  const [cx, cy] = centre(k);
+  const housing = shadowy(new THREE.Mesh(housingGeo, housingMat));
+  housing.position.set(cx, cy, (8.65 + SW_TOP) / 2);
+  model.add(housing);
+  const stem = new THREE.Mesh(stemGeo, stemMat);
+  stem.position.set(cx, cy, (SW_TOP + CAP_Z0) / 2);
+  model.add(stem);
+
+  const wide = k.w > 20;
+  let mat = wide ? mbk : frosted;
+  if (dark) {
+    mat = mat.clone();
+    mat.emissive = hue(cx);
+    mat.emissiveIntensity = wide ? 0.35 : 0.55;
+  }
+  const cap = shadowy(new THREE.Mesh(new RoundedBoxGeometry(k.w - 0.2, k.d - 0.2, CAP_H, 4, 1.0), mat));
+  cap.position.set(cx, cy, CAP_Z0 + CAP_H / 2);
+  model.add(cap);
+
+  if (k.svg) {
+    const decal = new THREE.Mesh(
+      new THREE.PlaneGeometry(17.5, 16.5),
+      new THREE.MeshStandardMaterial({
+        map: await legendTexture(k.ref), transparent: true, roughness: 0.7,
+        polygonOffset: true, polygonOffsetFactor: -2,
+      })
+    );
+    decal.position.set(cx, cy, CAP_Z0 + CAP_H + 0.01);
+    model.add(decal);
+  }
+  if (dark) {
+    // The SK6812MINI-E under each key lights the underside of its cap.
+    const glow = new THREE.Mesh(
+      new THREE.PlaneGeometry(16, 15),
+      new THREE.MeshBasicMaterial({ color: hue(cx), transparent: true, opacity: 0.55 })
+    );
+    glow.position.set(cx, cy, SW_TOP + 0.05);
+    model.add(glow);
+  }
+}
+
+// ---- USB-C receptacles (HRO TYPE-C-31-M-12), mouths 1.04 inside the rear face
+const metal = new THREE.MeshStandardMaterial({ color: 0xd2d3d6, metalness: 1, roughness: 0.28 });
+const black = new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.8 });
+const tongueMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.4 });
+for (const x of PORTS_X) {
+  const cx = x + B2C;
+  const s = roundRect(new THREE.Shape(), -PORT.w / 2, -PORT.h / 2, PORT.w, PORT.h, PORT.h / 2);
+  s.holes.push(roundRect(new THREE.Path(), -PORT.w / 2 + 0.35, -PORT.h / 2 + 0.35, PORT.w - 0.7, PORT.h - 0.7, PORT.h / 2 - 0.35));
+  const shell = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: PORT.y1 - PORT.y0, bevelEnabled: false, curveSegments: 12 }), metal);
+  shell.rotation.x = Math.PI / 2;
+  shell.position.set(cx, PORT.y1, PORT.zc);
+  model.add(shell);
+  const back = new THREE.Mesh(new THREE.BoxGeometry(PORT.w - 0.7, 0.2, PORT.h - 0.7), black);
+  back.position.set(cx, PORT.y1 - 3.5, PORT.zc);
+  model.add(back);
+  const tongue = new THREE.Mesh(new THREE.BoxGeometry(6.6, 3.2, 0.7), tongueMat);
+  tongue.position.set(cx, PORT.y1 - 2.0, PORT.zc);
+  model.add(tongue);
+}
+
+// ---- floor and light
+const floor = new THREE.Mesh(
+  new THREE.PlaneGeometry(4000, 4000),
+  new THREE.MeshStandardMaterial({ color: BG, roughness: 1 })
+);
+floor.rotation.x = -Math.PI / 2;
+floor.receiveShadow = true;
+scene.add(floor);
+
+const sun = new THREE.DirectionalLight(0xfff6ea, dark ? 0.25 : 3.2);
+sun.position.set(-260, 380, 180);
+sun.castShadow = true;
+sun.shadow.mapSize.set(4096, 4096);
+sun.shadow.radius = 10;
+sun.shadow.bias = -0.0004;
+sun.shadow.normalBias = 0.05;
+Object.assign(sun.shadow.camera, { left: -220, right: 220, top: 160, bottom: -160, near: 50, far: 1000 });
+scene.add(sun);
+const fill = new THREE.DirectionalLight(0xe8eeff, dark ? 0 : 0.6);
+fill.position.set(300, 120, 400);
+scene.add(fill);
+
+// ---- a soft contact shadow under the case, so it sits on the floor
+{
+  const c = document.createElement("canvas");
+  c.width = 512; c.height = 256;
+  const g = c.getContext("2d");
+  g.filter = "blur(18px)";
+  g.fillStyle = "rgba(0,0,0,1)";
+  g.fillRect(56, 48, 400, 160);
+  const t = new THREE.CanvasTexture(c);
+  const m = new THREE.Mesh(
+    new THREE.PlaneGeometry(CASE_W * 1.28, CASE_D * 1.6),
+    new THREE.MeshBasicMaterial({ map: t, transparent: true, opacity: dark ? 0.6 : 0.32, depthWrite: false })
+  );
+  m.rotation.x = -Math.PI / 2;
+  m.position.y = 0.05;
+  scene.add(m);
+}
+
+// ---- cameras
+const cams = {
+  hero:  { fov: 28, pos: [-190, 215, 390], look: [-2, 0, 4] },
+  rear:  { fov: 20, pos: [300, 150, -380], look: [-20, 4, 10] },
+  top:   { fov: 22.5, pos: [0, 600, 1], look: [0, 0, 0] },
+  glow:  { fov: 28, pos: [-190, 215, 390], look: [-2, 0, 4] },
+  ports: { fov: 13, pos: [150, 95, -330], look: [-78, 2, -38] },
+};
+const c = cams[view];
+const camera = new THREE.PerspectiveCamera(c.fov, W / H, 10, 5000);
+camera.position.set(...c.pos);
+camera.lookAt(...c.look);
+
+renderer.render(scene, camera);
+window.__done = true;
+</script>
+</body>
+</html>

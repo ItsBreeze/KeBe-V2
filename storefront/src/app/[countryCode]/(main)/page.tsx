@@ -85,7 +85,7 @@ export default async function Home(props: {
       {/* Hero */}
       <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-black">
         <Image
-          src="/products/kebe-v1-rgb.jpg"
+          src="/products/kebe-v2-glow.jpg"
           alt=""
           aria-hidden
           fill
@@ -159,8 +159,8 @@ export default async function Home(props: {
           </div>
           <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
             v2 is wired: the battery-and-Bluetooth design is still a prototype,
-            and this is the board that ships. Photos on this site show v1,
-            whose layout and form v2 keeps.
+            and this is the board that ships. The v2 pictures are renders of
+            its CAD; the photos below are of v1, whose layout and form v2 keeps.
           </p>
         </div>
       </section>
