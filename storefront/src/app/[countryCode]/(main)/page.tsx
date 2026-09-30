@@ -50,6 +50,37 @@ const V2_SPECS = [
   },
 ]
 
+// The case for the layout, one reason each. Check against the caps before
+// changing: the Fn arrows are on . O E U, the number pad on the right hand's
+// G C R / H T N / M W V / B, F1-F10 on the number row, the media keys in the
+// middle columns, and ctrl, alt, fn, the GUI diamond and shift on both sides.
+const WHY = [
+  {
+    title: "Straight columns",
+    body: "Keys sit in a grid, not staggered rows. Each finger owns one column and moves straight up and down it: no diagonal reaches to learn, and the same finger always finds the same key.",
+  },
+  {
+    title: "The home row does the work",
+    body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of English keystrokes land there, against about 30% on QWERTY.",
+  },
+  {
+    title: "Hands take turns",
+    body: "With the vowels on one side and the consonants on the other, most words alternate hands: one hand reaches while the other strikes, for a steadier rhythm and less work for any single finger.",
+  },
+  {
+    title: "Both thumbs, both sides",
+    body: "Two space bars sit under the thumbs, and Shift, Ctrl, Alt, Fn and the ◆ key are mirrored on each side, so a shortcut takes one key from each hand instead of a stretch with one.",
+  },
+  {
+    title: "Sixty-eight keys, nothing missing",
+    body: "Hold Fn and the left hand's home keys become arrows, the right hand's a number pad, and the number row F1 to F10. Media controls sit in the middle columns. Nothing is more than a finger's reach from home.",
+  },
+  {
+    title: "A clean start",
+    body: "Nothing sits where a standard keyboard puts it, so you learn KeBe as a new instrument instead of unpicking old habits one key at a time, and every key is somewhere you can work out from the grid.",
+  },
+]
+
 type Presale =
   | { state: "none" }
   | {
@@ -92,53 +123,63 @@ export default async function Home(props: {
 
   return (
     <div className="bg-kebe-page text-kebe-text">
-      {/* Hero: the name, the one thing to do, and under it the lit 3D model
-          from v2's CAD (scripts/render-v2), which you click into to turn. */}
-      <section className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-14 pb-20 text-center small:px-[4vw] small:pt-20">
-        <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-          {presale.state === "open"
-            ? "Pre-orders open"
-            : presale.state === "sold-out"
-            ? "First batch spoken for"
-            : "Coming soon"}
-        </p>
-        <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
-          KeBe v2
-        </h1>
-        <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
-          Mindless Mastery, now with a hub
-        </p>
-        <div className="mt-8 flex flex-col items-center">
-          {presale.state === "open" ? (
-            <>
-              <LocalizedClientLink
-                href={`/products/${PRESALE_HANDLE}`}
-                className="rounded-xl bg-kebe-text px-8 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
-              >
-                Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
-              </LocalizedClientLink>
-              <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-                {presale.left === null
-                  ? ""
-                  : presale.left === 1
-                  ? "1 board left · "
-                  : `${presale.left} boards left · `}
-                ships by {presale.shipsBy} · Canada
-              </p>
-            </>
-          ) : (
-            <WaitlistForm source="v2" />
-          )}
-        </div>
+      {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2) fills it,
+          turning, with the name and Pre-order laid over its top. A click on
+          the model (not the text) hands it the pointer to turn and zoom. */}
+      <section className="relative">
         <ProductModel
           src="/products/kebe-v2.glb"
           poster="/products/kebe-v2-glow.jpg"
           alt="KeBe v2, a 3D model with its per-key lighting on."
           eager
-          orbit="-25deg 62deg 0.55m"
-          className="mt-12 aspect-[16/9]"
-        />
-        <p className="mt-10 max-w-xl text-lg leading-relaxed text-kebe-text/80">
+          variant="backdrop"
+          angle="-25deg 62deg"
+          fill={0.72}
+          stageClassName="inset-x-0 bottom-0 top-[40%] small:top-[20%]"
+          className="h-[calc(100svh-4rem)] min-h-[640px] max-h-[1000px] bg-[radial-gradient(ellipse_at_50%_68%,#2c2821_0%,#1c1a17_38%,#12110f_72%)]"
+        >
+          <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
+            <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+              {presale.state === "open"
+                ? "Pre-orders open"
+                : presale.state === "sold-out"
+                ? "First batch spoken for"
+                : "Coming soon"}
+            </p>
+            <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
+              KeBe v2
+            </h1>
+            <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
+              Mindless Mastery, now with a hub
+            </p>
+            <div className="mt-8 flex flex-col items-center">
+              {presale.state === "open" ? (
+                <>
+                  <LocalizedClientLink
+                    href={`/products/${PRESALE_HANDLE}`}
+                    className="rounded-xl bg-kebe-text px-8 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+                  >
+                    Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
+                  </LocalizedClientLink>
+                  <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+                    {presale.left === null
+                      ? ""
+                      : presale.left === 1
+                      ? "1 board left · "
+                      : `${presale.left} boards left · `}
+                    ships by {presale.shipsBy} · Canada
+                  </p>
+                </>
+              ) : (
+                <WaitlistForm source="v2" />
+              )}
+            </div>
+          </div>
+        </ProductModel>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-[6vw] py-16 text-center small:px-[4vw]">
+        <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
           The v1 layout, all in black, in a lower, screwless case, with three
           more USB-C ports on the back.{" "}
           {presale.state === "sold-out"
@@ -204,55 +245,51 @@ export default async function Home(props: {
         </div>
       </section>
 
-      {/* Why the layout: the original site's two reasons, its wording kept
-          but for two slips ("locateable", "means, faster"). */}
+      {/* Why the layout. Every claim is checkable on the caps themselves
+          (the Fn legends in Keycaps/print) or is the textbook description of
+          Dvorak; the home-row shares are the usual English-text figures. */}
       <section className="border-t border-kebe-line bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            The layout
+            Peace of mind · speed of thought
           </p>
           <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
             Why make the change?
           </h2>
-          <div className="mt-12 grid gap-x-12 gap-y-14 small:grid-cols-2">
-            <div>
-              <div className="relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line">
-                <Image
-                  src="/products/kebe-v2-top.jpg"
-                  alt="KeBe v2 from above: 68 keys on a regular grid, with the legends in capitals."
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 560px"
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
-                Peace of Mind
-              </h3>
-              <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
-                The layout makes it easier to learn to touch type by simplifying
-                the matrix and placing keys in logical, easy-to-find locations.
-              </p>
-            </div>
-            <div>
-              <div className="relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line">
-                <Image
-                  src="/products/kebe-v2-glow.jpg"
-                  alt="KeBe v2 at an angle with its per-key RGB lighting on."
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 560px"
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
-                Speed of Thought
-              </h3>
-              <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
-                A matrix organization of keys provides the shortest possible
-                distance between keys. This efficiency means faster stroking
-                with less movement.
-              </p>
-            </div>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            The keyboard you learned on kept two habits from the typewriter:
+            rows knocked sideways to clear its levers, and a letter order that
+            was never arranged around your hands. KeBe drops both.
+          </p>
+          <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-kebe-line">
+            <Image
+              src="/products/kebe-v2-top.jpg"
+              alt="KeBe v2 from above: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides."
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover"
+            />
           </div>
+          <ol className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
+            {WHY.map((w, i) => (
+              <li key={w.title} className="border-t border-kebe-line pt-6">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+                  {w.title}
+                </h3>
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
+                  {w.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-14 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            Switching takes practice, and the first weeks are slower. Once it
+            is in your hands you stop thinking about the keyboard at all:
+            that is the mindless mastery in the name.
+          </p>
         </div>
       </section>
 

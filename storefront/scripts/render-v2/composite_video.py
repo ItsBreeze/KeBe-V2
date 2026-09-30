@@ -100,7 +100,8 @@ def main(clip, still_path, plate_path, ref_path, layer_path, out_stem, mode=""):
 
     # 4. encode
     ff = os.environ.get("FFMPEG", "ffmpeg")
-    src = ["-y", "-loglevel", "error", "-framerate", f"{fps:g}", "-i", os.path.join(tmp, "f%04d.png")]
+    # Four threads: the render machine has crashed under full-core encodes.
+    src = ["-y", "-loglevel", "error", "-threads", "4", "-framerate", f"{fps:g}", "-i", os.path.join(tmp, "f%04d.png")]
     subprocess.run([ff, *src, "-c:v", "libx264", "-preset", "slow", "-crf", "20", "-pix_fmt", "yuv420p",
                     "-movflags", "+faststart", "-an", f"{out_stem}.mp4"], check=True)
     subprocess.run([ff, *src, "-c:v", "libvpx-vp9", "-crf", "32", "-b:v", "0", "-row-mt", "1",
