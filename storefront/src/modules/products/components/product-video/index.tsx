@@ -14,7 +14,7 @@ export default function ProductVideo({
   className?: string
 }) {
   return (
-    <figure className={`relative w-full overflow-hidden rounded-lg bg-ui-bg-subtle ${className}`}>
+    <figure className={`relative w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised ${className}`}>
       {poster && (
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -21,11 +21,18 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
+        // The suite's night neutrals (Grounders, ItsRadio, Offhand):
+        // page #12110F, raised #1C1A17, alt #242119, hairline #2E2B26,
+        // text #F5F1EA, muted #9B948A, faint #6E675D. KeBe's old greens
+        // (#151915, #12261E) are gone.
         kebe: {
-          black: "#000000",
-          ink: "#151915",
-          accent: "#12261E",
-          bone: "#E0E0DB",
+          page: "#12110F",
+          raised: "#1C1A17",
+          alt: "#242119",
+          line: "#2E2B26",
+          text: "#F5F1EA",
+          muted: "#9B948A",
+          faint: "#6E675D",
         },
         grey: {
           0: "#FFFFFF",
@@ -65,9 +72,14 @@ module.exports = {
         "3xl": "2rem",
       },
       fontFamily: {
-        display: ["var(--font-display)", "Cormorant Garamond", "Georgia", "serif"],
-        body: ["var(--font-body)", "EB Garamond", "Georgia", "serif"],
+        // The suite's faces: DM Serif Display for names and headings, IBM
+        // Plex Mono caps for labels (the keycap legends are Plex Mono too),
+        // Inter for reading. The old site's Garamonds are gone.
+        display: ["var(--font-display)", "DM Serif Display", "Georgia", "serif"],
+        body: ["var(--font-body)", "Inter", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "IBM Plex Mono", "ui-monospace", "monospace"],
         sans: [
+          "var(--font-body)",
           "Inter",
           "-apple-system",
           "BlinkMacSystemFont",

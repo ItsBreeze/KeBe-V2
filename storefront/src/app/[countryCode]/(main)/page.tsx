@@ -91,84 +91,81 @@ export default async function Home(props: {
   const presale = await getPresale(countryCode)
 
   return (
-    <>
-      {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2), which
-          you can turn, under the name and the one thing to do. */}
-      <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_70%,#1f261f_0%,#0e110e_60%,#0a0c0a_100%)]">
-        <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-14 text-center small:px-[4vw] small:pt-20">
-          <p className="mb-5 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
-            {presale.state === "open"
-              ? "Pre-orders open"
-              : presale.state === "sold-out"
-              ? "First batch spoken for"
-              : "Coming soon"}
-          </p>
-          <h1 className="font-display text-[clamp(2.75rem,8vw,4.5rem)] leading-[1.05] text-white">
-            KeBe v2
-          </h1>
-          <p className="mt-4 max-w-xl font-display text-[clamp(1.25rem,3vw,1.75rem)] text-[#E0E0DB]">
-            Mindless Mastery, now with a hub
-          </p>
-          <div className="mt-8 flex flex-col items-center">
-            {presale.state === "open" ? (
-              <>
-                <LocalizedClientLink
-                  href={`/products/${PRESALE_HANDLE}`}
-                  className="rounded-[7px] bg-white px-8 py-3 text-base text-black transition-opacity hover:opacity-80"
-                >
-                  Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
-                </LocalizedClientLink>
-                <p className="mt-4 text-sm text-[#E0E0DB]/60">
-                  {presale.left === null
-                    ? ""
-                    : presale.left === 1
-                    ? "1 board left · "
-                    : `${presale.left} boards left · `}
-                  ships by {presale.shipsBy} · within Canada
-                </p>
-              </>
-            ) : (
-              <WaitlistForm source="v2" />
-            )}
-          </div>
+    <div className="bg-kebe-page text-kebe-text">
+      {/* Hero: the name, the one thing to do, and under it the lit 3D model
+          from v2's CAD (scripts/render-v2), which you click into to turn. */}
+      <section className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-14 pb-20 text-center small:px-[4vw] small:pt-20">
+        <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+          {presale.state === "open"
+            ? "Pre-orders open"
+            : presale.state === "sold-out"
+            ? "First batch spoken for"
+            : "Coming soon"}
+        </p>
+        <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
+          KeBe v2
+        </h1>
+        <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
+          Mindless Mastery, now with a hub
+        </p>
+        <div className="mt-8 flex flex-col items-center">
+          {presale.state === "open" ? (
+            <>
+              <LocalizedClientLink
+                href={`/products/${PRESALE_HANDLE}`}
+                className="rounded-xl bg-kebe-text px-8 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+              >
+                Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
+              </LocalizedClientLink>
+              <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+                {presale.left === null
+                  ? ""
+                  : presale.left === 1
+                  ? "1 board left · "
+                  : `${presale.left} boards left · `}
+                ships by {presale.shipsBy} · Canada
+              </p>
+            </>
+          ) : (
+            <WaitlistForm source="v2" />
+          )}
         </div>
         <ProductModel
           src="/products/kebe-v2.glb"
           poster="/products/kebe-v2-glow.jpg"
-          alt="KeBe v2, a 3D model with its per-key lighting on. Drag to turn it."
+          alt="KeBe v2, a 3D model with its per-key lighting on."
           eager
           orbit="-25deg 62deg 0.55m"
-          caption="The 3D model from its CAD · drag to turn"
-          // Pulled up under the text: the frame's top is empty dark ground.
-          className="mx-auto -mt-6 aspect-[16/9] w-full max-w-[1400px] small:-mt-20"
+          className="mt-12 aspect-[16/9]"
         />
-        <div className="mx-auto max-w-[1200px] px-[6vw] pb-20 text-center small:px-[4vw]">
-          <p className="mx-auto max-w-xl text-lg leading-relaxed text-[#E0E0DB]/80">
-            The v1 layout, all in black, in a lower, screwless case, with three
-            more USB-C ports on the back.{" "}
-            {presale.state === "sold-out"
-              ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
-              : presale.state === "none"
-              ? "Leave an address and you'll hear when pre-orders open."
-              : "Shipping is calculated at checkout and the board is charged in full there."}
-          </p>
-        </div>
+        <p className="mt-10 max-w-xl text-lg leading-relaxed text-kebe-text/80">
+          The v1 layout, all in black, in a lower, screwless case, with three
+          more USB-C ports on the back.{" "}
+          {presale.state === "sold-out"
+            ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
+            : presale.state === "none"
+            ? "Leave an address and you'll hear when pre-orders open."
+            : "Shipping is calculated at checkout and the board is charged in full there."}
+        </p>
       </section>
 
       {/* What v2 is */}
-      <section className="bg-[#151915] py-24">
+      <section className="border-t border-kebe-line py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
             What changes
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            v1&apos;s board, with a hub built in
           </h2>
           {/* An AI camera move over the night scene, with the CAD keyboard
               tracked back into every frame (scripts/render-v2). */}
-          <div className="relative mt-10 aspect-[4/3] w-full max-w-3xl overflow-hidden rounded-sm">
+          <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-kebe-line">
             <Image
               src="/products/kebe-v2-night-clip.jpg"
               alt="KeBe v2 on a desk at night, its legends lit in a rainbow by the per-key RGB."
               fill
-              sizes="(max-width: 768px) 100vw, 768px"
+              sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
             />
             <video
@@ -187,69 +184,71 @@ export default async function Home(props: {
           </div>
           <div className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {V2_SPECS.map((s) => (
-              <div key={s.title}>
-                <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
+              <div key={s.title} className="border-t border-kebe-line pt-6">
+                <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {s.title}
                 </h3>
-                <p className="mt-3 text-lg leading-relaxed text-[#E0E0DB]/80">
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
                   {s.body}
                 </p>
               </div>
             ))}
           </div>
-          <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
+          <p className="mt-14 max-w-2xl text-sm leading-relaxed text-kebe-faint">
             v2 is wired: the battery-and-Bluetooth design is not for sale, and
             this is the board that ships. None of the v2 pictures or videos are
-            photographs. The 3D model at the top and the plain renders come straight from its CAD; the desk, studio and
-            night scenes, the clip above included, set that CAD model in
-            AI-generated surroundings. The photos below are of v1, whose layout
-            and form v2 keeps.
+            photographs. The 3D model at the top and the plain renders come
+            straight from its CAD; the desk, studio and night scenes, the clip
+            above included, set that CAD model in AI-generated surroundings.
           </p>
         </div>
       </section>
 
-      {/* Why the layout -- verbatim from the original site, including its own
-          spelling and punctuation. */}
-      <section className="bg-[#12261E] py-24">
+      {/* Why the layout: the original site's two reasons, its wording kept
+          but for two slips ("locateable", "means, faster"). */}
+      <section className="border-t border-kebe-line bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <h2 className="text-center font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
-            Why Make the Change?
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+            The layout
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            Why make the change?
           </h2>
-          <div className="mt-16 grid gap-x-16 gap-y-14 small:grid-cols-2">
-            <div className="text-center">
-              <div className="relative mx-auto mb-8 aspect-[4/3] w-full max-w-md overflow-hidden rounded-sm">
+          <div className="mt-12 grid gap-x-12 gap-y-14 small:grid-cols-2">
+            <div>
+              <div className="relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line">
                 <Image
-                  src="/products/kebe-v1-hero.jpg"
-                  alt="A KeBe keyboard seen straight on, its 68 keycaps laid out on a regular grid."
+                  src="/products/kebe-v2-top.jpg"
+                  alt="KeBe v2 from above: 68 keys on a regular grid, with the legends in capitals."
                   fill
-                  sizes="(max-width: 640px) 100vw, 480px"
+                  sizes="(max-width: 1024px) 100vw, 560px"
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
+              <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                 Peace of Mind
               </h3>
-              <p className="mt-4 text-lg leading-relaxed text-[#E0E0DB]/85">
+              <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
                 The layout makes it easier to learn to touch type by simplifying
-                the matrix and placing keys in logical, locateable locations.
+                the matrix and placing keys in logical, easy-to-find locations.
               </p>
             </div>
-            <div className="text-center">
-              <div className="relative mx-auto mb-8 aspect-[4/3] w-full max-w-md overflow-hidden rounded-sm">
+            <div>
+              <div className="relative mb-8 aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line">
                 <Image
-                  src="/products/kebe-v1-angle.jpg"
-                  alt="A KeBe keyboard at an angle with its per-key RGB lighting on."
+                  src="/products/kebe-v2-glow.jpg"
+                  alt="KeBe v2 at an angle with its per-key RGB lighting on."
                   fill
-                  sizes="(max-width: 640px) 100vw, 480px"
+                  sizes="(max-width: 1024px) 100vw, 560px"
                   className="object-cover"
                 />
               </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
+              <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                 Speed of Thought
               </h3>
-              <p className="mt-4 text-lg leading-relaxed text-[#E0E0DB]/85">
+              <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
                 A matrix organization of keys provides the shortest possible
-                distance between keys. This efficiency means, faster stroking
+                distance between keys. This efficiency means faster stroking
                 with less movement.
               </p>
             </div>
@@ -258,23 +257,23 @@ export default async function Home(props: {
       </section>
 
       {/* v1 */}
-      <section className="bg-[#151915] py-24">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] text-center small:px-[4vw]">
-          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
-            KeBe v1
-          </h2>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#E0E0DB]/80">
-            The board that started it. Sixty-eight keys, wired, hand-built in
-            small batches — and currently out of stock.
-          </p>
+      <section className="border-t border-kebe-line py-16">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-[6vw] small:flex-row small:items-center small:px-[4vw]">
+          <div>
+            <h2 className="font-display text-3xl">KeBe v1</h2>
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-kebe-text/70">
+              The board that started it. Sixty-eight keys, wired, hand-built in
+              small batches — and sold out.
+            </p>
+          </div>
           <LocalizedClientLink
             href="/products/kebe-v1-keyboard"
-            className="mt-9 rounded-[6px] border-2 border-white px-8 py-3 text-base text-white transition-colors hover:bg-white hover:text-black"
+            className="rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
           >
             See the v1
           </LocalizedClientLink>
         </div>
       </section>
-    </>
+    </div>
   )
 }

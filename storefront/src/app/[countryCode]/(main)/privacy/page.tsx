@@ -19,11 +19,11 @@ export default function PrivacyPage() {
         <h1 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-ui-fg-base">
           Privacy
         </h1>
-        <p className="mt-3 text-sm text-kebe-bone/50">
+        <p className="mt-3 text-sm text-kebe-muted">
           Last updated {LAST_UPDATED}
         </p>
 
-        <div className="mt-10 flex flex-col gap-8 text-base leading-relaxed text-kebe-bone/80">
+        <div className="mt-10 flex flex-col gap-8 text-base leading-relaxed text-kebe-text/80">
           <p>
             KeBe is a one-person keyboard workshop in Canada. This page describes
             everything the site collects, which is only what it takes to join a
@@ -144,7 +144,7 @@ export default function PrivacyPage() {
                 </a>
               </p>
             ) : (
-              <p className="mt-3 text-kebe-bone/60">
+              <p className="mt-3 text-kebe-muted">
                 A contact address has not been set for this site yet.
               </p>
             )}

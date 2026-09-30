@@ -17,14 +17,14 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   return (
     <div id="product-info" className="flex flex-col gap-y-3">
       {shipsBy ? (
-        <p className="text-sm uppercase tracking-[0.3em] text-ui-fg-muted">
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
           Pre-order · ships by {shipsBy}
         </p>
       ) : (
         product.collection && (
           <LocalizedClientLink
             href={`/collections/${product.collection.handle}`}
-            className="text-sm uppercase tracking-[0.3em] text-ui-fg-muted hover:text-ui-fg-subtle"
+            className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted hover:text-ui-fg-subtle"
           >
             {product.collection.title}
           </LocalizedClientLink>
@@ -37,7 +37,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
         {name}
       </h1>
       {kind && (
-        <p className="font-display text-[clamp(1.25rem,2.5vw,1.6rem)] leading-snug text-ui-fg-subtle">
+        <p className="text-[clamp(1.05rem,2vw,1.25rem)] leading-snug text-ui-fg-subtle">
           {kind}
         </p>
       )}

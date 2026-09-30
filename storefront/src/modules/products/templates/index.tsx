@@ -65,18 +65,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   return (
     <div data-testid="product-container">
       <section className="content-container pt-6 pb-12 small:pt-10 small:pb-16">
-        <div className="grid grid-cols-1 gap-8 large:grid-cols-12 large:items-center large:gap-14">
-          <div className="large:col-span-7">
+        <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-center small:gap-14">
+          <div className="small:col-span-7">
             {model ? (
               <ProductModel
                 src={model}
                 poster={modelPoster}
                 alt={`${product.title}, a 3D model you can turn`}
                 eager
-                className="aspect-[4/3] rounded-lg bg-[radial-gradient(ellipse_at_center,#1f261f_0%,#101410_70%)]"
+                className="aspect-[4/3]"
               />
             ) : lead?.url ? (
-              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-ui-bg-subtle">
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised">
                 <Image
                   src={lead.url}
                   alt={product.title ?? ""}
@@ -88,7 +88,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
             ) : null}
           </div>
-          <div className="flex flex-col gap-8 large:col-span-5">
+          <div className="flex flex-col gap-8 small:col-span-5">
             <ProductInfo product={product} />
             <Suspense
               fallback={
@@ -134,9 +134,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       )}
 
       <section className="border-t border-ui-border-base">
-        <div className="content-container grid grid-cols-1 gap-12 py-16 small:py-24 large:grid-cols-12 large:gap-16">
+        <div className="content-container grid grid-cols-1 gap-12 py-16 small:py-24 small:grid-cols-12 small:gap-16">
           {paragraphs.length > 0 && (
-            <div className="large:col-span-7">
+            <div className="small:col-span-7">
               <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] text-ui-fg-base">
                 About the board
               </h2>
@@ -150,7 +150,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               </div>
             </div>
           )}
-          <div className={paragraphs.length > 0 ? "large:col-span-5" : "large:col-span-12"}>
+          <div className={paragraphs.length > 0 ? "small:col-span-5" : "small:col-span-12"}>
             <ProductTabs product={product} />
           </div>
         </div>

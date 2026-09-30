@@ -87,10 +87,10 @@ export const StripeCardContainer = ({
         // theme has to be passed in: bone text, as the other fields.
         base: {
           fontFamily: "Inter, sans-serif",
-          color: "#e0e0db",
-          iconColor: "#e0e0db",
+          color: "#f5f1ea",
+          iconColor: "#f5f1ea",
           "::placeholder": {
-            color: "rgba(224, 224, 219, 0.5)",
+            color: "#9b948a",
           },
         },
         invalid: {

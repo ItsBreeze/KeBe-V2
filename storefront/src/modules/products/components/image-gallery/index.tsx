@@ -15,7 +15,7 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
           <div
             key={image.id}
             id={image.id}
-            className="relative aspect-[4/3] w-full overflow-hidden rounded-lg bg-ui-bg-subtle"
+            className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised"
           >
             <Image
               src={image.url}
