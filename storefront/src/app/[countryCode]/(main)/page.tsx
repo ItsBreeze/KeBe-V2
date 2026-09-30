@@ -10,6 +10,7 @@ import {
 } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import WaitlistForm from "@modules/home/components/waitlist-form"
+import ProductModel from "@modules/products/components/product-model"
 
 const DESCRIPTION =
   "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Assembled by hand in Canada."
@@ -91,57 +92,24 @@ export default async function Home(props: {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-black">
-        <Image
-          src="/products/kebe-v2-turntable.jpg"
-          alt=""
-          aria-hidden
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-40 motion-safe:hidden"
-        />
-        {/* One lit revolution of the CAD model (scripts/render-v2), looping;
-            the still above stands in for it when motion is reduced. */}
-        <video
-          aria-hidden
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/products/kebe-v2-turntable.jpg"
-          className="absolute inset-0 h-full w-full object-cover opacity-40 motion-reduce:hidden"
-        >
-          {/* media: with reduced motion no source matches, so nothing downloads */}
-          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.webm" type="video/webm" />
-          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
-        </video>
-        <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] py-24 text-center small:px-[4vw]">
-          <p className="mb-6 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
+      {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2), which
+          you can turn, under the name and the one thing to do. */}
+      <section className="relative overflow-hidden bg-[radial-gradient(ellipse_at_50%_70%,#1f261f_0%,#0e110e_60%,#0a0c0a_100%)]">
+        <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-14 text-center small:px-[4vw] small:pt-20">
+          <p className="mb-5 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
             {presale.state === "open"
               ? "Pre-orders open"
               : presale.state === "sold-out"
               ? "First batch spoken for"
               : "Coming soon"}
           </p>
-          <h1 className="font-display text-[clamp(2.75rem,8vw,4rem)] leading-[1.05] text-white">
+          <h1 className="font-display text-[clamp(2.75rem,8vw,4.5rem)] leading-[1.05] text-white">
             KeBe v2
           </h1>
-          <p className="mt-5 max-w-xl font-display text-[clamp(1.25rem,3vw,1.75rem)] text-[#E0E0DB]">
+          <p className="mt-4 max-w-xl font-display text-[clamp(1.25rem,3vw,1.75rem)] text-[#E0E0DB]">
             Mindless Mastery, now with a hub
           </p>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#E0E0DB]/80">
-            The v1 layout, all in black, in a lower, screwless case, with three more USB-C
-            ports on the back.{" "}
-            {presale.state === "open"
-              ? `The first batch ships by ${presale.shipsBy}.`
-              : presale.state === "sold-out"
-              ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
-              : "Leave an address and you'll hear when pre-orders open."}
-          </p>
-          <div className="mt-10 flex flex-col items-center">
+          <div className="mt-8 flex flex-col items-center">
             {presale.state === "open" ? (
               <>
                 <LocalizedClientLink
@@ -156,14 +124,34 @@ export default async function Home(props: {
                     : presale.left === 1
                     ? "1 board left · "
                     : `${presale.left} boards left · `}
-                  shipping calculated at checkout · charged in full ·
-                  ships within Canada
+                  ships by {presale.shipsBy} · within Canada
                 </p>
               </>
             ) : (
               <WaitlistForm source="v2" />
             )}
           </div>
+        </div>
+        <ProductModel
+          src="/products/kebe-v2.glb"
+          poster="/products/kebe-v2-glow.jpg"
+          alt="KeBe v2, a 3D model with its per-key lighting on. Drag to turn it."
+          eager
+          orbit="-25deg 62deg 0.55m"
+          caption="The 3D model from its CAD · drag to turn"
+          // Pulled up under the text: the frame's top is empty dark ground.
+          className="mx-auto -mt-6 aspect-[16/9] w-full max-w-[1400px] small:-mt-20"
+        />
+        <div className="mx-auto max-w-[1200px] px-[6vw] pb-20 text-center small:px-[4vw]">
+          <p className="mx-auto max-w-xl text-lg leading-relaxed text-[#E0E0DB]/80">
+            The v1 layout, all in black, in a lower, screwless case, with three
+            more USB-C ports on the back.{" "}
+            {presale.state === "sold-out"
+              ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
+              : presale.state === "none"
+              ? "Leave an address and you'll hear when pre-orders open."
+              : "Shipping is calculated at checkout and the board is charged in full there."}
+          </p>
         </div>
       </section>
 
@@ -212,8 +200,7 @@ export default async function Home(props: {
           <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
             v2 is wired: the battery-and-Bluetooth design is not for sale, and
             this is the board that ships. None of the v2 pictures or videos are
-            photographs. The turning keyboard at the top, the 3D model and the
-            plain renders come straight from its CAD; the desk, studio and
+            photographs. The 3D model at the top and the plain renders come straight from its CAD; the desk, studio and
             night scenes, the clip above included, set that CAD model in
             AI-generated surroundings. The photos below are of v1, whose layout
             and form v2 keeps.

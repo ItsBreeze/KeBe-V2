@@ -6,13 +6,15 @@ export default function ProductVideo({
   stem,
   poster,
   caption,
+  className = "aspect-[4/3]",
 }: {
   stem: string
   poster?: string
   caption: string
+  className?: string
 }) {
   return (
-    <figure className="relative aspect-[4/3] w-full overflow-hidden rounded-rounded bg-ui-bg-subtle">
+    <figure className={`relative w-full overflow-hidden rounded-lg bg-ui-bg-subtle ${className}`}>
       {poster && (
         // eslint-disable-next-line @next/next/no-img-element
         <img

@@ -226,6 +226,9 @@ try {
   await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
   port = server.address().port;
   browser = await chromium.launch({
+    // PW_CHANNEL=chrome drives the installed Chrome instead of Playwright's
+    // own Chromium, for machines without it.
+    channel: process.env.PW_CHANNEL,
     args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
   });
   await mkdir(OUT, { recursive: true });

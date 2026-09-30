@@ -83,12 +83,19 @@ export const StripeCardContainer = ({
   const useOptions: StripeCardElementOptions = useMemo(() => {
     return {
       style: {
+        // Stripe draws the card field in its own iframe, so the store's dark
+        // theme has to be passed in: bone text, as the other fields.
         base: {
           fontFamily: "Inter, sans-serif",
-          color: "#424270",
+          color: "#e0e0db",
+          iconColor: "#e0e0db",
           "::placeholder": {
-            color: "rgb(107 114 128)",
+            color: "rgba(224, 224, 219, 0.5)",
           },
+        },
+        invalid: {
+          color: "#fb7185",
+          iconColor: "#fb7185",
         },
       },
       classes: {

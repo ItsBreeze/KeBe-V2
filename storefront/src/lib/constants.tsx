@@ -73,3 +73,8 @@ export const noDivisionCurrencies = [
   "xdr",
   "xau",
 ]
+
+// Where buyers and the privacy notice send people. Cloudflare Email Routing
+// forwards it to the owner's inbox. (support@keberds.ca is dead: the .ca
+// domain lapsed.)
+export const CONTACT_EMAIL = "support@grounders.app"

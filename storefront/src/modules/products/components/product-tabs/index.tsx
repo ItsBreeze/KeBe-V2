@@ -1,117 +1,66 @@
-"use client"
-
-import Back from "@modules/common/icons/back"
-import FastDelivery from "@modules/common/icons/fast-delivery"
-import Refresh from "@modules/common/icons/refresh"
-
-import Accordion from "./accordion"
 import { HttpTypes } from "@medusajs/types"
+import { presaleShipsBy } from "@lib/util/presale"
+import { productSpecs } from "@lib/util/specs"
+import { CONTACT_EMAIL } from "@lib/constants"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
 }
 
+// The specification and shipping, set out in full rather than folded into
+// the starter's accordions. Its shipping tab promised 3-5 day delivery, free
+// exchanges and no-questions refunds, none of which KeBe offers: only what is
+// true of the order is said here.
 const ProductTabs = ({ product }: ProductTabsProps) => {
-  const tabs = [
-    {
-      label: "Product Information",
-      component: <ProductInfoTab product={product} />,
-    },
-    {
-      label: "Shipping & Returns",
-      component: <ShippingInfoTab />,
-    },
-  ]
+  const specs = productSpecs(product)
+  const shipsBy = presaleShipsBy(product)
 
   return (
-    <div className="w-full">
-      <Accordion type="multiple">
-        {tabs.map((tab, i) => (
-          <Accordion.Item
-            key={i}
-            title={tab.label}
-            headingSize="medium"
-            value={tab.label}
-          >
-            {tab.component}
-          </Accordion.Item>
-        ))}
-      </Accordion>
-    </div>
-  )
-}
-
-const ProductInfoTab = ({ product }: ProductTabsProps) => {
-  return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-2 gap-x-8">
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Material</span>
-            <p>{product.material ? product.material : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Country of origin</span>
-            <p>{product.origin_country ? product.origin_country : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Type</span>
-            <p>{product.type ? product.type.value : "-"}</p>
-          </div>
+    <div className="flex flex-col gap-12">
+      {specs.length > 0 && (
+        <div>
+          <h2 className="font-display text-2xl text-ui-fg-base">
+            Specifications
+          </h2>
+          <dl className="mt-4 divide-y divide-ui-border-base border-y border-ui-border-base">
+            {specs.map((s) => (
+              <div
+                key={s.label}
+                className="grid grid-cols-[8rem_1fr] gap-4 py-3 text-base"
+              >
+                <dt className="text-ui-fg-muted">{s.label}</dt>
+                <dd className="text-ui-fg-subtle">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
-        <div className="flex flex-col gap-y-4">
-          <div>
-            <span className="font-semibold">Weight</span>
-            <p>{product.weight ? `${product.weight} g` : "-"}</p>
-          </div>
-          <div>
-            <span className="font-semibold">Dimensions</span>
+      )}
+      <div>
+        <h2 className="font-display text-2xl text-ui-fg-base">Shipping</h2>
+        <div className="mt-4 flex flex-col gap-3 text-base leading-relaxed text-ui-fg-subtle">
+          {shipsBy ? (
+            <>
+              <p>
+                A pre-order: it ships by {shipsBy}, within Canada only, and is
+                charged in full at checkout.
+              </p>
+              <p>
+                Shipping is calculated at checkout from your address and added
+                to the price.
+              </p>
+            </>
+          ) : (
             <p>
-              {product.length && product.width && product.height
-                ? `${product.length}L x ${product.width}W x ${product.height}H`
-                : "-"}
+              Ships within Canada only. Shipping is calculated at checkout from
+              your address.
             </p>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-const ShippingInfoTab = () => {
-  return (
-    <div className="text-small-regular py-8">
-      <div className="grid grid-cols-1 gap-y-8">
-        <div className="flex items-start gap-x-2">
-          <FastDelivery />
-          <div>
-            <span className="font-semibold">Fast delivery</span>
-            <p className="max-w-sm">
-              Your package will arrive in 3-5 business days at your pick up
-              location or in the comfort of your home.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-start gap-x-2">
-          <Refresh />
-          <div>
-            <span className="font-semibold">Simple exchanges</span>
-            <p className="max-w-sm">
-              Is the fit not quite right? No worries - we&apos;ll exchange your
-              product for a new one.
-            </p>
-          </div>
-        </div>
-        <div className="flex items-start gap-x-2">
-          <Back />
-          <div>
-            <span className="font-semibold">Easy returns</span>
-            <p className="max-w-sm">
-              Just return your product and we&apos;ll refund your money. No
-              questions asked – we&apos;ll do our best to make sure your return
-              is hassle-free.
-            </p>
-          </div>
+          )}
+          <p>
+            Questions about an order:{" "}
+            <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+              {CONTACT_EMAIL}
+            </a>
+          </p>
         </div>
       </div>
     </div>

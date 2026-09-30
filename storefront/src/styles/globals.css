@@ -110,3 +110,40 @@
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+/* The whole store is dark (html.dark, app/layout.tsx), in the homepage's
+   palette: ink #151915, bone #E0E0DB. These override Medusa UI's own dark
+   tokens, which are zinc greys and a grey primary button. */
+.dark {
+  --bg-base: #151915;
+  --bg-base-hover: #1c221c;
+  --bg-base-pressed: #232a23;
+  --bg-subtle: #101410;
+  --bg-subtle-hover: #181d18;
+  --bg-component: #1e241e;
+  --bg-component-hover: rgba(224, 224, 219, 0.1);
+  --bg-component-pressed: rgba(224, 224, 219, 0.16);
+  --bg-field: rgba(224, 224, 219, 0.05);
+  --bg-field-hover: rgba(224, 224, 219, 0.09);
+  --bg-field-component: #1c221c;
+  --bg-disabled: #1c221c;
+  --bg-overlay: rgba(8, 10, 8, 0.72);
+  --fg-base: #e0e0db;
+  --fg-subtle: rgba(224, 224, 219, 0.72);
+  --fg-muted: rgba(224, 224, 219, 0.5);
+  --fg-disabled: rgba(224, 224, 219, 0.28);
+  --border-base: rgba(224, 224, 219, 0.12);
+  --border-strong: rgba(224, 224, 219, 0.22);
+  --border-menu-top: #1c221c;
+  --contrast-border-top: #1c221c;
+  /* Primary buttons: bone with ink text, like the homepage's Pre-order. */
+  --button-inverted: #e0e0db;
+  --button-inverted-hover: #ffffff;
+  --button-inverted-pressed: #cfcfca;
+  --contrast-fg-primary: #151915;
+  /* Links: bone, not the kit's blue. */
+  --fg-interactive: #e0e0db;
+  --fg-interactive-hover: #ffffff;
+  --button-neutral: rgba(224, 224, 219, 0.06);
+  --button-neutral-hover: rgba(224, 224, 219, 0.1);
+}

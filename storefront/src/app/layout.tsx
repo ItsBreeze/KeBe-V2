@@ -25,19 +25,23 @@ export const metadata: Metadata = {
 
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
+    // One dark theme for the whole store, in the homepage's palette: the
+    // `dark` class switches Medusa UI to its dark tokens, which
+    // styles/globals.css sets to KeBe's ink and bone. The starter's light
+    // product, cart and account pages sat oddly under the dark homepage.
     <html
       lang="en"
-      data-mode="light"
-      className={`${display.variable} ${body.variable}`}
+      data-mode="dark"
+      className={`dark ${display.variable} ${body.variable}`}
+      style={{ colorScheme: "dark" }}
     >
-      {/* No global colour here. The homepage sets its own dark palette per
-          section; the product, cart and account pages are the starter's light
-          theme and go unreadable if white text is forced on them. */}
-      {/* Explicit white: the starter left body transparent and relied on the
-          browser's default, which goes black in a dark-mode browser and hides
-          the near-black product text. The homepage sets its own dark
-          backgrounds per section, so this never shows through there. */}
-      <body className="bg-white font-body antialiased">
+      <head>
+        {/* Dark Reader repaints any page it doesn't take for dark; here it
+            turned the white Pre-order button into a dark box on a dark card.
+            The lock tells it the site handles its own colours. */}
+        <meta name="darkreader-lock" />
+      </head>
+      <body className="bg-ui-bg-base text-ui-fg-base font-body antialiased">
         <main className="relative">{props.children}</main>
       </body>
     </html>
