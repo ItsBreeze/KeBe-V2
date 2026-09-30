@@ -4,7 +4,7 @@ import sys, os
 from PIL import Image
 
 DIR = sys.argv[1]
-for stem in ("kebe-v1-hero", "kebe-v1-angle", "kebe-v1-rgb"):
+for stem in ("kebe-v1-hero", "kebe-v1-angle", "kebe-v1-rgb", "kebe-v1-port", "kebe-v1-profile"):
     src = Image.open(os.path.join(DIR, stem + ".jpg")).convert("RGB")
     for w in (400, 800, 1600, 2400):
         im = src.resize((w, w * 3 // 4), Image.LANCZOS)

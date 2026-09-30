@@ -22,10 +22,11 @@ const WIDTHS = [400, 800, 1600, 2400];
 // forest composites have no contact shadow and read as fake, and Images/Smaller
 // is the same 4032x3024 pixels just palette-quantised.
 //
-// kebe-v1-hero, -angle and -rgb, the three the v1 listing shows, are NOT made
-// here any more: scripts/v1-photos/compose.py puts the lit root-folder
-// cut-outs on the store's dark ground (the grey-backdrop shots below looked
-// washed out on it). Those three cut-outs keep the case; some others do not.
+// kebe-v1-hero, -angle and -rgb (the three the v1 listing shows) and
+// kebe-v1-port and -profile are NOT made here: scripts/v1-photos/compose.py
+// puts the lit root-folder cut-outs on the store's dark ground with their real
+// underglow (the grey-backdrop shots below looked washed out on it). Those
+// five cut-outs keep the case; some others in the folder do not.
 const OG_SOURCE = "Backdropped/20240804_224926368_iOS.png";
 const SOURCES = [
   {
