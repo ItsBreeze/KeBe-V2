@@ -10,6 +10,7 @@ import {
 } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import WaitlistForm from "@modules/home/components/waitlist-form"
+import ProductModel from "@modules/products/components/product-model"
 
 const DESCRIPTION =
   "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Assembled by hand in Canada."
@@ -46,6 +47,46 @@ const V2_SPECS = [
   {
     title: "Still yours to change",
     body: "Kailh Choc hot-swap sockets, per-key RGB that lights each legend through the black caps, and QMK on v1's STM32 controller, so a v1 keymap carries straight over.",
+  },
+]
+
+// The two typewriter habits a standard keyboard keeps, and what KeBe does
+// instead. The owner's argument (30 Sept 2026): the stagger cleared levers a
+// keyboard does not have, and QWERTY's order kept common letter pairs apart
+// so the typebars would not jam.
+const HABITS = [
+  {
+    label: "The stagger",
+    title: "Rows knocked sideways",
+    body: "On a typewriter every key sat on a lever, and each row was shifted sideways so the levers could pass one another. A keyboard has no levers, yet the offset stayed. KeBe's keys sit in straight columns: each finger moves straight up and down its own.",
+  },
+  {
+    label: "The letter order",
+    title: "Letters kept apart",
+    body: "Every typebar struck the same spot on the page. Hit two keys at once, or too close together, and their bars could collide on the way up and jam. So QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. Dvorak's is laid out for the hands.",
+  },
+]
+
+// The case for the layout, one reason each. Check against the caps before
+// changing: the Fn arrows are on . O E U, the number pad on the right hand's
+// G C R / H T N / M W V / B, F1-F10 on the number row, the media keys in the
+// middle columns, and ctrl, alt, fn, the GUI diamond and shift on both sides.
+const WHY = [
+  {
+    title: "The home row does the work",
+    body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of English keystrokes land there, against about 30% on QWERTY.",
+  },
+  {
+    title: "Hands take turns",
+    body: "With the vowels on one side and the consonants on the other, most words alternate hands: one hand reaches while the other strikes, for a steadier rhythm and less work for any single finger.",
+  },
+  {
+    title: "Both thumbs, both sides",
+    body: "Two space bars sit under the thumbs, and Shift, Ctrl, Alt, Fn and the ◆ key are mirrored on each side, so a shortcut takes one key from each hand instead of a stretch with one.",
+  },
+  {
+    title: "Sixty-eight keys, nothing missing",
+    body: "Hold Fn and the left hand's home keys become arrows, the right hand's a number pad, and the number row F1 to F10. Media controls sit in the middle columns. Nothing is more than a finger's reach from home.",
   },
 ]
 
@@ -90,97 +131,91 @@ export default async function Home(props: {
   const presale = await getPresale(countryCode)
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative flex min-h-[85vh] items-center justify-center overflow-hidden bg-black">
-        <Image
-          src="/products/kebe-v2-turntable.jpg"
-          alt=""
-          aria-hidden
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover opacity-40 motion-safe:hidden"
-        />
-        {/* One lit revolution of the CAD model (scripts/render-v2), looping;
-            the still above stands in for it when motion is reduced. */}
-        <video
-          aria-hidden
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          poster="/products/kebe-v2-turntable.jpg"
-          className="absolute inset-0 h-full w-full object-cover opacity-40 motion-reduce:hidden"
+    <div className="bg-kebe-page text-kebe-text">
+      {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2) fills it,
+          still, with the name and Pre-order laid over its top. A click on
+          the model (not the text) hands it the pointer to turn and zoom. */}
+      <section className="relative">
+        <ProductModel
+          src="/products/kebe-v2.glb"
+          poster="/products/kebe-v2-glow.jpg"
+          alt="KeBe v2, a 3D model with its per-key lighting on."
+          eager
+          variant="backdrop"
+          angle="-25deg 62deg"
+          fill={0.72}
+          stageClassName="inset-x-0 bottom-0 top-[40%] small:top-[20%]"
+          className="h-[calc(100svh-4rem)] min-h-[640px] max-h-[1000px] bg-[radial-gradient(ellipse_at_50%_68%,#2c2821_0%,#1c1a17_38%,#12110f_72%)]"
         >
-          {/* media: with reduced motion no source matches, so nothing downloads */}
-          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.webm" type="video/webm" />
-          <source media="(prefers-reduced-motion: no-preference)" src="/products/kebe-v2-turntable.mp4" type="video/mp4" />
-        </video>
-        <div className="relative z-10 mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] py-24 text-center small:px-[4vw]">
-          <p className="mb-6 text-sm uppercase tracking-[0.3em] text-[#E0E0DB]/70">
-            {presale.state === "open"
-              ? "Pre-orders open"
-              : presale.state === "sold-out"
-              ? "First batch spoken for"
-              : "Coming soon"}
-          </p>
-          <h1 className="font-display text-[clamp(2.75rem,8vw,4rem)] leading-[1.05] text-white">
-            KeBe v2
-          </h1>
-          <p className="mt-5 max-w-xl font-display text-[clamp(1.25rem,3vw,1.75rem)] text-[#E0E0DB]">
-            Mindless Mastery, now with a hub
-          </p>
-          <p className="mt-6 max-w-lg text-lg leading-relaxed text-[#E0E0DB]/80">
-            The v1 layout, all in black, in a lower, screwless case, with three more USB-C
-            ports on the back.{" "}
-            {presale.state === "open"
-              ? `The first batch ships by ${presale.shipsBy}.`
-              : presale.state === "sold-out"
-              ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
-              : "Leave an address and you'll hear when pre-orders open."}
-          </p>
-          <div className="mt-10 flex flex-col items-center">
-            {presale.state === "open" ? (
-              <>
-                <LocalizedClientLink
-                  href={`/products/${PRESALE_HANDLE}`}
-                  className="rounded-[7px] bg-white px-8 py-3 text-base text-black transition-opacity hover:opacity-80"
-                >
-                  Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
-                </LocalizedClientLink>
-                <p className="mt-4 text-sm text-[#E0E0DB]/60">
-                  {presale.left === null
-                    ? ""
-                    : presale.left === 1
-                    ? "1 board left · "
-                    : `${presale.left} boards left · `}
-                  shipping calculated at checkout · charged in full ·
-                  ships within Canada
-                </p>
-              </>
-            ) : (
-              <WaitlistForm source="v2" />
-            )}
+          <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
+            <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+              {presale.state === "open"
+                ? "Pre-orders open"
+                : presale.state === "sold-out"
+                ? "First batch spoken for"
+                : "Coming soon"}
+            </p>
+            <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
+              KeBe v2
+            </h1>
+            <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
+              Mindless Mastery, now with a hub
+            </p>
+            <div className="mt-8 flex flex-col items-center">
+              {presale.state === "open" ? (
+                <>
+                  <LocalizedClientLink
+                    href={`/products/${PRESALE_HANDLE}`}
+                    className="rounded-xl bg-kebe-text px-8 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+                  >
+                    Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
+                  </LocalizedClientLink>
+                  <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+                    {presale.left === null
+                      ? ""
+                      : presale.left === 1
+                      ? "1 board left · "
+                      : `${presale.left} boards left · `}
+                    ships by {presale.shipsBy} · Canada
+                  </p>
+                </>
+              ) : (
+                <WaitlistForm source="v2" />
+              )}
+            </div>
           </div>
-        </div>
+        </ProductModel>
+      </section>
+
+      <section className="mx-auto max-w-[1200px] px-[6vw] py-16 text-center small:px-[4vw]">
+        <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
+          The v1 layout, all in black, in a lower, screwless case, with three
+          more USB-C ports on the back.{" "}
+          {presale.state === "sold-out"
+            ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
+            : presale.state === "none"
+            ? "Leave an address and you'll hear when pre-orders open."
+            : "Shipping is calculated at checkout and the board is charged in full there."}
+        </p>
       </section>
 
       {/* What v2 is */}
-      <section className="bg-[#151915] py-24">
+      <section className="border-t border-kebe-line py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
             What changes
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            v1&apos;s board, with a hub built in
           </h2>
           {/* An AI camera move over the night scene, with the CAD keyboard
               tracked back into every frame (scripts/render-v2). */}
-          <div className="relative mt-10 aspect-[4/3] w-full max-w-3xl overflow-hidden rounded-sm">
+          <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-kebe-line">
             <Image
               src="/products/kebe-v2-night-clip.jpg"
               alt="KeBe v2 on a desk at night, its legends lit in a rainbow by the per-key RGB."
               fill
-              sizes="(max-width: 768px) 100vw, 768px"
+              sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
             />
             <video
@@ -199,95 +234,116 @@ export default async function Home(props: {
           </div>
           <div className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {V2_SPECS.map((s) => (
-              <div key={s.title}>
-                <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
+              <div key={s.title} className="border-t border-kebe-line pt-6">
+                <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {s.title}
                 </h3>
-                <p className="mt-3 text-lg leading-relaxed text-[#E0E0DB]/80">
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
                   {s.body}
                 </p>
               </div>
             ))}
           </div>
-          <p className="mt-14 max-w-2xl text-base leading-relaxed text-[#E0E0DB]/50">
+          <p className="mt-14 max-w-2xl text-sm leading-relaxed text-kebe-faint">
             v2 is wired: the battery-and-Bluetooth design is not for sale, and
             this is the board that ships. None of the v2 pictures or videos are
-            photographs. The turning keyboard at the top, the 3D model and the
-            plain renders come straight from its CAD; the desk, studio and
-            night scenes, the clip above included, set that CAD model in
-            AI-generated surroundings. The photos below are of v1, whose layout
-            and form v2 keeps.
+            photographs. The 3D model at the top and the plain renders come
+            straight from its CAD; the desk, studio and night scenes, the clip
+            above included, set that CAD model in AI-generated surroundings.
           </p>
         </div>
       </section>
 
-      {/* Why the layout -- verbatim from the original site, including its own
-          spelling and punctuation. */}
-      <section className="bg-[#12261E] py-24">
+      {/* Why the layout. Every claim is checkable on the caps themselves
+          (the Fn legends in Keycaps/print) or is the textbook description of
+          Dvorak; the home-row shares are the usual English-text figures. */}
+      <section className="border-t border-kebe-line bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <h2 className="text-center font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
-            Why Make the Change?
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+            Peace of mind · speed of thought
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            Why make the change?
           </h2>
-          <div className="mt-16 grid gap-x-16 gap-y-14 small:grid-cols-2">
-            <div className="text-center">
-              <div className="relative mx-auto mb-8 aspect-[4/3] w-full max-w-md overflow-hidden rounded-sm">
-                <Image
-                  src="/products/kebe-v1-hero.jpg"
-                  alt="A KeBe keyboard seen straight on, its 68 keycaps laid out on a regular grid."
-                  fill
-                  sizes="(max-width: 640px) 100vw, 480px"
-                  className="object-cover"
-                />
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            The keyboard you learned on was designed around a typewriter. Two
+            of its habits survive on every laptop, and neither has a reason to
+            any more.
+          </p>
+          <div className="mt-10 grid gap-6 small:grid-cols-2">
+            {HABITS.map((h) => (
+              <div
+                key={h.title}
+                className="rounded-2xl border border-kebe-line bg-kebe-page p-8"
+              >
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+                  {h.label}
+                </p>
+                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+                  {h.title}
+                </h3>
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
+                  {h.body}
+                </p>
               </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
-                Peace of Mind
-              </h3>
-              <p className="mt-4 text-lg leading-relaxed text-[#E0E0DB]/85">
-                The layout makes it easier to learn to touch type by simplifying
-                the matrix and placing keys in logical, locateable locations.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="relative mx-auto mb-8 aspect-[4/3] w-full max-w-md overflow-hidden rounded-sm">
-                <Image
-                  src="/products/kebe-v1-angle.jpg"
-                  alt="A KeBe keyboard at an angle with its per-key RGB lighting on."
-                  fill
-                  sizes="(max-width: 640px) 100vw, 480px"
-                  className="object-cover"
-                />
-              </div>
-              <h3 className="font-display text-[clamp(1.5rem,3vw,2.2rem)] text-white">
-                Speed of Thought
-              </h3>
-              <p className="mt-4 text-lg leading-relaxed text-[#E0E0DB]/85">
-                A matrix organization of keys provides the shortest possible
-                distance between keys. This efficiency means, faster stroking
-                with less movement.
-              </p>
-            </div>
+            ))}
           </div>
+          <p className="mt-8 max-w-2xl font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
+            Nothing on a digital keyboard can jam. Keeping either habit only
+            costs your hands.
+          </p>
+          <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-kebe-line">
+            <Image
+              src="/products/kebe-v2-top.jpg"
+              alt="KeBe v2 from above: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides."
+              fill
+              sizes="(max-width: 1200px) 100vw, 1200px"
+              className="object-cover"
+            />
+          </div>
+          <ol className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
+            {WHY.map((w, i) => (
+              <li key={w.title} className="border-t border-kebe-line pt-6">
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+                  {String(i + 1).padStart(2, "0")}
+                </p>
+                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+                  {w.title}
+                </h3>
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
+                  {w.body}
+                </p>
+              </li>
+            ))}
+          </ol>
+          <p className="mt-14 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            Nothing sits where a standard keyboard puts it, so you learn KeBe
+            as a new instrument instead of unpicking old habits one key at a
+            time. Switching takes practice, and the first weeks are slower.
+            Once it is in your hands you stop thinking about the keyboard at
+            all: that is the mindless mastery in the name.
+          </p>
         </div>
       </section>
 
       {/* v1 */}
-      <section className="bg-[#151915] py-24">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] text-center small:px-[4vw]">
-          <h2 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-white">
-            KeBe v1
-          </h2>
-          <p className="mt-5 max-w-xl text-lg leading-relaxed text-[#E0E0DB]/80">
-            The board that started it. Sixty-eight keys, wired, hand-built in
-            small batches — and currently out of stock.
-          </p>
+      <section className="border-t border-kebe-line py-16">
+        <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-[6vw] small:flex-row small:items-center small:px-[4vw]">
+          <div>
+            <h2 className="font-display text-3xl">KeBe v1</h2>
+            <p className="mt-2 max-w-xl text-base leading-relaxed text-kebe-text/70">
+              The board that started it. Sixty-eight keys, wired, hand-built in
+              small batches — and sold out.
+            </p>
+          </div>
           <LocalizedClientLink
             href="/products/kebe-v1-keyboard"
-            className="mt-9 rounded-[6px] border-2 border-white px-8 py-3 text-base text-white transition-colors hover:bg-white hover:text-black"
+            className="rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
           >
             See the v1
           </LocalizedClientLink>
         </div>
       </section>
-    </>
+    </div>
   )
 }

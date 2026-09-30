@@ -110,3 +110,49 @@
     @apply text-[32px] leading-[44px] font-semibold;
   }
 }
+
+/* The whole store is dark (html.dark, app/layout.tsx), in the suite's night
+   register (Grounders, ItsRadio, Offhand): page #12110F, raised #1C1A17,
+   alt #242119, hairline #2E2B26, text #F5F1EA, muted #9B948A, faint #6E675D.
+   These override Medusa UI's own dark tokens, which are zinc greys, a blue
+   accent and a grey primary button. */
+.dark {
+  --bg-base: #12110f;
+  --bg-base-hover: #1c1a17;
+  --bg-base-pressed: #242119;
+  --bg-subtle: #1c1a17;
+  --bg-subtle-hover: #242119;
+  --bg-component: #242119;
+  --bg-component-hover: rgba(245, 241, 234, 0.1);
+  --bg-component-pressed: rgba(245, 241, 234, 0.16);
+  --bg-field: #1c1a17;
+  --bg-field-hover: #242119;
+  --bg-field-component: #1c1a17;
+  --bg-disabled: #1c1a17;
+  --bg-overlay: rgba(10, 9, 8, 0.72);
+  --fg-base: #f5f1ea;
+  --fg-subtle: #c9c3b9;
+  --fg-muted: #9b948a;
+  --fg-disabled: #6e675d;
+  --border-base: #2e2b26;
+  --border-strong: #3d3932;
+  --border-menu-top: #1c1a17;
+  --contrast-border-top: #1c1a17;
+  /* Links and primary buttons: the page's own text colour, ink labels. */
+  --fg-interactive: #f5f1ea;
+  --fg-interactive-hover: #ffffff;
+  --button-inverted: #f5f1ea;
+  --button-inverted-hover: #ffffff;
+  --button-inverted-pressed: #ddd8cf;
+  --contrast-fg-primary: #12110f;
+  --button-neutral: rgba(245, 241, 234, 0.06);
+  --button-neutral-hover: rgba(245, 241, 234, 0.1);
+}
+
+/* The suite's one roundness: 12 on buttons and fields. */
+.dark button,
+.dark input,
+.dark select,
+.dark textarea {
+  border-radius: 12px;
+}

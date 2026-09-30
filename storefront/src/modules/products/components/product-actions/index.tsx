@@ -136,12 +136,20 @@ export default function ProductActions({
       countryCode,
     })
 
+    // A pre-order is one board bought on its own, so go to the cart: left on
+    // the page, nothing visibly changed, and a second click added a second
+    // board.
+    if (shipsBy) {
+      router.push(`/${countryCode}/cart`)
+      return
+    }
+
     setIsAdding(false)
   }
 
   return (
     <>
-      <div className="flex flex-col gap-y-2" ref={actionsRef}>
+      <div className="flex flex-col gap-y-4" ref={actionsRef}>
         <div>
           {(product.variants?.length ?? 0) > 1 && (
             <div className="flex flex-col gap-y-4">
@@ -176,7 +184,7 @@ export default function ProductActions({
             !isValidVariant
           }
           variant="primary"
-          className="w-full h-10"
+          className="w-full h-12 text-base"
           isLoading={isAdding}
           data-testid="add-product-button"
         >
@@ -188,7 +196,7 @@ export default function ProductActions({
         </Button>
         {shipsBy && inStock && (
           <p
-            className="text-small-regular text-ui-fg-subtle"
+            className="text-base leading-relaxed text-ui-fg-muted"
             data-testid="presale-note"
           >
             Pre-order: plus shipping, calculated at checkout, and charged in

@@ -10,7 +10,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="shrink-0 rounded-[7px] bg-white px-7 py-3 text-base text-black transition-opacity hover:opacity-80 disabled:opacity-50"
+      className="shrink-0 rounded-xl bg-kebe-text px-7 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white disabled:opacity-50"
     >
       {pending ? "Adding…" : "Notify me"}
     </button>
@@ -28,7 +28,7 @@ export default function WaitlistForm({
 
   if (state.status === "ok") {
     return (
-      <p className="text-lg text-[#E0E0DB]" role="status">
+      <p className="text-lg text-kebe-text" role="status">
         {state.message} We'll write once, when there's something to see.
       </p>
     )
@@ -49,7 +49,7 @@ export default function WaitlistForm({
           autoComplete="email"
           placeholder="you@example.com"
           aria-describedby={state.status === "error" ? "waitlist-error" : undefined}
-          className="w-full rounded-[7px] border-2 border-white/40 bg-transparent px-5 py-3 text-base text-white placeholder:text-white/40 focus:border-white focus:outline-none"
+          className="w-full rounded-xl border border-kebe-line bg-kebe-raised px-5 py-3 text-base text-kebe-text placeholder:text-kebe-faint focus:border-kebe-muted focus:outline-none"
         />
         <SubmitButton />
       </div>

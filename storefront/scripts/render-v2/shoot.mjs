@@ -172,7 +172,8 @@ async function shootTurntable(frames, FRAMES, TW, TH) {
   await page.close();
   await sharp(path.join(frames, "f0000.png")).jpeg({ quality: 82, mozjpeg: true })
     .toFile(path.join(OUT, "kebe-v2-turntable.jpg"));
-  const input = ["-y", "-loglevel", "error", "-framerate", "30", "-i", path.join(frames, "f%04d.png")];
+  // Four threads: this machine has crashed under full-core encodes.
+  const input = ["-y", "-loglevel", "error", "-threads", "4", "-framerate", "30", "-i", path.join(frames, "f%04d.png")];
   const encodes = {
     "kebe-v2-turntable.mp4": ["-c:v", "libx264", "-preset", "slow", "-crf", "24", "-pix_fmt", "yuv420p", "-movflags", "+faststart", "-an"],
     "kebe-v2-turntable.webm": ["-c:v", "libvpx-vp9", "-crf", "36", "-b:v", "0", "-row-mt", "1", "-pix_fmt", "yuv420p", "-an"],
@@ -226,6 +227,9 @@ try {
   await new Promise((ok) => server.listen(0, "127.0.0.1", ok));
   port = server.address().port;
   browser = await chromium.launch({
+    // PW_CHANNEL=chrome drives the installed Chrome instead of Playwright's
+    // own Chromium, for machines without it.
+    channel: process.env.PW_CHANNEL,
     args: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"],
   });
   await mkdir(OUT, { recursive: true });

@@ -2,6 +2,7 @@ import { listCategories } from "@lib/data/categories"
 import { listCollections } from "@lib/data/collections"
 import { Text, clx } from "@medusajs/ui"
 
+import { CONTACT_EMAIL } from "@lib/constants"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 export default async function Footer() {
@@ -13,11 +14,11 @@ export default async function Footer() {
   return (
     <footer className="border-t border-ui-border-base w-full">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
+        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-16">
           <div>
             <LocalizedClientLink
               href="/"
-              className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
+              className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-subtle hover:text-ui-fg-base"
             >
               KeBe
             </LocalizedClientLink>
@@ -33,7 +34,8 @@ export default async function Footer() {
                   data-testid="footer-categories"
                 >
                   {productCategories?.slice(0, 6).map((c) => {
-                    if (c.parent_category) {
+                    // "Parts" holds only drafts, and linked to an empty page.
+                    if (c.parent_category || !c.products?.length) {
                       return
                     }
 
@@ -109,8 +111,8 @@ export default async function Footer() {
             )}
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
-          <div className="flex gap-x-4">
+        <div className="flex w-full flex-col gap-y-2 mb-16 small:flex-row small:justify-between text-ui-fg-muted">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <Text className="txt-compact-small">
               © {new Date().getFullYear()} KeBe. All rights reserved.
             </Text>
@@ -120,6 +122,12 @@ export default async function Footer() {
             >
               Privacy
             </LocalizedClientLink>
+            <a
+              href={`mailto:${CONTACT_EMAIL}`}
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              {CONTACT_EMAIL}
+            </a>
           </div>
           <Text className="txt-compact-small">
             Designed and Assembled in Canada

@@ -39,6 +39,10 @@ const view = params.get("view") || "hero";
 const W = +params.get("w") || 2400, H = +params.get("h") || 1600;
 const dark = view === "glow" || view === "glowturn";
 const exporting = view === "glb"; // the 3D model for the product page's viewer
+// The exported model has its LEDs on, as the site shows it on a dark ground:
+// emissive legends and the spill round each cap, but no bloom (a glTF carries
+// no post-processing, so the viewer draws emission at its own brightness).
+const lit = dark || exporting;
 // alpha=1: the keyboard alone on a transparent background, no floor, fog or
 // contact shadow -- for compositing over a photographed or generated scene.
 const alpha = params.get("alpha") === "1";
@@ -146,7 +150,7 @@ async function legendMaps(ref) {
     return t;
   };
   // Lit, the frosted legend shows its LED's colour, not its own near-white.
-  return { map: layer(dark ? "#3c3c3a" : LEGEND, CAP), mask: layer("#ffffff", "#000000") };
+  return { map: exporting ? null : layer(lit ? "#3c3c3a" : LEGEND, CAP), mask: layer("#ffffff", "#000000") };
 }
 
 const hue = (x) => new THREE.Color().setHSL(((x / CASE_W) * 0.85 + 0.55) % 1, 0.95, 0.55);
@@ -185,20 +189,24 @@ for (const k of keys) {
   let mats = capMat;
   if (k.svg) {
     const { map, mask } = await legendMaps(k.ref);
-    const top = new THREE.MeshStandardMaterial({ map, roughness: 0.62 });
-    // Without the bloom pass (alpha) full emission clips to white; keep the colour.
-    if (dark) Object.assign(top, { emissive: hue(cx), emissiveMap: mask, emissiveIntensity: alpha ? 0.8 : 1.6 });
+    // The exported model draws its legends by emission alone (one texture a
+    // cap rather than two), which keeps the file small.
+    const top = new THREE.MeshStandardMaterial(map ? { map, roughness: 0.62 } : { color: CAP, roughness: 0.62 });
+    // Without the bloom pass (alpha, or the exported model) full emission
+    // clips to white; keep the colour.
+    if (lit) Object.assign(top, { emissive: hue(cx), emissiveMap: mask, emissiveIntensity: alpha || exporting ? 0.9 : 1.6 });
     mats = [capMat, capMat, capMat, capMat, top, capMat];
   }
   const cap = shadowy(new THREE.Mesh(capGeo(k.w, k.d), mats));
   cap.position.set(cx, cy, CAP_Z0 + CAP_H / 2);
   model.add(cap);
-  if (dark) {
+  if (lit) {
     // The SK6812MINI-E under each key shines up into an opaque cap, so what
     // shows is the light it spills onto the plate round the cap's edges.
     const glow = new THREE.Mesh(
       new THREE.PlaneGeometry(k.w + 1.2, k.d + 1.2),
-      new THREE.MeshBasicMaterial({ color: hue(cx), map: glowMap, transparent: true, opacity: 0.45, depthWrite: false })
+      // Brighter in the exported model, which has no bloom to spread the light.
+      new THREE.MeshBasicMaterial({ color: hue(cx), map: glowMap, transparent: true, opacity: exporting ? 0.85 : 0.45, depthWrite: false })
     );
     glow.position.set(cx, cy, PLATE.z0 + PLATE.t + 0.02);
     model.add(glow);

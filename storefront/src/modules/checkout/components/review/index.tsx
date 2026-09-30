@@ -1,5 +1,7 @@
 "use client"
 
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+
 import { Heading, Text, clx } from "@medusajs/ui"
 
 import PaymentButton from "../payment-button"
@@ -19,7 +21,7 @@ const Review = ({ cart }: { cart: any }) => {
     (cart.payment_collection || paidByGiftcard)
 
   return (
-    <div className="bg-white">
+    <div className="bg-ui-bg-base">
       <div className="flex flex-row items-center justify-between mb-6">
         <Heading
           level="h2"
@@ -37,11 +39,17 @@ const Review = ({ cart }: { cart: any }) => {
         <>
           <div className="flex items-start gap-x-1 w-full mb-6">
             <div className="w-full">
+              {/* The starter's line had buyers accept a Terms of Use, Terms
+                  of Sale and Returns Policy that do not exist, and "Medusa
+                  Store's" privacy policy. Only what is true is said here. */}
               <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                By clicking the Place Order button, you confirm that you have
-                read, understand and accept our Terms of Use, Terms of Sale and
-                Returns Policy and acknowledge that you have read Medusa
-                Store&apos;s Privacy Policy.
+                Placing the order charges your card the total above, now,
+                shipping included. How we handle your details is set out in
+                our{" "}
+                <LocalizedClientLink href="/privacy" className="underline">
+                  privacy notice
+                </LocalizedClientLink>
+                .
               </Text>
             </div>
           </div>

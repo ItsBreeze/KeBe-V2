@@ -4,13 +4,14 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductModel from "@modules/products/components/product-model"
 import ProductVideo from "@modules/products/components/product-video"
 import ProductActions from "@modules/products/components/product-actions"
-import ProductOnboardingCta from "@modules/products/components/product-onboarding-cta"
 import ProductTabs from "@modules/products/components/product-tabs"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
+import Image from "next/image"
+import { productSpecs } from "@lib/util/specs"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -21,6 +22,10 @@ type ProductTemplateProps = {
   images: HttpTypes.StoreProductImage[]
 }
 
+// Layout: the 3D model (or the first picture) beside the buy box, the clip
+// and pictures in a grid under them, then the description with the
+// specification and shipping beside it. The starter's three columns put a
+// narrow run of description on the far left and the button on the far right.
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
   product,
   region,
@@ -33,75 +38,133 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
   // A product with a 3D model (metadata.model_glb) or a clip (metadata.video,
   // a path without extension), both set by the backend's start-presale
-  // script, shows them above its pictures.
+  // script, shows them first.
   const model =
     typeof product.metadata?.model_glb === "string"
       ? product.metadata.model_glb
       : null
   const video =
     typeof product.metadata?.video === "string" ? product.metadata.video : null
-  // The viewer's poster is a plain render (metadata.model_poster), not the
-  // first gallery picture, which may be a composite scene.
-  const modelPoster =
-    typeof product.metadata?.model_poster === "string"
-      ? product.metadata.model_poster
-      : images[0]?.url
+  // The viewer's poster is the lit still render-v2 makes beside each model
+  // (<model>-glow.jpg), so the poster and the lit model match. The backend's
+  // model_poster is a daylight render on a pale ground, which flashed white.
+  const modelPoster = model ? model.replace(/\.glb$/, "-glow.jpg") : undefined
+
+  // Without a model the first picture leads, and the grid shows the rest.
+  const lead = model ? null : images[0]
+  const gallery = model ? images : images.slice(1)
+  // The buy box repeats the four facts that sell it; the full list is below.
+  const highlights = productSpecs(product).filter((s) =>
+    ["Ports", "Switches", "Lighting", "Layout"].includes(s.label)
+  )
+  const paragraphs = (product.description ?? "")
+    .split(/\n\s*\n/)
+    .map((p) => p.trim())
+    .filter(Boolean)
 
   return (
-    <>
-      <div
-        className="content-container  flex flex-col small:flex-row small:items-start py-6 relative"
-        data-testid="product-container"
-      >
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-6">
-          <ProductInfo product={product} />
-          <ProductTabs product={product} />
-        </div>
-        <div className="block w-full relative">
-          {model && (
-            <div className="mb-4 small:mx-16">
+    <div data-testid="product-container">
+      <section className="content-container pt-6 pb-12 small:pt-10 small:pb-16">
+        <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-center small:gap-14">
+          <div className="small:col-span-7">
+            {model ? (
               <ProductModel
                 src={model}
                 poster={modelPoster}
                 alt={`${product.title}, a 3D model you can turn`}
+                eager
+                className="aspect-[4/3]"
               />
+            ) : lead?.url ? (
+              <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised">
+                <Image
+                  src={lead.url}
+                  alt={product.title ?? ""}
+                  priority
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 800px"
+                  className="object-cover"
+                />
+              </div>
+            ) : null}
+          </div>
+          <div className="flex flex-col gap-8 small:col-span-5">
+            <ProductInfo product={product} />
+            <Suspense
+              fallback={
+                <ProductActions
+                  disabled={true}
+                  product={product}
+                  region={region}
+                />
+              }
+            >
+              <ProductActionsWrapper id={product.id} region={region} />
+            </Suspense>
+            {highlights.length > 0 && (
+              <ul className="flex flex-col divide-y divide-ui-border-base border-y border-ui-border-base text-base text-ui-fg-subtle">
+                {highlights.map((h) => (
+                  <li key={h.label} className="flex justify-between gap-6 py-3">
+                    <span className="text-ui-fg-muted">{h.label}</span>
+                    <span className="text-right">{h.value}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {(video || gallery.length > 0) && (
+        <section className="content-container pb-16 small:pb-24">
+          <div className="grid grid-cols-1 gap-4 small:grid-cols-2">
+            {video && (
+              <div className="small:col-span-2">
+                <ProductVideo
+                  stem={video}
+                  poster={`${video}.jpg`}
+                  caption="The CAD model in an AI-generated scene"
+                  className="aspect-[16/9]"
+                />
+              </div>
+            )}
+            <ImageGallery images={gallery} title={product.title ?? ""} />
+          </div>
+        </section>
+      )}
+
+      <section className="border-t border-ui-border-base">
+        <div className="content-container grid grid-cols-1 gap-12 py-16 small:py-24 small:grid-cols-12 small:gap-16">
+          {paragraphs.length > 0 && (
+            <div className="small:col-span-7">
+              <h2 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] text-ui-fg-base">
+                About the board
+              </h2>
+              <div
+                className="mt-6 flex max-w-2xl flex-col gap-5 text-lg leading-relaxed text-ui-fg-subtle"
+                data-testid="product-description"
+              >
+                {paragraphs.map((p, i) => (
+                  <p key={i}>{p}</p>
+                ))}
+              </div>
             </div>
           )}
-          {video && (
-            <div className="mb-4 small:mx-16">
-              <ProductVideo
-                stem={video}
-                poster={`${video}.jpg`}
-                caption="The CAD model in an AI-generated scene"
-              />
-            </div>
-          )}
-          <ImageGallery images={images} />
+          <div className={paragraphs.length > 0 ? "small:col-span-5" : "small:col-span-12"}>
+            <ProductTabs product={product} />
+          </div>
         </div>
-        <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
-          <ProductOnboardingCta />
-          <Suspense
-            fallback={
-              <ProductActions
-                disabled={true}
-                product={product}
-                region={region}
-              />
-            }
-          >
-            <ProductActionsWrapper id={product.id} region={region} />
-          </Suspense>
-        </div>
-      </div>
+      </section>
+
       <div
-        className="content-container my-16 small:my-32"
+        className="content-container pb-16 small:pb-32"
         data-testid="related-products-container"
       >
         <Suspense fallback={<SkeletonRelatedProducts />}>
           <RelatedProducts product={product} countryCode={countryCode} />
         </Suspense>
       </div>
-    </>
+    </div>
   )
 }
 
