@@ -21,6 +21,9 @@ const MODEL_VIEWER =
 // most it spans while turning (metres): 257 mm across, and up to about
 // 135 mm top to bottom when it points at the camera.
 const FOV_DEG = 22
+// The idle sway: this far either side of the starting azimuth, once per period.
+const SWAY_DEG = 15
+const SWAY_MS = 9000
 const BOARD_W = 0.27
 const BOARD_H = 0.135
 
@@ -40,9 +43,10 @@ function fitRadius(w: number, h: number, fill: number) {
 // the spill round each cap are emissive, so it is shown on a dark ground with
 // the room lighting turned down, where the colour carries.
 //
-// It holds still and ignores the pointer until it is clicked: a viewer that
-// takes drags and the scroll wheel straight away traps a page scrolling past
-// it. Clicked, it takes drag (turn), wheel and pinch (zoom); Done, Esc or
+// Idle, it sways slowly back and forth about its starting angle (a full turn
+// was too much; the owner's call, 30 Sept 2026) and ignores the pointer until
+// it is clicked: a viewer that takes drags and the scroll wheel straight away
+// traps a page scrolling past it. Clicked, it takes drag (turn), wheel and pinch (zoom); Done, Esc or
 // a click elsewhere hands the page back and returns it to its starting view.
 //
 // `framed` is a bordered box; `backdrop` fills its parent edge to edge, and
@@ -105,6 +109,36 @@ export default function ProductModel({
     }
   }, [orbit])
 
+  // The sway: the camera's azimuth follows a slow sine while idle and on
+  // screen. Not under reduced motion, and not while someone is turning it.
+  useEffect(() => {
+    const mv = viewer.current as any
+    if (active || !mv) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+    const [az, polar, radius] = orbit.split(/\s+/)
+    const base = parseFloat(az)
+    const t0 = performance.now()
+    let raf = 0
+    let visible = true
+    const tick = (now: number) => {
+      raf = 0
+      if (!visible) return
+      const a = base + SWAY_DEG * Math.sin(((now - t0) / SWAY_MS) * 2 * Math.PI)
+      mv.cameraOrbit = `${a.toFixed(2)}deg ${polar} ${radius}`
+      raf = requestAnimationFrame(tick)
+    }
+    const io = new IntersectionObserver(([e]) => {
+      visible = e.isIntersecting
+      if (visible && !raf) raf = requestAnimationFrame(tick)
+    })
+    io.observe(mv)
+    raf = requestAnimationFrame(tick)
+    return () => {
+      cancelAnimationFrame(raf)
+      io.disconnect()
+    }
+  }, [active, orbit])
+
   useEffect(() => {
     if (!active) return
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && finish()
@@ -150,8 +184,7 @@ export default function ProductModel({
         "ar-modes": "webxr scene-viewer quick-look",
         // Present (as an empty attribute) only while it is in use.
         "camera-controls": active ? "" : undefined,
-        // No auto-rotate: it holds still at its starting angle (the owner's
-        // call, 30 Sept 2026) and turns only when someone turns it.
+        // No auto-rotate: the idle motion is the sway above.
         "interaction-prompt": "none",
         "camera-orbit": orbit,
         "field-of-view": `${FOV_DEG}deg`,
