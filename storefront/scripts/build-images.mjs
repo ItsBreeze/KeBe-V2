@@ -19,25 +19,15 @@ const OUT = path.join(process.cwd(), "public", "products");
 const WIDTHS = [400, 800, 1600, 2400];
 
 // Hand-picked. Everything not listed here is excluded on purpose: the
-// root-folder alpha PNGs have the case cut away along with the background, the
 // forest composites have no contact shadow and read as fake, and Images/Smaller
 // is the same 4032x3024 pixels just palette-quantised.
+//
+// kebe-v1-hero, -angle and -rgb, the three the v1 listing shows, are NOT made
+// here any more: scripts/v1-photos/compose.py puts the lit root-folder
+// cut-outs on the store's dark ground (the grey-backdrop shots below looked
+// washed out on it). Those three cut-outs keep the case; some others do not.
+const OG_SOURCE = "Backdropped/20240804_224926368_iOS.png";
 const SOURCES = [
-  {
-    src: "Backdropped/20240804_224926368_iOS.png",
-    name: "kebe-v1-hero",
-    alt: "A KeBe v1 keyboard seen straight on, its 68 white keycaps laid out on a regular grid.",
-  },
-  {
-    src: "Backdropped/20240804_225556079_iOS.png",
-    name: "kebe-v1-angle",
-    alt: "A KeBe v1 keyboard at a three-quarter angle with its per-key RGB lighting on.",
-  },
-  {
-    src: "Backdropped/20240804_225421998_iOS.png",
-    name: "kebe-v1-rgb",
-    alt: "A KeBe v1 keyboard photographed low and close, RGB backlighting glowing beneath the keycaps.",
-  },
   {
     src: "Backdropped/20240804_225430187_iOS.png",
     name: "kebe-v1-front",
@@ -94,8 +84,8 @@ async function main() {
     manifest[name] = { alt, widths: WIDTHS.filter((w) => w <= meta.width) };
   }
 
-  // Social card, 1200x630, cropped from the hero.
-  await sharp(path.join(SRC, SOURCES[0].src))
+  // Social card, 1200x630, cropped from the straight-on shot.
+  await sharp(path.join(SRC, OG_SOURCE))
     .resize(1200, 630, { fit: "cover", position: "centre" })
     .jpeg({ quality: 85, mozjpeg: true })
     .toFile(path.join(OUT, "og-image.jpg"));
