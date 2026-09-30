@@ -50,15 +50,28 @@ const V2_SPECS = [
   },
 ]
 
+// The two typewriter habits a standard keyboard keeps, and what KeBe does
+// instead. The owner's argument (30 Sept 2026): the stagger cleared levers a
+// keyboard does not have, and QWERTY's order kept common letter pairs apart
+// so the typebars would not jam.
+const HABITS = [
+  {
+    label: "The stagger",
+    title: "Rows knocked sideways",
+    body: "On a typewriter every key sat on a lever, and each row was shifted sideways so the levers could pass one another. A keyboard has no levers, yet the offset stayed. KeBe's keys sit in straight columns: each finger moves straight up and down its own.",
+  },
+  {
+    label: "The letter order",
+    title: "Letters kept apart",
+    body: "Every typebar struck the same spot on the page. Hit two keys at once, or too close together, and their bars could collide on the way up and jam. So QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. Dvorak's is laid out for the hands.",
+  },
+]
+
 // The case for the layout, one reason each. Check against the caps before
 // changing: the Fn arrows are on . O E U, the number pad on the right hand's
 // G C R / H T N / M W V / B, F1-F10 on the number row, the media keys in the
 // middle columns, and ctrl, alt, fn, the GUI diamond and shift on both sides.
 const WHY = [
-  {
-    title: "Straight columns",
-    body: "Keys sit in a grid, not staggered rows. Each finger owns one column and moves straight up and down it: no diagonal reaches to learn, and the same finger always finds the same key.",
-  },
   {
     title: "The home row does the work",
     body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of English keystrokes land there, against about 30% on QWERTY.",
@@ -74,10 +87,6 @@ const WHY = [
   {
     title: "Sixty-eight keys, nothing missing",
     body: "Hold Fn and the left hand's home keys become arrows, the right hand's a number pad, and the number row F1 to F10. Media controls sit in the middle columns. Nothing is more than a finger's reach from home.",
-  },
-  {
-    title: "A clean start",
-    body: "Nothing sits where a standard keyboard puts it, so you learn KeBe as a new instrument instead of unpicking old habits one key at a time, and every key is somewhere you can work out from the grid.",
   },
 ]
 
@@ -257,9 +266,31 @@ export default async function Home(props: {
             Why make the change?
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            The keyboard you learned on kept two habits from the typewriter:
-            rows knocked sideways to clear its levers, and a letter order that
-            was never arranged around your hands. KeBe drops both.
+            The keyboard you learned on was designed around a typewriter. Two
+            of its habits survive on every laptop, and neither has a reason to
+            any more.
+          </p>
+          <div className="mt-10 grid gap-6 small:grid-cols-2">
+            {HABITS.map((h) => (
+              <div
+                key={h.title}
+                className="rounded-2xl border border-kebe-line bg-kebe-page p-8"
+              >
+                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+                  {h.label}
+                </p>
+                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+                  {h.title}
+                </h3>
+                <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
+                  {h.body}
+                </p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 max-w-2xl font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
+            Nothing on a digital keyboard can jam. Keeping either habit only
+            costs your hands.
           </p>
           <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-kebe-line">
             <Image
@@ -286,9 +317,11 @@ export default async function Home(props: {
             ))}
           </ol>
           <p className="mt-14 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            Switching takes practice, and the first weeks are slower. Once it
-            is in your hands you stop thinking about the keyboard at all:
-            that is the mindless mastery in the name.
+            Nothing sits where a standard keyboard puts it, so you learn KeBe
+            as a new instrument instead of unpicking old habits one key at a
+            time. Switching takes practice, and the first weeks are slower.
+            Once it is in your hands you stop thinking about the keyboard at
+            all: that is the mindless mastery in the name.
           </p>
         </div>
       </section>
