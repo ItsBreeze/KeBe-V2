@@ -4,6 +4,7 @@ import { Text, clx } from "@medusajs/ui"
 
 import { CONTACT_EMAIL } from "@lib/constants"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import Bear from "@modules/common/icons/bear"
 
 export default async function Footer() {
   const { collections } = await listCollections({
@@ -18,8 +19,9 @@ export default async function Footer() {
           <div>
             <LocalizedClientLink
               href="/"
-              className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-subtle hover:text-ui-fg-base"
+              className="flex items-center gap-x-3 font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-subtle hover:text-ui-fg-base"
             >
+              <Bear height={22} />
               KeBe
             </LocalizedClientLink>
           </div>

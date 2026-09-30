@@ -7,6 +7,7 @@ import { StoreRegion } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
+import Bear from "@modules/common/icons/bear"
 
 export default async function Nav() {
   const [regions, locales, currentLocale] = await Promise.all([
@@ -28,9 +29,10 @@ export default async function Nav() {
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-white"
+              className="flex items-center gap-x-3 font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-white"
               data-testid="nav-store-link"
             >
+              <Bear height={22} />
               KeBe
             </LocalizedClientLink>
           </div>
