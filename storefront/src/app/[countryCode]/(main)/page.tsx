@@ -77,6 +77,13 @@ const WHY = [
     body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of the letters you type in English land there, against about a third on QWERTY.",
   },
   {
+    // The owner's reasons (30 Sept 2026). 9 cm: the pointer fingers' home
+    // keys U and H are 90 mm apart on the caps; a standard board's F-J is
+    // 3 x 19.05 mm.
+    title: "Symbols in the middle",
+    body: "The - = [ ] / \\ keys a standard board leaves to your right pinky sit in the two middle columns, where your pointer fingers take them: far stronger fingers than your pinkies. They also set your hands further apart. KeBe's pointer-finger home keys are 9 cm apart, against 5.7 cm on a standard keyboard, so your wrists bend less.",
+  },
+  {
     title: "Hands take turns",
     body: "With the vowels on one side and the consonants on the other, most words alternate hands: one hand reaches while the other strikes, for a steadier rhythm and less work for any single finger.",
   },
