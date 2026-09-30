@@ -74,7 +74,7 @@ const HABITS = [
 const WHY = [
   {
     title: "The home row does the work",
-    body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of English keystrokes land there, against about 30% on QWERTY.",
+    body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of the letters you type in English land there, against about a third on QWERTY.",
   },
   {
     title: "Hands take turns",
