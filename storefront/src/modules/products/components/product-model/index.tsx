@@ -40,9 +40,9 @@ function fitRadius(w: number, h: number, fill: number) {
 // the spill round each cap are emissive, so it is shown on a dark ground with
 // the room lighting turned down, where the colour carries.
 //
-// It turns on its own and ignores the pointer until it is clicked: a viewer
-// that takes drags and the scroll wheel straight away traps a page scrolling
-// past it. Clicked, it takes drag (turn), wheel and pinch (zoom); Done, Esc or
+// It holds still and ignores the pointer until it is clicked: a viewer that
+// takes drags and the scroll wheel straight away traps a page scrolling past
+// it. Clicked, it takes drag (turn), wheel and pinch (zoom); Done, Esc or
 // a click elsewhere hands the page back and returns it to its starting view.
 //
 // `framed` is a bordered box; `backdrop` fills its parent edge to edge, and
@@ -97,7 +97,7 @@ export default function ProductModel({
 
   const finish = useCallback(() => {
     setActive(false)
-    // Back to the starting view, so the board turns the right way round again.
+    // Back to the starting view.
     const mv = viewer.current as any
     if (mv) {
       mv.cameraOrbit = orbit
@@ -150,10 +150,8 @@ export default function ProductModel({
         "ar-modes": "webxr scene-viewer quick-look",
         // Present (as an empty attribute) only while it is in use.
         "camera-controls": active ? "" : undefined,
-        "auto-rotate": "",
-        // Turning at once while idle; in use, only after 3 s left alone.
-        "auto-rotate-delay": active ? "3000" : "0",
-        "rotation-per-second": "18deg",
+        // No auto-rotate: it holds still at its starting angle (the owner's
+        // call, 30 Sept 2026) and turns only when someone turns it.
         "interaction-prompt": "none",
         "camera-orbit": orbit,
         "field-of-view": `${FOV_DEG}deg`,

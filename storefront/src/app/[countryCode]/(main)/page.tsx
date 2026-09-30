@@ -124,7 +124,7 @@ export default async function Home(props: {
   return (
     <div className="bg-kebe-page text-kebe-text">
       {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2) fills it,
-          turning, with the name and Pre-order laid over its top. A click on
+          still, with the name and Pre-order laid over its top. A click on
           the model (not the text) hands it the pointer to turn and zoom. */}
       <section className="relative">
         <ProductModel
