@@ -4,6 +4,7 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
+import { cookies as nextCookies } from "next/headers"
 import { redirect } from "next/navigation"
 import {
   getAuthHeaders,
@@ -15,6 +16,28 @@ import {
 } from "./cookies"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
+
+// The ad that brought this visitor, if any: the utm_* tags middleware.ts
+// keeps in _kebe_utm. Put on the cart when it is made and again at checkout
+// (the latest tagged visit wins); Medusa copies cart metadata to the order.
+async function utmMetadata(): Promise<Record<string, string> | undefined> {
+  try {
+    const raw = (await nextCookies()).get("_kebe_utm")?.value
+    if (!raw) return undefined
+    const tags = JSON.parse(raw)
+    if (!tags || typeof tags !== "object") return undefined
+    const metadata = Object.fromEntries(
+      Object.entries(tags).filter(
+        ([key, value]) =>
+          (key.startsWith("utm_") || key === "fbclid") &&
+          typeof value === "string"
+      )
+    ) as Record<string, string>
+    return Object.keys(metadata).length ? metadata : undefined
+  } catch {
+    return undefined
+  }
+}
 
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
@@ -68,7 +91,11 @@ export async function getOrSetCart(countryCode: string) {
   if (!cart) {
     const locale = await getLocale()
     const cartResp = await sdk.store.cart.create(
-      { region_id: region.id, locale: locale || undefined },
+      {
+        region_id: region.id,
+        locale: locale || undefined,
+        metadata: await utmMetadata(),
+      },
       {},
       headers
     )
@@ -400,6 +427,14 @@ export async function placeOrder(cartId?: string) {
 
   const headers = {
     ...(await getAuthHeaders()),
+  }
+
+  // never let attribution stand in the way of an order
+  const utm = await utmMetadata()
+  if (utm) {
+    await sdk.store.cart
+      .update(id, { metadata: utm }, {}, headers)
+      .catch(() => undefined)
   }
 
   const cartRes = await sdk.store.cart

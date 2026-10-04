@@ -6,6 +6,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import {
   PRESALE_HANDLE,
   presaleAvailability,
+  presaleShipLine,
   presaleShipsBy,
 } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -97,13 +98,14 @@ const WHY = [
   },
 ]
 
+// No count of boards anywhere: the line under the button says only when an
+// order placed now ships (owner, 1 Oct 2026).
 type Presale =
   | { state: "none" }
   | {
       state: "open" | "sold-out"
       price?: string
-      shipsBy: string
-      left: number | null
+      shipLine: string | null
     }
 
 // The homepage must render with the backend down, so any failure reads as
@@ -119,15 +121,14 @@ async function getPresale(countryCode: string): Promise<Presale> {
   } catch {
     return { state: "none" }
   }
-  const shipsBy = product && presaleShipsBy(product)
-  if (!product || !shipsBy) return { state: "none" }
+  if (!product || !presaleShipsBy(product)) return { state: "none" }
 
-  const { open, left } = presaleAvailability(product)
+  // "sold-out" only once every counted board is sold with backorders off;
+  // ship-dates.ts turns them on, so the board normally stays open.
   return {
-    state: open ? "open" : "sold-out",
+    state: presaleAvailability(product).open ? "open" : "sold-out",
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
-    shipsBy,
-    left,
+    shipLine: presaleShipLine(product),
   }
 }
 
@@ -159,7 +160,7 @@ export default async function Home(props: {
               {presale.state === "open"
                 ? "Pre-orders open"
                 : presale.state === "sold-out"
-                ? "First batch spoken for"
+                ? "Pre-orders closed"
                 : "Coming soon"}
             </p>
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
@@ -178,12 +179,9 @@ export default async function Home(props: {
                     Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
                   </LocalizedClientLink>
                   <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-                    {presale.left === null
-                      ? ""
-                      : presale.left === 1
-                      ? "1 board left · "
-                      : `${presale.left} boards left · `}
-                    ships by {presale.shipsBy} · Canada
+                    {presale.shipLine
+                      ? `${presale.shipLine} · Canada and the US`
+                      : "Ships to Canada and the US"}
                   </p>
                 </>
               ) : (
@@ -199,7 +197,7 @@ export default async function Home(props: {
           The v1 layout, all in black, in a lower, screwless case, with three
           more USB-C ports on the back.{" "}
           {presale.state === "sold-out"
-            ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
+            ? "Pre-orders are closed for now — leave an address and you'll hear when they open again."
             : presale.state === "none"
             ? "Leave an address and you'll hear when pre-orders open."
             : "Shipping is calculated at checkout and the board is charged in full there."}

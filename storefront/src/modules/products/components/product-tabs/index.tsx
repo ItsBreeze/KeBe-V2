@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipsBy } from "@lib/util/presale"
+import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
 import { CONTACT_EMAIL } from "@lib/constants"
 
@@ -14,6 +14,7 @@ type ProductTabsProps = {
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
+  const shipLine = presaleShipLine(product)
 
   return (
     <div className="flex flex-col gap-12">
@@ -41,18 +42,22 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
           {shipsBy ? (
             <>
               <p>
-                A pre-order: it ships by {shipsBy}, within Canada only, and is
-                charged in full at checkout.
+                A pre-order, charged in full at checkout and shipped to
+                Canada and the United States.{shipLine && ` ${shipLine}.`}
               </p>
               <p>
                 Shipping is calculated at checkout from your address and added
                 to the price.
               </p>
+              <p>
+                US orders go by Canada Post with the US duties already paid,
+                so there is nothing more to pay on delivery.
+              </p>
             </>
           ) : (
             <p>
-              Ships within Canada only. Shipping is calculated at checkout from
-              your address.
+              Ships to Canada and the United States. Shipping is calculated at
+              checkout from your address.
             </p>
           )}
           <p>

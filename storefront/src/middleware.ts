@@ -5,6 +5,42 @@ const BACKEND_URL = process.env.MEDUSA_BACKEND_URL
 const PUBLISHABLE_API_KEY = process.env.NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY
 const DEFAULT_REGION = process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
 
+// Ad attribution (owner, 4 Oct 2026): a landing URL's utm_* tags are kept for
+// 30 days in a first-party cookie, the newest tagged visit winning, and
+// lib/data/cart.ts writes them onto the cart, which Medusa copies into the
+// order's metadata. A Meta click with no utm_* tags still carries fbclid; only
+// its presence is kept. The privacy page describes the cookie.
+const UTM_COOKIE = "_kebe_utm"
+const UTM_KEYS = [
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+]
+
+function keepUtm(request: NextRequest, response: NextResponse) {
+  const params = request.nextUrl.searchParams
+  const tags: Record<string, string> = {}
+  for (const key of UTM_KEYS) {
+    const value = params.get(key)
+    if (value) tags[key] = value.slice(0, 120)
+  }
+  if (!Object.keys(tags).length && params.has("fbclid")) tags.fbclid = "yes"
+  if (!Object.keys(tags).length) return response
+
+  tags.utm_landing = request.nextUrl.pathname.slice(0, 200)
+  tags.utm_at = new Date().toISOString()
+  response.cookies.set(UTM_COOKIE, JSON.stringify(tags), {
+    maxAge: 60 * 60 * 24 * 30,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,
+    path: "/",
+  })
+  return response
+}
+
 const regionMapCache = {
   regionMap: new Map<string, HttpTypes.StoreRegion>(),
   regionMapUpdated: Date.now(),
@@ -121,16 +157,27 @@ export async function middleware(request: NextRequest) {
 
   // if one of the country codes is in the url and the cache id is set, return next
   if (urlHasCountryCode && cacheIdCookie) {
-    return NextResponse.next()
+    return keepUtm(request, NextResponse.next())
   }
 
-  // if one of the country codes is in the url and the cache id is not set, set the cache id and redirect
+  // A country code in the URL but no cache id yet: set the cookie on this
+  // response and hand it to this render as well. The starter redirected to the
+  // same URL to set it, which loops forever for a client that keeps no
+  // cookies -- Meta's link check and preview crawler among them, so an ad's
+  // landing page looked broken (4 Oct 2026).
   if (urlHasCountryCode && !cacheIdCookie) {
-    response.cookies.set("_medusa_cache_id", cacheId, {
+    const headers = new Headers(request.headers)
+    const cookie = headers.get("cookie")
+    headers.set(
+      "cookie",
+      `${cookie ? `${cookie}; ` : ""}_medusa_cache_id=${cacheId}`
+    )
+    const next = NextResponse.next({ request: { headers } })
+    next.cookies.set("_medusa_cache_id", cacheId, {
       maxAge: 60 * 60 * 24,
     })
 
-    return response
+    return keepUtm(request, next)
   }
 
   // check if the url is a static asset

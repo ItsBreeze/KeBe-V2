@@ -1,14 +1,24 @@
 import { Text, clx } from "@medusajs/ui"
 import { VariantPrice } from "types/global"
 
-export default async function PreviewPrice({ price }: { price: VariantPrice }) {
+export default async function PreviewPrice({
+  price,
+  preorder = false,
+}: {
+  price: VariantPrice
+  preorder?: boolean
+}) {
   if (!price) {
     return null
   }
 
   return (
     <>
-      {price.price_type === "sale" && (
+      {preorder ? (
+        <Text className="text-ui-fg-muted" data-testid="preorder-label">
+          Pre-order
+        </Text>
+      ) : price.price_type === "sale" && (
         <Text
           className="line-through text-ui-fg-muted"
           data-testid="original-price"

@@ -186,6 +186,22 @@ async function shootTurntable(frames, FRAMES, TW, TH) {
   }
 }
 
+// The Instagram ad's product shot: REEL_FRAMES portrait frames of view=reel
+// into REEL_OUT (PNG), for the ad kit to lay type over.
+async function reel() {
+  const n = +(process.env.REEL_FRAMES ?? 120);
+  const out = process.env.REEL_OUT ?? path.join(HERE, "..", "..", "..", "marketing", "instagram", "cad-reel");
+  await mkdir(out, { recursive: true });
+  const page = await open("reel", 1080, 1920);
+  const canvas = page.locator("canvas");
+  for (let i = 0; i < n; i++) {
+    await page.evaluate((t) => window.__frame(t), n > 1 ? i / (n - 1) : 0);
+    await canvas.screenshot({ path: path.join(out, `c${String(i).padStart(4, "0")}.png`) });
+  }
+  await page.close();
+  console.log(`wrote ${n} reel frames to ${out}`);
+}
+
 async function glb() {
   const page = await open("glb", 64, 64);
   const b64 = await page.evaluate(() => window.__glb);
@@ -235,6 +251,7 @@ try {
   await mkdir(OUT, { recursive: true });
 
   if (JOBS.includes("glb")) await glb();
+  if (JOBS.includes("reel")) await reel();
   if (JOBS.includes("turntable")) await turntable();
   for (const view of JOBS.includes("stills") ? VIEWS : []) {
     const page = await open(view, W, H);

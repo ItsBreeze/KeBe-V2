@@ -10,7 +10,7 @@ import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
-import { presaleShipsBy } from "@lib/util/presale"
+import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 
@@ -37,7 +37,15 @@ export default function ProductActions({
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  const [options, setOptions] = useState<Record<string, string | undefined>>({})
+  // A single variant is selected from the first render, so the server's HTML
+  // already shows the buy button, not "Out of stock" / "Select variant"
+  // until hydration (what crawlers and a slow tap from an ad see).
+  const [options, setOptions] = useState<Record<string, string | undefined>>(
+    () =>
+      product.variants?.length === 1
+        ? optionsAsKeymap(product.variants[0].options) ?? {}
+        : {}
+  )
   const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
 
@@ -118,6 +126,7 @@ export default function ProductActions({
   }, [selectedVariant])
 
   const shipsBy = presaleShipsBy(product)
+  const shipLine = presaleShipLine(product)
   const buyLabel = shipsBy ? "Pre-order" : "Add to cart"
 
   const actionsRef = useRef<HTMLDivElement>(null)
@@ -200,7 +209,8 @@ export default function ProductActions({
             data-testid="presale-note"
           >
             Pre-order: plus shipping, calculated at checkout, and charged in
-            full there. Ships by {shipsBy}, within Canada.
+            full there.{" "}
+            {shipLine ? `${shipLine}, to Canada and the US.` : "Ships to Canada and the US."}
           </p>
         )}
         <MobileActions
