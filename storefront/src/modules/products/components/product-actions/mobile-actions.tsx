@@ -7,6 +7,7 @@ import ChevronDown from "@modules/common/icons/chevron-down"
 import X from "@modules/common/icons/x"
 
 import { getProductPrice } from "@lib/util/get-product-price"
+import { isPreorderPrice } from "@lib/util/presale"
 import OptionSelect from "./option-select"
 import { HttpTypes } from "@medusajs/types"
 import { isSimpleProduct } from "@lib/util/product"
@@ -83,7 +84,11 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               <span>—</span>
               {selectedPrice ? (
                 <div className="flex items-end gap-x-2 text-ui-fg-base">
-                  {selectedPrice.price_type === "sale" && (
+                  {isPreorderPrice(product, selectedPrice) ? (
+                    <span className="text-small-regular text-ui-fg-subtle">
+                      pre-order price
+                    </span>
+                  ) : selectedPrice.price_type === "sale" && (
                     <p>
                       <span className="line-through text-small-regular">
                         {selectedPrice.original_price}

@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipsBy } from "@lib/util/presale"
+import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type ProductInfoProps = {
@@ -13,12 +13,13 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   const [name, ...rest] = (product.title ?? "").split(" — ")
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
+  const shipLine = presaleShipLine(product)
 
   return (
     <div id="product-info" className="flex flex-col gap-y-3">
       {shipsBy ? (
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
-          Pre-order · ships by {shipsBy}
+          {shipLine ? `Pre-order · ${shipLine}` : "Pre-order"}
         </p>
       ) : (
         product.collection && (

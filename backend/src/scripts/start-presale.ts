@@ -11,8 +11,11 @@ import {
 } from "@medusajs/medusa/core-flows";
 
 // Opens the KeBe v2 presale: publishes the product at the owner's price with
-// the first batch as its stock, so the storefront sells exactly that many and
-// then shows Sold Out (and the waitlist) on its own.
+// the first batch as its counted stock. While counted boards are unsold the
+// storefront says "Currently shipping <ships_by>"; ship-dates.ts then keeps
+// the board on sale past them as backorders, shipping on a second date. The
+// site never says how many boards there are (owner, 1 Oct 2026), and nor may
+// the description below.
 //
 //   medusa exec ./src/scripts/start-presale.ts
 //
@@ -36,10 +39,13 @@ import {
 // title, colour option, variant and SKU are set once, at creation.
 
 const HANDLE = "kebe-v2-keyboard";
+// The regular price, charged once pre-orders close. While they are open,
+// preorder-sale.ts puts a CA$349 sale price list over it.
 const PRICE_CAD = 386.89; // plus shipping, calculated at checkout
 const FIRST_BATCH = 5;
 // Read by the storefront (lib/util/presale.ts) for the pre-order button and
-// the ships-by line; editing it in Admin moves the date without a deploy.
+// the "Currently shipping" date; editing it in Admin moves the date without a
+// deploy.
 const SHIPS_BY = "2026-10-31";
 const STRIPE = "pp_stripe_stripe";
 // model_glb puts the 3D viewer on the product page and video a looping clip
@@ -49,7 +55,9 @@ const MODEL_GLB = "/products/kebe-v2.glb";
 const MODEL_POSTER = "/products/kebe-v2-hero.jpg"; // a plain render, not a scene
 const VIDEO = "/products/kebe-v2-desk-clip";
 
-const DESCRIPTION =
+// Also written by ship-dates.ts. No quantity: the site never says how many
+// boards there are.
+export const DESCRIPTION =
   "KeBe v2 is v1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
   "Four USB-C ports sit on the back edge: one goes to your computer, and the " +
   "other three are a USB 2.0 hub for a mouse receiver, a flash drive or " +
@@ -62,7 +70,7 @@ const DESCRIPTION =
   "It is all black. The plate is FR4 with black soldermask, and the keycaps " +
   "are black with shine-through legends, so each key's LED lights its " +
   "legend. Where a key has an Fn-layer legend, it sits below the main one.\n\n" +
-  "The first batch is five boards, assembled by hand in Canada. None of the " +
+  "Each board is assembled by hand in Canada. None of the " +
   "pictures or the clip are photographs: the plain renders and the 3D model " +
   "come straight from v2's CAD, and the desk, studio and night pictures and " +
   "the clip set that CAD model in AI-generated scenes.";
@@ -82,8 +90,9 @@ const IMAGES = [
 ];
 
 // The storefront's rule (lib/util/presale.ts): a real calendar date, so a
-// re-run replaces an Admin typo like 2026-11-31 rather than keeping it.
-const validDate = (v: unknown): v is string => {
+// re-run replaces an Admin typo like 2026-11-31 rather than keeping it. Also
+// checks ships_by_next in ship-dates.ts.
+export const validDate = (v: unknown): v is string => {
   if (typeof v !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(v)) return false;
   const d = new Date(`${v}T12:00:00Z`);
   return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === v;
@@ -92,7 +101,7 @@ const validDate = (v: unknown): v is string => {
 // medusa exec calls process.exit() as soon as this script returns, which cuts
 // off the revalidate-storefront subscriber's un-awaited fetch. So once the
 // stock exists, flush the storefront here and wait for it.
-const revalidateStorefront = async (logger: { info: (m: string) => void; warn: (m: string) => void }) => {
+export const revalidateStorefront = async (logger: { info: (m: string) => void; warn: (m: string) => void }) => {
   const base = process.env.STOREFRONT_URL;
   const secret = process.env.REVALIDATE_SECRET;
   const byHand = "POST <storefront>/api/revalidate?secret=<REVALIDATE_SECRET> by hand, or the site keeps its cached state.";
@@ -266,6 +275,8 @@ export default async function startPresale({ container }: ExecArgs) {
               title: "Black",
               sku: "KEBE-V2-BLK-SHINE",
               manage_inventory: true,
+              // Sells the counted stock only; ship-dates.ts turns backorders
+              // on and sets the date for the boards after it.
               allow_backorder: false,
               options: { Colour: "Black" },
               prices: [{ amount: PRICE_CAD, currency_code: "cad" }],

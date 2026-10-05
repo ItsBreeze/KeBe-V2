@@ -2,7 +2,8 @@ import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 
 // Clears the Next cache so an edit in Medusa Admin, or stock moving (the
-// presale's boards-left count), shows up without redeploying the storefront.
+// presale's ship date turns to ships_by_next once the counted boards are
+// sold), shows up without redeploying the storefront.
 //
 //   POST /api/revalidate?secret=<REVALIDATE_SECRET>
 //

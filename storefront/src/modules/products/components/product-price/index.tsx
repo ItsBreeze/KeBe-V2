@@ -1,6 +1,7 @@
 import { clx } from "@medusajs/ui"
 
 import { getProductPrice } from "@lib/util/get-product-price"
+import { isPreorderPrice } from "@lib/util/presale"
 import { HttpTypes } from "@medusajs/types"
 
 export default function ProductPrice({
@@ -39,7 +40,11 @@ export default function ProductPrice({
           {selectedPrice.calculated_price}
         </span>
       </span>
-      {selectedPrice.price_type === "sale" && (
+      {isPreorderPrice(product, selectedPrice) ? (
+        <p className="mt-2 text-ui-fg-subtle" data-testid="preorder-price-note">
+          Pre-order price.
+        </p>
+      ) : selectedPrice.price_type === "sale" && (
         <>
           <p>
             <span className="text-ui-fg-subtle">Original: </span>

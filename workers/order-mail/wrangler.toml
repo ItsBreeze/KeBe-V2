@@ -1,0 +1,16 @@
+# Emails each new KeBe order to the shop's support inboxes. The Medusa
+# backend's order-placed-email subscriber POSTs here; see src/index.js.
+#
+#   wrangler deploy
+#   wrangler secret put ORDER_MAIL_SECRET   (the same value as on medusa-backend)
+#   wrangler secret put MAIL_TO             (comma-separated, each a verified
+#                                            Email Routing destination)
+name = "kebe-order-mail"
+main = "src/index.js"
+compatibility_date = "2026-09-01"
+workers_dev = true
+
+# Cloudflare Email Routing's sender: it delivers only to the account's
+# verified destination addresses, the ones support@grounders.app forwards to.
+[[send_email]]
+name = "MAIL"

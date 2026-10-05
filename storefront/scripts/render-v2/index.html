@@ -37,7 +37,8 @@ const PORT = { w: 8.94, h: 3.26, zc: 3.35, y0: 81.35, y1: 88.65 };
 const params = new URLSearchParams(location.search);
 const view = params.get("view") || "hero";
 const W = +params.get("w") || 2400, H = +params.get("h") || 1600;
-const dark = view === "glow" || view === "glowturn";
+// reel: the Instagram ad's product shot, portrait, lit, a slow camera move.
+const dark = view === "glow" || view === "glowturn" || view === "reel";
 const exporting = view === "glb"; // the 3D model for the product page's viewer
 // The exported model has its LEDs on, as the site shows it on a dark ground:
 // emissive legends and the spill round each cap, but no bloom (a glTF carries
@@ -284,6 +285,7 @@ const cams = {
   ports: { fov: 13, pos: [150, 95, -330], look: [-78, 2, -38] },
   turn:  { fov: 17, pos: [0, 205, 530], look: [0, -8, 0] },
   glowturn: { fov: 17, pos: [0, 205, 530], look: [0, -8, 0] },
+  reel:  { fov: 30, pos: [-230, 190, 250], look: [-10, 0, 10] },
 };
 const c = cams[view] ?? cams.hero;
 const camera = new THREE.PerspectiveCamera(c.fov, W / H, 10, 5000);
@@ -314,8 +316,18 @@ if (exporting) {
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   window.__glb = btoa(bin);
 } else {
-  // Turntable views: shoot.mjs calls __frame(t) for t in [0, 1).
-  window.__frame = (t) => { spin.rotation.y = t * 2 * Math.PI; draw(); };
+  // Turntable views: shoot.mjs calls __frame(t) for t in [0, 1). The reel
+  // instead eases the board through a quarter of its sway while the camera
+  // drifts in.
+  window.__frame = view === "reel"
+    ? (t) => {
+        const e = t * t * (3 - 2 * t);
+        spin.rotation.y = -0.18 + 0.36 * e;
+        camera.position.set(c.pos[0] * (1 - 0.12 * e), c.pos[1] * (1 - 0.08 * e), c.pos[2] * (1 - 0.12 * e));
+        camera.lookAt(...c.look);
+        draw();
+      }
+    : (t) => { spin.rotation.y = t * 2 * Math.PI; draw(); };
   draw();
 }
 window.__done = true;

@@ -6,6 +6,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import {
   PRESALE_HANDLE,
   presaleAvailability,
+  presaleShipLine,
   presaleShipsBy,
 } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -58,12 +59,15 @@ const HABITS = [
   {
     label: "The stagger",
     title: "Rows knocked sideways",
-    body: "On a typewriter every key sat on a lever, and each row was shifted sideways so the levers could pass one another. A keyboard has no levers, yet the offset stayed. KeBe's keys sit in straight columns: each finger moves straight up and down its own.",
+    // The offsets are a standard ANSI board's: its rows start 1, 1.5, 1.75
+    // and 2.25 keys from the left edge (` / Tab / Caps / Shift). KeBe's grid
+    // is 18 x 17 mm (Keycaps/print/kebe-legend-list.csv).
+    body: "On a typewriter every key sat on a lever that ran straight back under the keys behind it, so each row was shifted sideways to let the levers pass. A keyboard has no levers, yet the offset stayed. Half a key between the number row and the row with Q on it, a quarter of a key more to the home row, and half a key again to the bottom row: every finger still reaches off at an angle for the keys above and below its home. KeBe's keys sit in straight columns on an 18 by 17 mm grid, so each finger moves straight up and down its own.",
   },
   {
     label: "The letter order",
     title: "Letters kept apart",
-    body: "Every typebar struck the same spot on the page. Hit two keys at once, or too close together, and their bars could collide on the way up and jam. So QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. Dvorak's is laid out for the hands.",
+    body: "Every typebar struck the same spot on the page. Hit two keys too close together and their bars could meet on the way up and jam, so QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. August Dvorak started from the hands instead, in the 1930s: the vowels under the left hand's resting fingers, the most-used consonants under the right's, and the rarest letters down on the bottom row. KeBe's letters are his.",
   },
 ]
 
@@ -73,8 +77,11 @@ const HABITS = [
 // middle columns, and ctrl, alt, fn, the GUI diamond and shift on both sides.
 const WHY = [
   {
+    // 70.6% vs 34.0%: English letter frequencies (Lewand's table) summed over
+    // each layout's home-row letters; the reel's figures come from the same
+    // table (marketing/instagram/src-levers/README.md, "Claims, checked").
     title: "The home row does the work",
-    body: "Dvorak puts every vowel under the left hand and the most-used consonants under the right, on the row your fingers rest on. About 70% of the letters you type in English land there, against about a third on QWERTY.",
+    body: "The row your fingers rest on reads A O E U I under the left hand and D H T N S under the right. Add up how often each letter turns up in English and about 71% of the letters you type land on that row. On QWERTY's A S D F G H J K L it is about 34%, so two letters in three are a reach.",
   },
   {
     // The owner's reasons (30 Sept 2026). 9 cm: the pointer fingers' home
@@ -85,25 +92,35 @@ const WHY = [
   },
   {
     title: "Hands take turns",
-    body: "With the vowels on one side and the consonants on the other, most words alternate hands: one hand reaches while the other strikes, for a steadier rhythm and less work for any single finger.",
+    body: "Words tend to go consonant, vowel, consonant, vowel. With the vowels on one side and the consonants on the other, a word like HOME or TOMATO passes from hand to hand with every letter: one hand reaches while the other strikes, for a steadier rhythm and less work for any single finger.",
   },
   {
     title: "Both thumbs, both sides",
-    body: "Two space bars sit under the thumbs, and Shift, Ctrl, Alt, Fn and the ◆ key are mirrored on each side, so a shortcut takes one key from each hand instead of a stretch with one.",
+    body: "Two space bars sit under the thumbs, and Shift, Ctrl, Alt, Fn and the Super key are mirrored on each side, so a shortcut takes one key from each hand instead of a stretch with one.",
   },
   {
     title: "Sixty-eight keys, nothing missing",
     body: "Hold Fn and the left hand's home keys become arrows, the right hand's a number pad, and the number row F1 to F10. Media controls sit in the middle columns. Nothing is more than a finger's reach from home.",
   },
+  {
+    // QMK autocorrect in keyboards/kebe (its readme, "Autocorrect"): a typo
+    // table of 1121 entries plus a corrector that knows words, judged when
+    // Space ends a word; Backspace straight after a correction puts the word
+    // back and remembers it; Fn + A toggles both. It corrects after the word
+    // is typed, so it never claims the typo does not reach the computer.
+    title: "Typos fixed in the keyboard",
+    body: "The firmware carries a dictionary of common misspellings and corrects a word the moment you finish it, by itself, on any computer you plug into: accomodate becomes accommodate before you look up. There is nothing to install. If it was right the first time, Backspace straight after puts your word back and it is left alone from then on, and Fn + A switches the whole thing off.",
+  },
 ]
 
+// No count of boards anywhere: the line under the button says only when an
+// order placed now ships (owner, 1 Oct 2026).
 type Presale =
   | { state: "none" }
   | {
       state: "open" | "sold-out"
       price?: string
-      shipsBy: string
-      left: number | null
+      shipLine: string | null
     }
 
 // The homepage must render with the backend down, so any failure reads as
@@ -119,15 +136,14 @@ async function getPresale(countryCode: string): Promise<Presale> {
   } catch {
     return { state: "none" }
   }
-  const shipsBy = product && presaleShipsBy(product)
-  if (!product || !shipsBy) return { state: "none" }
+  if (!product || !presaleShipsBy(product)) return { state: "none" }
 
-  const { open, left } = presaleAvailability(product)
+  // "sold-out" only once every counted board is sold with backorders off;
+  // ship-dates.ts turns them on, so the board normally stays open.
   return {
-    state: open ? "open" : "sold-out",
+    state: presaleAvailability(product).open ? "open" : "sold-out",
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
-    shipsBy,
-    left,
+    shipLine: presaleShipLine(product),
   }
 }
 
@@ -136,6 +152,9 @@ export default async function Home(props: {
 }) {
   const { countryCode } = await props.params
   const presale = await getPresale(countryCode)
+  // The reel's end card names the price and where it ships: US$249 · US on
+  // the US route, CA$349 · Canada everywhere else (the shop's two regions).
+  const market = countryCode.toLowerCase() === "us" ? "us" : "ca"
 
   return (
     <div className="bg-kebe-page text-kebe-text">
@@ -159,7 +178,7 @@ export default async function Home(props: {
               {presale.state === "open"
                 ? "Pre-orders open"
                 : presale.state === "sold-out"
-                ? "First batch spoken for"
+                ? "Pre-orders closed"
                 : "Coming soon"}
             </p>
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
@@ -178,12 +197,9 @@ export default async function Home(props: {
                     Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
                   </LocalizedClientLink>
                   <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-                    {presale.left === null
-                      ? ""
-                      : presale.left === 1
-                      ? "1 board left · "
-                      : `${presale.left} boards left · `}
-                    ships by {presale.shipsBy} · Canada
+                    {presale.shipLine
+                      ? `${presale.shipLine} · Canada and the US`
+                      : "Ships to Canada and the US"}
                   </p>
                 </>
               ) : (
@@ -199,7 +215,7 @@ export default async function Home(props: {
           The v1 layout, all in black, in a lower, screwless case, with three
           more USB-C ports on the back.{" "}
           {presale.state === "sold-out"
-            ? "The first batch has sold out — leave an address and you'll hear when the next one opens."
+            ? "Pre-orders are closed for now — leave an address and you'll hear when they open again."
             : presale.state === "none"
             ? "Leave an address and you'll hear when pre-orders open."
             : "Shipping is calculated at checkout and the board is charged in full there."}
@@ -277,7 +293,42 @@ export default async function Home(props: {
             of its habits survive on every laptop, and neither has a reason to
             any more.
           </p>
-          <div className="mt-10 grid gap-6 small:grid-cols-2">
+          {/* The reel (marketing/instagram/kebe-reel-levers.mp4, owner's
+              voice, captions burnt in) makes the whole case in 48 seconds,
+              drawn in KeBe's own keys; the text below it goes further. The
+              end card names the price, the ship line and the market, so each
+              market gets its own cut, and whoever changes the presale price
+              or ships_by must re-render the end card for both markets
+              (build.mjs --from=<end0>, then --market=us) and re-copy all four
+              files here. No autoplay: it has a voice. */}
+          <div className="mt-10 grid gap-8 small:grid-cols-[minmax(0,360px)_1fr] small:items-center">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-2xl border border-kebe-line bg-black small:mx-0">
+              <video
+                controls
+                playsInline
+                preload="metadata"
+                poster="/products/kebe-v2-reel.jpg"
+                aria-label="Why KeBe is laid out the way it is, in 48 seconds"
+                className="h-full w-full object-cover"
+              >
+                <source src={`/products/kebe-v2-reel-${market}.webm`} type="video/webm" />
+                <source src={`/products/kebe-v2-reel-${market}.mp4`} type="video/mp4" />
+              </video>
+            </div>
+            <div className="max-w-xl">
+              <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+                Watch, 48 seconds
+              </p>
+              <p className="mt-3 font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
+                The whole argument, drawn in KeBe&apos;s own keys.
+              </p>
+              <p className="mt-4 text-lg leading-relaxed text-kebe-text/75">
+                Or read on: the words below have the history, the rest of the
+                layout and the reason behind every move.
+              </p>
+            </div>
+          </div>
+          <div className="mt-14 grid gap-6 small:grid-cols-2">
             {HABITS.map((h) => (
               <div
                 key={h.title}

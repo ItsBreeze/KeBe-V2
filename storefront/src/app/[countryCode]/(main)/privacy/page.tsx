@@ -110,9 +110,12 @@ export default function PrivacyPage() {
               the site can work out which region to show you.{" "}
               <code>_medusa_cart_id</code> remembers what is in your cart, and{" "}
               <code>_medusa_jwt</code> keeps you signed in, only if you sign
-              in. Each holds a random identifier and nothing about you. At
-              checkout, Stripe sets its own cookies, which it uses to detect
-              card fraud.
+              in. Each holds a random identifier and nothing about you.{" "}
+              <code>_kebe_utm</code> is set only when you arrive through a link
+              we tagged, such as one of our ads: for 30 days it holds that
+              link's campaign tags, and they are saved with your order so we
+              know which ad led to it. At checkout, Stripe sets its own
+              cookies, which it uses to detect card fraud.
             </p>
             <p className="mt-3">
               There is no analytics, no tracking pixel, and no advertising
