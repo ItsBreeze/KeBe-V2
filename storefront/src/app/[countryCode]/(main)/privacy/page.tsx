@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 
 // Last substantive change to this notice. Update it whenever the content changes.
-const LAST_UPDATED = "29 September 2026"
+const LAST_UPDATED = "5 October 2026"
 
 export default function PrivacyPage() {
   return (
@@ -26,8 +26,9 @@ export default function PrivacyPage() {
         <div className="mt-10 flex flex-col gap-8 text-base leading-relaxed text-kebe-text/80">
           <p>
             KeBe is a one-person keyboard workshop in Canada. This page describes
-            everything the site collects, which is only what it takes to join a
-            waitlist or buy a keyboard, and what happens to it.
+            everything the site collects, which is what it takes to join a
+            waitlist or buy a keyboard plus what Meta&apos;s pixel records to
+            measure our ads, and what happens to it.
           </p>
 
           <section>
@@ -60,6 +61,21 @@ export default function PrivacyPage() {
               email address, a scrambled (hashed) copy of your password, any
               addresses you save and your orders.
             </p>
+            <p className="mt-3">
+              <strong className="font-normal text-ui-fg-base">
+                Meta&apos;s pixel.
+              </strong>{" "}
+              We advertise on Instagram and Facebook, and this site runs Meta&apos;s
+              pixel, a script from Meta. It tells Meta which pages you view and
+              when you add a keyboard to your cart, start a checkout, place an
+              order or join the waitlist, with the product and the amount, but
+              not your name, shipping address or card. Meta links that to your
+              Facebook or Instagram account if it can, so it can tell us how
+              many orders our ads led to and show our ads to people like the
+              ones who bought. The pixel can also send Meta a scrambled (hashed)
+              copy of an email address you type here, to make that match. Meta
+              handles what it receives under its own privacy policy.
+            </p>
           </section>
 
           <section>
@@ -71,14 +87,15 @@ export default function PrivacyPage() {
               you asked about is actually available. Order details to make,
               ship and support your keyboard, to tell you about your order (a
               delay, for instance), and to keep the business and tax records
-              the law requires. We do not send a newsletter, we do not sell,
-              rent or share any of it for advertising, and we do not use it for
-              advertising ourselves.
+              the law requires. We do not send a newsletter and we do not sell
+              or rent any of it. Beyond what Meta&apos;s pixel records, we do not
+              share it for advertising.
             </p>
             <p className="mt-3">
-              The only others who see any of it: Stripe, for the payment, and
-              the carrier that delivers your keyboard, which gets your name,
-              shipping address and, if you gave one, your phone number.
+              The others who see any of it: Meta, what its pixel records;
+              Stripe, for the payment; and the carrier that delivers your
+              keyboard, which gets your name, shipping address and, if you gave
+              one, your phone number.
             </p>
           </section>
 
@@ -118,8 +135,18 @@ export default function PrivacyPage() {
               cookies, which it uses to detect card fraud.
             </p>
             <p className="mt-3">
-              There is no analytics, no tracking pixel, and no advertising
-              network on this site. Nobody else is watching you here.
+              Meta&apos;s pixel sets <code>_fbp</code>, a random identifier for
+              your browser that lasts 90 days, and, if you came by tapping one
+              of our ads, <code>_fbc</code>, which holds that click&apos;s
+              identifier for 90 days. If you are signed in to Facebook or
+              Instagram in the same browser, Meta can also recognise you by its
+              own cookies.
+            </p>
+            <p className="mt-3">
+              Apart from Meta&apos;s pixel there is no analytics and no other
+              advertising network on this site. A content blocker (uBlock
+              Origin, Brave, or the tracking protection in Firefox and Safari)
+              keeps the pixel out, and the site works the same without it.
             </p>
           </section>
 

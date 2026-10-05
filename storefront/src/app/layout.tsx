@@ -1,4 +1,10 @@
 import { getBaseURL } from "@lib/util/env"
+import {
+  MetaPixelNoscript,
+  MetaPixelScript,
+  PIXEL_ON,
+} from "@modules/common/components/meta-pixel"
+import PixelPageViews from "@modules/common/components/meta-pixel/page-views"
 import { Metadata } from "next"
 import { DM_Serif_Display, IBM_Plex_Mono, Inter } from "next/font/google"
 import "styles/globals.css"
@@ -45,8 +51,11 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             turned the white Pre-order button into a dark box on a dark card.
             The lock tells it the site handles its own colours. */}
         <meta name="darkreader-lock" />
+        {PIXEL_ON && <MetaPixelScript />}
       </head>
       <body className="bg-ui-bg-base text-ui-fg-base font-body antialiased">
+        {PIXEL_ON && <MetaPixelNoscript />}
+        {PIXEL_ON && <PixelPageViews />}
         <main className="relative">{props.children}</main>
       </body>
     </html>

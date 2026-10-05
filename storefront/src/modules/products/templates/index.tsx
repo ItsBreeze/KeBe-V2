@@ -12,6 +12,8 @@ import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import { productSpecs } from "@lib/util/specs"
+import { getProductPrice } from "@lib/util/get-product-price"
+import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -61,9 +63,22 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     .split(/\n\s*\n/)
     .map((p) => p.trim())
     .filter(Boolean)
+  const { cheapestPrice } = getProductPrice({ product })
 
   return (
     <div data-testid="product-container">
+      <PixelEvent
+        event="ViewContent"
+        params={{
+          content_ids: [product.id],
+          content_type: "product",
+          content_name: product.title,
+          value: cheapestPrice?.calculated_price_number,
+          currency: (
+            cheapestPrice?.currency_code ?? region.currency_code
+          ).toUpperCase(),
+        }}
+      />
       <section className="content-container pt-6 pb-12 small:pt-10 small:pb-16">
         <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-center small:gap-14">
           <div className="small:col-span-7">
