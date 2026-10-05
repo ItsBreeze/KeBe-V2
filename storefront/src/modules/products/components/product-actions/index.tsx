@@ -11,6 +11,8 @@ import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { getPricesForVariant } from "@lib/util/get-product-price"
+import { trackPixel } from "@lib/util/meta-pixel"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
 
@@ -143,6 +145,15 @@ export default function ProductActions({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
+    })
+
+    const price = getPricesForVariant(selectedVariant)
+    trackPixel("AddToCart", {
+      content_ids: [product.id],
+      content_type: "product",
+      content_name: product.title,
+      value: price?.calculated_price_number,
+      currency: price?.currency_code?.toUpperCase(),
     })
 
     // A pre-order is one board bought on its own, so go to the cart: left on

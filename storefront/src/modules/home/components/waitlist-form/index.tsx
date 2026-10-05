@@ -1,8 +1,9 @@
 "use client"
 
-import { useActionState } from "react"
+import { useActionState, useEffect } from "react"
 import { useFormStatus } from "react-dom"
 import { joinWaitlist, WaitlistState } from "@lib/data/waitlist"
+import { trackPixel } from "@lib/util/meta-pixel"
 
 function SubmitButton() {
   const { pending } = useFormStatus()
@@ -25,6 +26,11 @@ export default function WaitlistForm({
   const [state, action] = useActionState<WaitlistState, FormData>(joinWaitlist, {
     status: "idle",
   })
+
+  // A sign-up is a Lead to the Meta pixel. The event carries only which list.
+  useEffect(() => {
+    if (state.status === "ok") trackPixel("Lead", { content_name: source })
+  }, [state.status, source])
 
   if (state.status === "ok") {
     return (
