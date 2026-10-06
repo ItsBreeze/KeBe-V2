@@ -57,6 +57,18 @@ export const plainText = (text?: string | null) =>
     .replace(/\s+/g, " ")
     .trim()
 
+// Text for an XML element or attribute, for the feeds and the sitemap: the
+// five entities escaped, and the characters XML 1.0 does not allow at all
+// dropped.
+export const xmlText = (value: string) =>
+  value
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F￾￿]/g, "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&apos;")
+
 // Whole sentences up to max characters; a first sentence longer than that is
 // cut at a word and marked with an ellipsis.
 export const clipSentences = (text: string, max: number) => {

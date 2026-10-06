@@ -208,8 +208,13 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+// robots.txt, sitemap.xml, llms.txt and the feeds stay out: they need no
+// region and no cookie, and the region fetch above throws while the backend
+// is down, which made each of them a 500 before its own fallback could
+// answer (review, 6 Oct 2026). A 5xx robots.txt tells Google to crawl
+// nothing.
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|feeds/|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
   ],
 }

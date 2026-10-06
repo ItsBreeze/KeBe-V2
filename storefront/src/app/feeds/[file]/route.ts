@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import {
   listStoreProducts,
+  storeUnavailable,
   storefrontCountries,
   storefrontCountryNames,
 } from "@lib/data/seo"
@@ -16,13 +17,14 @@ import {
   variantAvailability,
   variantColour,
   variantPrice,
+  xmlText,
 } from "@lib/util/seo"
 import { productSpecs } from "@lib/util/specs"
 
 // Product feeds for Google Merchant Center, and the Microsoft Merchant
 // Center, Meta catalogue and Pinterest, which all read the same RSS 2.0 with
 // Google's g: namespace: one per storefront country, at
-// /feeds/google-<country>.xml (the ".xml" lets the middleware pass it).
+// /feeds/google-<country>.xml (outside the middleware: see its matcher).
 // Built from the live store on each request, from data at most an hour old
 // (lib/data/seo.ts): the region's calculated price, a pre-order's ship
 // date, never a stock count (owner, 1 Oct 2026). The attributes follow the
@@ -50,19 +52,8 @@ const productType = (product: HttpTypes.StoreProduct) => {
     .join(" > ")
 }
 
-// Text for an XML element: the five entities escaped, and the characters
-// XML 1.0 does not allow at all dropped.
-const xml = (value: string) =>
-  value
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\uFFFE\uFFFF]/g, "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&apos;")
-
 const tag = (name: string, value: string | null | undefined) =>
-  value ? `      <${name}>${xml(value)}</${name}>` : null
+  value ? `      <${name}>${xmlText(value)}</${name}>` : null
 
 // Google's feed wants the date with a time and offset; the ship date is a
 // day. Midnight UTC, as it was, is the evening before across North America,
@@ -83,10 +74,14 @@ const item = (
   const variants = product.variants ?? []
   const single = variants.length <= 1
   const availability = variantAvailability(product, variant)
-  const shipDate =
-    availability === "preorder" || availability === "backorder"
-      ? presaleShipDate(product)
-      : null
+  const presale = availability === "preorder" || availability === "backorder"
+  const shipDate = presale ? presaleShipDate(product) : null
+  // Merchant Center turns down a pre-order or backorder without its
+  // availability_date. Once the counted boards are gone that date is
+  // ships_by_next, and with it unset or mistyped in Admin the page names no
+  // date either: the item stays out until the owner sets one, rather than go
+  // in to be rejected (review, 6 Oct 2026).
+  if (presale && !shipDate) return null
   // The CAD renders and photographs, never an AI scene. Google turns down
   // an item without an image, which is right for a product with no other.
   const [image, ...more] = listingImageUrls(product, variant)
@@ -144,12 +139,7 @@ export async function GET(
   const countries = await storefrontCountries()
   // Without the regions there is no telling a real country from a typo: a
   // feed reader retries a 503, and drops products on a 404.
-  if (!countries.length) {
-    return new Response("Store unavailable", {
-      status: 503,
-      headers: { "Retry-After": "600" },
-    })
-  }
+  if (!countries.length) return storeUnavailable()
   if (!countries.includes(countryCode)) {
     return new Response("Not found", { status: 404 })
   }
@@ -158,10 +148,7 @@ export async function GET(
   try {
     products = await listStoreProducts(countryCode)
   } catch {
-    return new Response("Store unavailable", {
-      status: 503,
-      headers: { "Retry-After": "600" },
-    })
+    return storeUnavailable()
   }
 
   const names = await storefrontCountryNames()
@@ -178,9 +165,9 @@ export async function GET(
     `<?xml version="1.0" encoding="UTF-8"?>`,
     `<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">`,
     "  <channel>",
-    `    <title>${xml(`${BRAND} (${where})`)}</title>`,
-    `    <link>${xml(absoluteUrl(`/${countryCode}`))}</link>`,
-    `    <description>${xml(
+    `    <title>${xmlText(`${BRAND} (${where})`)}</title>`,
+    `    <link>${xmlText(absoluteUrl(`/${countryCode}`))}</link>`,
+    `    <description>${xmlText(
       `${BRAND} keyboards, priced for ${countryInSentence(where)}.`
     )}</description>`,
     ...items,
