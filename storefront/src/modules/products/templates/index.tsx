@@ -5,6 +5,7 @@ import ProductModel from "@modules/products/components/product-model"
 import ProductVideo from "@modules/products/components/product-video"
 import ProductActions from "@modules/products/components/product-actions"
 import ProductTabs from "@modules/products/components/product-tabs"
+import BeforeYouPreorder from "@modules/products/components/before-you-preorder"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
@@ -142,6 +143,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
+            {/* The presale's short answers, directly under the button and
+                its note; nothing on other products. */}
+            <BeforeYouPreorder product={product} countryCode={countryCode} />
             {shipsBy ? (
               <section
                 aria-labelledby="why-keys"
@@ -207,6 +211,19 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
       {(video || gallery.length > 0) && (
         <section className="content-container pb-16 small:pb-24">
+          {/* On the presale board a line above the clip says what the
+              pictures are: renders and AI-generated scenes, none of them a
+              photograph. It is the disclosure that ends the description, set
+              where the pictures start, in the clip caption's style
+              (6 Oct 2026). */}
+          {shipsBy && (
+            <p className="mb-3 text-small-regular text-white/80">
+              None of the v2 pictures here are photographs: the plain renders
+              and the 3D model come straight from v2&apos;s CAD, and the desk,
+              studio and night pictures and the clip set that CAD model in
+              AI-generated scenes.
+            </p>
+          )}
           <div className="grid grid-cols-1 gap-4 small:grid-cols-2">
             {video && (
               <div className="small:col-span-2">
