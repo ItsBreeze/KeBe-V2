@@ -1,7 +1,9 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { isStripeLike } from "@lib/constants"
 import { getCheckoutStep } from "@lib/util/checkout-step"
+import { holdsPresaleBoard } from "@lib/util/presale"
 import medusaError from "@lib/util/medusa-error"
 import { POSTAL_CODES, postalCode } from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
@@ -505,9 +507,26 @@ export async function initiatePaymentSession(
       ...(await getAuthHeaders()),
     }
 
+    // What the payment is for, on Stripe's record of it: the Stripe account
+    // is shared with another business, so it keeps its own name, and a KeBe
+    // payment says it is KeBe's instead (owner, 6 Oct 2026). Medusa's store
+    // route hands data to the provider, and @medusajs/payment-stripe makes
+    // data.payment_description the PaymentIntent's description.
+    const body = isStripeLike(data.provider_id)
+      ? {
+          ...data,
+          data: {
+            ...data.data,
+            payment_description: holdsPresaleBoard(cart.items)
+              ? "KeBe v2 pre-order"
+              : "KeBe order",
+          },
+        }
+      : data
+
     const resp = await sdk.store.payment.initiatePaymentSession(
       cart,
-      data,
+      body,
       {},
       headers
     )
