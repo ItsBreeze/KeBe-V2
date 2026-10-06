@@ -8,10 +8,16 @@ import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import PaymentContainer, {
   StripeCardContainer,
+  StripeCardField,
 } from "@modules/checkout/components/payment-container"
 import Divider from "@modules/common/components/divider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
+
+// Shown when the payment session cannot be started. Without a session the
+// card field stays a grey placeholder, so the visitor needs to be told.
+const CARD_FORM_ERROR =
+  "Could not load the card form. Reload the page to try again."
 
 const Payment = ({
   cart,
@@ -24,12 +30,20 @@ const Payment = ({
     (paymentSession: any) => paymentSession.status === "pending"
   )
 
+  // Stripe is the only way to pay in both regions, so there is nothing to
+  // choose: the method starts selected and the card field opens on its own.
+  const onlyMethod: string | undefined =
+    availablePaymentMethods?.length === 1
+      ? availablePaymentMethods[0].id
+      : undefined
+  const onlyStripe = isStripeLike(onlyMethod) ? onlyMethod : undefined
+
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [cardBrand, setCardBrand] = useState<string | null>(null)
   const [cardComplete, setCardComplete] = useState(false)
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(
-    activeSession?.provider_id ?? ""
+    activeSession?.provider_id ?? onlyMethod ?? ""
   )
 
   const searchParams = useSearchParams()
@@ -42,9 +56,18 @@ const Payment = ({
     setError(null)
     setSelectedPaymentMethod(method)
     if (isStripeLike(method)) {
-      await initiatePaymentSession(cart, {
-        provider_id: method,
-      })
+      // The action returns its failure; a dropped connection throws here.
+      try {
+        const res = await initiatePaymentSession(cart, {
+          provider_id: method,
+        })
+
+        if ("error" in res) {
+          setError(CARD_FORM_ERROR)
+        }
+      } catch {
+        setError(CARD_FORM_ERROR)
+      }
     }
   }
 
@@ -80,9 +103,14 @@ const Payment = ({
         activeSession?.provider_id === selectedPaymentMethod
 
       if (!checkActiveSession) {
-        await initiatePaymentSession(cart, {
+        const res = await initiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
         })
+
+        if ("error" in res) {
+          setError(CARD_FORM_ERROR)
+          return
+        }
       }
 
       if (!shouldInputCard) {
@@ -93,8 +121,8 @@ const Payment = ({
           }
         )
       }
-    } catch (err: any) {
-      setError(err.message)
+    } catch {
+      setError(CARD_FORM_ERROR)
     } finally {
       setIsLoading(false)
     }
@@ -103,6 +131,24 @@ const Payment = ({
   useEffect(() => {
     setError(null)
   }, [isOpen])
+
+  // Starts the card's payment session when the step opens without one, as
+  // the radio tap did. Medusa deletes the session whenever the cart changes,
+  // so it runs again when the step reopens after a change. One start at a
+  // time: two at once could leave the cart with two Stripe sessions.
+  // setPaymentMethod shows CARD_FORM_ERROR itself when the start fails.
+  const starting = useRef(false)
+
+  useEffect(() => {
+    if (!isOpen || activeSession || !onlyStripe || starting.current) {
+      return
+    }
+
+    starting.current = true
+    setPaymentMethod(onlyStripe).finally(() => {
+      starting.current = false
+    })
+  }, [isOpen, activeSession?.id])
 
   return (
     <div className="bg-ui-bg-base">
@@ -127,42 +173,58 @@ const Payment = ({
               className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
               data-testid="edit-payment-button"
             >
-              Edit
+              Change
             </button>
           </Text>
         )}
       </div>
       <div>
         <div className={isOpen ? "block" : "hidden"}>
-          {!paidByGiftcard && availablePaymentMethods?.length && (
-            <>
-              <RadioGroup
-                value={selectedPaymentMethod}
-                onChange={(value: string) => setPaymentMethod(value)}
-              >
-                {availablePaymentMethods.map((paymentMethod) => (
-                  <div key={paymentMethod.id}>
-                    {isStripeLike(paymentMethod.id) ? (
-                      <StripeCardContainer
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                        paymentInfoMap={paymentInfoMap}
-                        setCardBrand={setCardBrand}
-                        setError={setError}
-                        setCardComplete={setCardComplete}
-                      />
-                    ) : (
-                      <PaymentContainer
-                        paymentInfoMap={paymentInfoMap}
-                        paymentProviderId={paymentMethod.id}
-                        selectedPaymentOptionId={selectedPaymentMethod}
-                      />
-                    )}
-                  </div>
-                ))}
-              </RadioGroup>
-            </>
+          {/* The card field alone, without a radio: headlessui's Radio
+              cannot render outside a RadioGroup, and one option is not a
+              choice. */}
+          {!paidByGiftcard && onlyStripe && (
+            <div data-testid="stripe-card-field">
+              <StripeCardField
+                label="Card, through Stripe"
+                setCardBrand={setCardBrand}
+                setError={setError}
+                setCardComplete={setCardComplete}
+              />
+            </div>
           )}
+
+          {!paidByGiftcard &&
+            !onlyStripe &&
+            availablePaymentMethods?.length && (
+              <>
+                <RadioGroup
+                  value={selectedPaymentMethod}
+                  onChange={(value: string) => setPaymentMethod(value)}
+                >
+                  {availablePaymentMethods.map((paymentMethod) => (
+                    <div key={paymentMethod.id}>
+                      {isStripeLike(paymentMethod.id) ? (
+                        <StripeCardContainer
+                          paymentProviderId={paymentMethod.id}
+                          selectedPaymentOptionId={selectedPaymentMethod}
+                          paymentInfoMap={paymentInfoMap}
+                          setCardBrand={setCardBrand}
+                          setError={setError}
+                          setCardComplete={setCardComplete}
+                        />
+                      ) : (
+                        <PaymentContainer
+                          paymentInfoMap={paymentInfoMap}
+                          paymentProviderId={paymentMethod.id}
+                          selectedPaymentOptionId={selectedPaymentMethod}
+                        />
+                      )}
+                    </div>
+                  ))}
+                </RadioGroup>
+              </>
+            )}
 
           {paidByGiftcard && (
             <div className="flex flex-col w-1/3">

@@ -2,6 +2,8 @@
 
 import { Table, Text, clx } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
+import { PRESALE_HANDLE } from "@lib/util/presale"
+import { QUANTITY_ERROR } from "@modules/common/components/delete-button"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -18,9 +20,13 @@ type ItemProps = {
   item: HttpTypes.StoreCartLineItem
   type?: "full" | "preview"
   currencyCode: string
+  // The ship line the product page shows now, from the cart page's product
+  // read. Never the line item's metadata, which keeps the line from when the
+  // board was added.
+  shipLine?: string | null
 }
 
-const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
+const Item = ({ item, type = "full", currencyCode, shipLine }: ItemProps) => {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -28,16 +34,21 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
     setError(null)
     setUpdating(true)
 
-    await updateLineItem({
-      lineId: item.id,
-      quantity,
-    })
-      .catch((err) => {
-        setError(err.message)
+    // The action returns its failure; a dropped connection throws here.
+    try {
+      const res = await updateLineItem({
+        lineId: item.id,
+        quantity,
       })
-      .finally(() => {
-        setUpdating(false)
-      })
+
+      if (res?.error) {
+        setError(QUANTITY_ERROR)
+      }
+    } catch {
+      setError(QUANTITY_ERROR)
+    } finally {
+      setUpdating(false)
+    }
   }
 
   // TODO: Update this to grab the actual max inventory
@@ -46,7 +57,14 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
 
   return (
     <Table.Row className="w-full" data-testid="product-row">
-      <Table.Cell className="!pl-0 p-4 w-24">
+      {/* The cart page leaves the picture out below 1024px, as it does the
+          unit price (6 Oct 2026). At 375px the row was 47px wider than the
+          screen, and the page scrolled sideways. */}
+      <Table.Cell
+        className={clx("!pl-0 p-4 w-24", {
+          "hidden small:table-cell": type === "full",
+        })}
+      >
         <LocalizedClientLink
           href={`/products/${item.product_handle}`}
           className={clx("flex", {
@@ -69,13 +87,29 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
         >
           {item.product_title}
         </Text>
+        {/* The cart said nowhere that this is a pre-order or when it ships
+            (6 Oct 2026). Without a line in force it says nothing rather
+            than guess a date. */}
+        {shipLine &&
+          (item.product_handle ?? item.product?.handle) === PRESALE_HANDLE && (
+            <Text
+              className="txt-medium text-ui-fg-subtle"
+              data-testid="product-ship-line"
+            >
+              Pre-order. {shipLine}.
+            </Text>
+          )}
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
       </Table.Cell>
 
       {type === "full" && (
         <Table.Cell>
           <div className="flex gap-2 items-center w-28">
-            <DeleteButton id={item.id} data-testid="product-delete-button" />
+            <DeleteButton
+              id={item.id}
+              onError={setError}
+              data-testid="product-delete-button"
+            />
             <CartItemSelect
               value={item.quantity}
               onChange={(value) => changeQuantity(parseInt(value.target.value))}
@@ -93,10 +127,6 @@ const Item = ({ item, type = "full", currencyCode }: ItemProps) => {
                   </option>
                 )
               )}
-
-              <option value={1} key={1}>
-                1
-              </option>
             </CartItemSelect>
             {updating && <Spinner />}
           </div>

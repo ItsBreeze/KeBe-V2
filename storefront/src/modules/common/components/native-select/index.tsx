@@ -49,11 +49,13 @@ const NativeSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
             }
           )}
         >
+          {/* text-base: 16px, as the inputs, so iOS does not zoom in on
+              focus. */}
           <select
             ref={innerRef}
             defaultValue={defaultValue}
             {...props}
-            className="appearance-none flex-1 bg-transparent border-none px-4 py-2.5 transition-colors duration-150 outline-none "
+            className="appearance-none flex-1 bg-transparent border-none px-4 py-2.5 text-base transition-colors duration-150 outline-none "
           >
             <option disabled value="">
               {placeholder}

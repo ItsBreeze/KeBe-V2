@@ -116,3 +116,23 @@ export const presaleShipDate = (
     ? metadataIsoDate(product, "ships_by")
     : metadataIsoDate(product, "ships_by_next")
 }
+
+// What a cart holds, in a few words, for checkout's order lines: the name
+// before the " — " in the title ("KeBe v2"), as the product page's sticky
+// bar shows it, and "pre-order" for the presale board; "3 items" for more
+// than one line. The phone's order bar and the Review step both say it.
+export const cartItemsLabel = (
+  items: HttpTypes.StoreCartLineItem[]
+): string => {
+  const only = items.length === 1 ? items[0] : undefined
+
+  return only
+    ? `${only.quantity > 1 ? `${only.quantity} × ` : ""}${
+        (only.product_title ?? only.title ?? "").split(" — ")[0]
+      }${
+        (only.product_handle ?? only.product?.handle) === PRESALE_HANDLE
+          ? " pre-order"
+          : ""
+      }`
+    : `${items.reduce((n, i) => n + i.quantity, 0)} items`
+}

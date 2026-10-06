@@ -1,4 +1,4 @@
-import { retrieveOrder } from "@lib/data/orders"
+import { retrieveOrder, retrieveOrderShipLine } from "@lib/data/orders"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import OrderCompletedTemplate from "@modules/order/templates/order-completed-template"
 import { Metadata } from "next"
@@ -9,12 +9,15 @@ type Props = {
 }
 export const metadata: Metadata = {
   title: "Order Confirmed",
-  description: "You purchase was successful",
+  description: "Your order is placed.",
 }
 
 export default async function OrderConfirmedPage(props: Props) {
   const params = await props.params
-  const order = await retrieveOrder(params.id).catch(() => null)
+  const [order, shipLine] = await Promise.all([
+    retrieveOrder(params.id).catch(() => null),
+    retrieveOrderShipLine(params.id),
+  ])
 
   if (!order) {
     return notFound()
@@ -37,7 +40,7 @@ export default async function OrderConfirmedPage(props: Props) {
         eventID={order.id}
         once={`kebe_px_purchase_${order.id}`}
       />
-      <OrderCompletedTemplate order={order} />
+      <OrderCompletedTemplate order={order} shipLine={shipLine} />
     </>
   )
 }
