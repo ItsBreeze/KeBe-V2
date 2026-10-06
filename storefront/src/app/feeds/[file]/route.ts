@@ -74,10 +74,14 @@ const item = (
   const variants = product.variants ?? []
   const single = variants.length <= 1
   const availability = variantAvailability(product, variant)
-  const shipDate =
-    availability === "preorder" || availability === "backorder"
-      ? presaleShipDate(product)
-      : null
+  const presale = availability === "preorder" || availability === "backorder"
+  const shipDate = presale ? presaleShipDate(product) : null
+  // Merchant Center turns down a pre-order or backorder without its
+  // availability_date. Once the counted boards are gone that date is
+  // ships_by_next, and with it unset or mistyped in Admin the page names no
+  // date either: the item stays out until the owner sets one, rather than go
+  // in to be rejected (review, 6 Oct 2026).
+  if (presale && !shipDate) return null
   // The CAD renders and photographs, never an AI scene. Google turns down
   // an item without an image, which is right for a product with no other.
   const [image, ...more] = listingImageUrls(product, variant)
