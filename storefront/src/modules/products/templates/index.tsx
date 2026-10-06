@@ -14,6 +14,7 @@ import Image from "next/image"
 import { productSpecs } from "@lib/util/specs"
 import { getProductPrice } from "@lib/util/get-product-price"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
 
@@ -126,6 +127,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 ))}
               </ul>
             )}
+            {/* Every KeBe has the same layout, so every product page points
+                at the trainer that teaches it. */}
+            <p className="text-base text-ui-fg-subtle">
+              New to Dvorak?{" "}
+              <LocalizedClientLink
+                href="/train"
+                className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+              >
+                Learn the layout
+              </LocalizedClientLink>{" "}
+              with the typing trainer, before your board arrives.
+            </p>
           </div>
         </div>
       </section>

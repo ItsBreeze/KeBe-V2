@@ -124,6 +124,12 @@ export default async function Footer() {
             >
               Privacy
             </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/train"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Typing trainer
+            </LocalizedClientLink>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="txt-compact-small hover:text-ui-fg-base"

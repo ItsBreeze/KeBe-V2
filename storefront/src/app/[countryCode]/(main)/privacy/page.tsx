@@ -76,6 +76,15 @@ export default function PrivacyPage() {
               copy of an email address you type here, to make that match. Meta
               handles what it receives under its own privacy policy.
             </p>
+            <p className="mt-3">
+              <strong className="font-normal text-ui-fg-base">
+                The typing trainer.
+              </strong>{" "}
+              The levels you have opened and your best speeds are kept in your
+              browser&apos;s local storage, which stays on your device. If you
+              are signed in, they are also saved to your account so they follow
+              you. What you type in it is not sent anywhere.
+            </p>
           </section>
 
           <section>

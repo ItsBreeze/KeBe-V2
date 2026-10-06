@@ -381,6 +381,19 @@ export default async function Home(props: {
             Once it is in your hands you stop thinking about the keyboard at
             all: that is the mindless mastery in the name.
           </p>
+          {/* The practice the paragraph above promises: the typing trainer
+              teaches the layout a few keys at a time, before the board arrives. */}
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <LocalizedClientLink
+              href="/train"
+              className="rounded-xl bg-kebe-text px-6 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+            >
+              Start learning the layout
+            </LocalizedClientLink>
+            <p className="text-base text-kebe-text/60">
+              A free typing game, a couple of keys at a time.
+            </p>
+          </div>
         </div>
       </section>
 

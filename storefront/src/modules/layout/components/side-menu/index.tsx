@@ -14,6 +14,7 @@ import { Locale } from "@lib/data/locales"
 const SideMenuItems = {
   Home: "/",
   Store: "/store",
+  "Learn the layout": "/train",
   Account: "/account",
   Cart: "/cart",
 }
