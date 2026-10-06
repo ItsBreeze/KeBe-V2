@@ -10,7 +10,9 @@ type ProductTabsProps = {
 // The specification and shipping, set out in full rather than folded into
 // the starter's accordions. Its shipping tab promised 3-5 day delivery, free
 // exchanges and no-questions refunds, none of which KeBe offers: only what is
-// true of the order is said here.
+// true of the order is said here. Shipping is a set price for each Canada
+// Post service, chosen at checkout, so it no longer says the cost is
+// calculated from the address (6 Oct 2026).
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
@@ -46,8 +48,8 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
                 Canada and the United States.{shipLine && ` ${shipLine}.`}
               </p>
               <p>
-                Shipping is calculated at checkout from your address and added
-                to the price.
+                Shipping goes by Canada Post. You choose the service at
+                checkout, and it is added to the price.
               </p>
               <p>
                 US orders go by Canada Post with the US duties already paid,
@@ -56,8 +58,8 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
             </>
           ) : (
             <p>
-              Ships to Canada and the United States. Shipping is calculated at
-              checkout from your address.
+              Ships to Canada and the United States by Canada Post. You choose
+              the service at checkout.
             </p>
           )}
           <p>

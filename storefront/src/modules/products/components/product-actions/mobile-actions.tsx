@@ -62,6 +62,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
     return variantPrice || cheapestPrice || null
   }, [price])
 
+  const preorder = isPreorderPrice(product, selectedPrice)
   const isSimple = isSimpleProduct(product)
 
   return (
@@ -85,38 +86,33 @@ const MobileActions: React.FC<MobileActionsProps> = ({
             className="bg-ui-bg-base flex flex-col gap-y-3 justify-center items-center text-large-regular p-4 h-full w-full border-t border-ui-border-base"
             data-testid="mobile-actions"
           >
-            <div className="flex items-center gap-x-2">
-              {/* The name only: the full title wrapped to two lines here. */}
-              <span data-testid="mobile-title">
+            {/* One line, whose price says "plus shipping" as every price
+                does (PRESALE.md). The name only: the full title wrapped to
+                two lines here, and under 360 px the pre-order line leaves
+                the name out to stay on one. The starter's struck-through
+                "was" price went on 6 Oct 2026: KeBe never shows one
+                (presale.ts). */}
+            <p
+              className="text-center text-small-regular text-ui-fg-subtle"
+              data-testid="mobile-price-line"
+            >
+              <span
+                className={clx({ "max-[359px]:hidden": preorder })}
+                data-testid="mobile-title"
+              >
                 {product.title?.split(" — ")[0]}
+                {selectedPrice && " · "}
               </span>
-              <span>—</span>
-              {selectedPrice ? (
-                <div className="flex items-end gap-x-2 text-ui-fg-base">
-                  {isPreorderPrice(product, selectedPrice) ? (
-                    <span className="text-small-regular text-ui-fg-subtle">
-                      pre-order price
-                    </span>
-                  ) : selectedPrice.price_type === "sale" && (
-                    <p>
-                      <span className="line-through text-small-regular">
-                        {selectedPrice.original_price}
-                      </span>
-                    </p>
-                  )}
-                  <span
-                    className={clx({
-                      "text-ui-fg-interactive":
-                        selectedPrice.price_type === "sale",
-                    })}
-                  >
+              {selectedPrice && (
+                <>
+                  {preorder && "pre-order price "}
+                  <span className="text-ui-fg-base">
                     {selectedPrice.calculated_price}
-                  </span>
-                </div>
-              ) : (
-                <div></div>
+                  </span>{" "}
+                  plus shipping
+                </>
               )}
-            </div>
+            </p>
             {addError && (
               <p
                 className="w-full text-center text-base text-rose-400"

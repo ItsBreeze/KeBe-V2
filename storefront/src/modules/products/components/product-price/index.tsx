@@ -1,5 +1,3 @@
-import { clx } from "@medusajs/ui"
-
 import { getProductPrice } from "@lib/util/get-product-price"
 import { isPreorderPrice } from "@lib/util/presale"
 import { HttpTypes } from "@medusajs/types"
@@ -25,13 +23,13 @@ export default function ProductPrice({
     return null
   }
 
+  // The price always says "plus shipping" (PRESALE.md). The starter's sale
+  // display went on 6 Oct 2026: KeBe never strikes through a price or shows
+  // a percent off (presale.ts), and a cleared ships_by under the still-active
+  // pre-order price list would have brought both back.
   return (
     <div className="flex flex-col text-ui-fg-base">
-      <span
-        className={clx("font-display text-[2rem] leading-none", {
-          "text-ui-fg-interactive": selectedPrice.price_type === "sale",
-        })}
-      >
+      <span className="font-display text-[2rem] leading-none">
         {!variant && "From "}
         <span
           data-testid="product-price"
@@ -42,24 +40,12 @@ export default function ProductPrice({
       </span>
       {isPreorderPrice(product, selectedPrice) ? (
         <p className="mt-2 text-ui-fg-subtle" data-testid="preorder-price-note">
-          Pre-order price.
+          Pre-order price, plus shipping.
         </p>
-      ) : selectedPrice.price_type === "sale" && (
-        <>
-          <p>
-            <span className="text-ui-fg-subtle">Original: </span>
-            <span
-              className="line-through"
-              data-testid="original-product-price"
-              data-value={selectedPrice.original_price_number}
-            >
-              {selectedPrice.original_price}
-            </span>
-          </p>
-          <span className="text-ui-fg-interactive">
-            -{selectedPrice.percentage_diff}%
-          </span>
-        </>
+      ) : (
+        <p className="mt-2 text-ui-fg-subtle" data-testid="shipping-price-note">
+          Plus shipping.
+        </p>
       )}
     </div>
   )
