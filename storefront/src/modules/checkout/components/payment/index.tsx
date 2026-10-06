@@ -13,6 +13,11 @@ import Divider from "@modules/common/components/divider"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useState } from "react"
 
+// Shown when the payment session cannot be started. Without a session the
+// card field stays a grey placeholder, so the visitor needs to be told.
+const CARD_FORM_ERROR =
+  "Could not load the card form. Reload the page to try again."
+
 const Payment = ({
   cart,
   availablePaymentMethods,
@@ -42,9 +47,18 @@ const Payment = ({
     setError(null)
     setSelectedPaymentMethod(method)
     if (isStripeLike(method)) {
-      await initiatePaymentSession(cart, {
-        provider_id: method,
-      })
+      // The action returns its failure; a dropped connection throws here.
+      try {
+        const res = await initiatePaymentSession(cart, {
+          provider_id: method,
+        })
+
+        if ("error" in res) {
+          setError(CARD_FORM_ERROR)
+        }
+      } catch {
+        setError(CARD_FORM_ERROR)
+      }
     }
   }
 
@@ -80,9 +94,14 @@ const Payment = ({
         activeSession?.provider_id === selectedPaymentMethod
 
       if (!checkActiveSession) {
-        await initiatePaymentSession(cart, {
+        const res = await initiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
         })
+
+        if ("error" in res) {
+          setError(CARD_FORM_ERROR)
+          return
+        }
       }
 
       if (!shouldInputCard) {
@@ -93,8 +112,8 @@ const Payment = ({
           }
         )
       }
-    } catch (err: any) {
-      setError(err.message)
+    } catch {
+      setError(CARD_FORM_ERROR)
     } finally {
       setIsLoading(false)
     }

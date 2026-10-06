@@ -133,15 +133,29 @@ const Shipping: React.FC<ShippingProps> = ({
       return id
     })
 
-    await setShippingMethod({ cartId: cart.id, shippingMethodId: id })
-      .catch((err) => {
-        setShippingMethodId(currentId)
+    // The action returns its failure; a dropped connection throws here.
+    const fail = () => {
+      setShippingMethodId(currentId)
 
-        setError(err.message)
+      setError(
+        "Could not save that delivery option. Try again, or reload the page."
+      )
+    }
+
+    try {
+      const res = await setShippingMethod({
+        cartId: cart.id,
+        shippingMethodId: id,
       })
-      .finally(() => {
-        setIsLoading(false)
-      })
+
+      if (res?.error) {
+        fail()
+      }
+    } catch {
+      fail()
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   useEffect(() => {

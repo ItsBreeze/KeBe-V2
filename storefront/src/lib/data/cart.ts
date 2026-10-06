@@ -96,6 +96,11 @@ async function shipMetadataAtPayment(
   }
 }
 
+// An error's message, for an action's { error } result.
+function errorText(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 /**
  * Retrieves a cart by its ID. If no ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to retrieve.
@@ -364,64 +369,80 @@ export async function preorderNow(
   redirect(`/${countryCode}/checkout?step=${step}&added=1`)
 }
 
+// The four actions below return { error } rather than throw. A thrown
+// server-action error reaches a production page as React's "An error
+// occurred in the Server Components render" text, never its own message, so
+// each caller shows its own plain sentence instead.
 export async function updateLineItem({
   lineId,
   quantity,
 }: {
   lineId: string
   quantity: number
-}) {
-  if (!lineId) {
-    throw new Error("Missing lineItem ID when updating line item")
+}): Promise<{ error: string } | undefined> {
+  try {
+    if (!lineId) {
+      throw new Error("Missing lineItem ID when updating line item")
+    }
+
+    const cartId = await getCartId()
+
+    if (!cartId) {
+      throw new Error("Missing cart ID when updating line item")
+    }
+
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    await sdk.store.cart.updateLineItem(
+      cartId,
+      lineId,
+      { quantity },
+      {},
+      headers
+    )
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+  } catch (error) {
+    console.error("Changing a line's quantity failed:", error)
+    return { error: errorText(error) }
   }
-
-  const cartId = await getCartId()
-
-  if (!cartId) {
-    throw new Error("Missing cart ID when updating line item")
-  }
-
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
-
-  await sdk.store.cart
-    .updateLineItem(cartId, lineId, { quantity }, {}, headers)
-    .then(async () => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-
-      const fulfillmentCacheTag = await getCacheTag("fulfillment")
-      revalidateTag(fulfillmentCacheTag)
-    })
-    .catch(medusaError)
 }
 
-export async function deleteLineItem(lineId: string) {
-  if (!lineId) {
-    throw new Error("Missing lineItem ID when deleting line item")
+export async function deleteLineItem(
+  lineId: string
+): Promise<{ error: string } | undefined> {
+  try {
+    if (!lineId) {
+      throw new Error("Missing lineItem ID when deleting line item")
+    }
+
+    const cartId = await getCartId()
+
+    if (!cartId) {
+      throw new Error("Missing cart ID when deleting line item")
+    }
+
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    await sdk.store.cart.deleteLineItem(cartId, lineId, {}, headers)
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+  } catch (error) {
+    console.error("Removing a line failed:", error)
+    return { error: errorText(error) }
   }
-
-  const cartId = await getCartId()
-
-  if (!cartId) {
-    throw new Error("Missing cart ID when deleting line item")
-  }
-
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
-
-  await sdk.store.cart
-    .deleteLineItem(cartId, lineId, {}, headers)
-    .then(async () => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-
-      const fulfillmentCacheTag = await getCacheTag("fulfillment")
-      revalidateTag(fulfillmentCacheTag)
-    })
-    .catch(medusaError)
 }
 
 export async function setShippingMethod({
@@ -430,36 +451,51 @@ export async function setShippingMethod({
 }: {
   cartId: string
   shippingMethodId: string
-}) {
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
+}): Promise<{ error: string } | undefined> {
+  try {
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
 
-  return sdk.store.cart
-    .addShippingMethod(cartId, { option_id: shippingMethodId }, {}, headers)
-    .then(async () => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-    })
-    .catch(medusaError)
+    await sdk.store.cart.addShippingMethod(
+      cartId,
+      { option_id: shippingMethodId },
+      {},
+      headers
+    )
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+  } catch (error) {
+    console.error("Setting the delivery option failed:", error)
+    return { error: errorText(error) }
+  }
 }
 
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
-) {
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
+): Promise<HttpTypes.StorePaymentCollectionResponse | { error: string }> {
+  try {
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
 
-  return sdk.store.payment
-    .initiatePaymentSession(cart, data, {}, headers)
-    .then(async (resp) => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-      return resp
-    })
-    .catch(medusaError)
+    const resp = await sdk.store.payment.initiatePaymentSession(
+      cart,
+      data,
+      {},
+      headers
+    )
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    return resp
+  } catch (error) {
+    console.error("Starting the payment session failed:", error)
+    return { error: errorText(error) }
+  }
 }
 
 export async function applyPromotions(codes: string[]) {
@@ -591,60 +627,99 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   )
 }
 
+// It never throws to the page. By the time it runs, Stripe has already
+// captured the card (capture is automatic), so a failure here is a buyer who
+// has paid and has no order. The page has to say so in its own words, not
+// show React's production error text or nothing at all.
 /**
  * Places an order for a cart. If no cart ID is provided, it will use the cart ID from the cookies.
  * @param cartId - optional - The ID of the cart to place an order for.
- * @returns The cart object if the order was successful, or null if not.
+ * @returns Nothing when the order is placed, since it redirects to the
+ * order's confirmation; { error } when it is not.
  */
-export async function placeOrder(cartId?: string) {
-  const id = cartId || (await getCartId())
+export async function placeOrder(cartId?: string): Promise<{ error: string }> {
+  let order: HttpTypes.StoreOrder | null = null
+  let error = "The order did not complete."
 
-  if (!id) {
-    throw new Error("No existing cart found when placing an order")
+  try {
+    const id = cartId || (await getCartId())
+
+    if (!id) {
+      return { error: "No existing cart found when placing an order" }
+    }
+
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    // One update for the ad that brought the buyer and, for the presale board,
+    // the ship line in force now. Medusa copies cart metadata to the order, so
+    // order.metadata.ship_line is the date this order was promised. It goes on
+    // the cart, not the line: a line update this close to completion could
+    // re-price the cart after the card has gone through. For the same reason,
+    // nothing here may stand in the way of the order.
+    const [utm, ship] = await Promise.all([
+      utmMetadata(),
+      shipMetadataAtPayment(id),
+    ])
+    const metadata = { ...utm, ...ship }
+    if (Object.keys(metadata).length) {
+      await sdk.store.cart
+        .update(id, { metadata }, {}, headers)
+        .catch(() => undefined)
+    }
+
+    // Two tries, 1.5 s apart. The Stripe webhook completes the same cart once
+    // the payment succeeds, and while it does, this call fails with "Cart is
+    // already being completed by another request". Completing a cart that is
+    // already completed returns its order, so the second try finds the order
+    // either way.
+    for (let attempt = 0; attempt < 2 && !order; attempt++) {
+      if (attempt > 0) {
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+      }
+
+      try {
+        const cartRes = await sdk.store.cart.complete(id, {}, headers)
+
+        if (cartRes.type === "order") {
+          order = cartRes.order
+        } else {
+          error = cartRes.error?.message ?? "The order did not complete."
+        }
+      } catch (e) {
+        error = errorText(e)
+      }
+    }
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    if (!order) {
+      console.error(`Placing the order for ${id} failed:`, error)
+      return { error }
+    }
+  } catch (e) {
+    console.error("Placing the order failed:", e)
+    return { error: errorText(e) }
   }
 
-  const headers = {
-    ...(await getAuthHeaders()),
-  }
-
-  // One update for the ad that brought the buyer and, for the presale board,
-  // the ship line in force now. Medusa copies cart metadata to the order, so
-  // order.metadata.ship_line is the date this order was promised. It goes on
-  // the cart, not the line: a line update this close to completion could
-  // re-price the cart after the card has gone through. For the same reason,
-  // nothing here may stand in the way of the order.
-  const [utm, ship] = await Promise.all([
-    utmMetadata(),
-    shipMetadataAtPayment(id),
-  ])
-  const metadata = { ...utm, ...ship }
-  if (Object.keys(metadata).length) {
-    await sdk.store.cart
-      .update(id, { metadata }, {}, headers)
-      .catch(() => undefined)
-  }
-
-  const cartRes = await sdk.store.cart
-    .complete(id, {}, headers)
-    .then(async (cartRes) => {
-      const cartCacheTag = await getCacheTag("carts")
-      revalidateTag(cartCacheTag)
-      return cartRes
-    })
-    .catch(medusaError)
-
-  if (cartRes?.type === "order") {
-    const countryCode =
-      cartRes.order.shipping_address?.country_code?.toLowerCase()
-
+  // The order exists from here on, so nothing may stand between the buyer
+  // and its confirmation page.
+  try {
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 
-    removeCartId()
-    redirect(`/${countryCode}/order/${cartRes?.order.id}/confirmed`)
+    await removeCartId()
+  } catch (e) {
+    console.error("Clearing the placed order's cart failed:", e)
   }
 
-  return cartRes.cart
+  // Outside any try: redirect() works by throwing. The page's catch must call
+  // unstable_rethrow(e) first, because Next rejects a redirecting action's
+  // promise with NEXT_REDIRECT.
+  const countryCode = order.shipping_address?.country_code?.toLowerCase()
+  redirect(`/${countryCode}/order/${order.id}/confirmed`)
 }
 
 /**

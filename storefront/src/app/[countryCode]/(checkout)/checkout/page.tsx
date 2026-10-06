@@ -9,18 +9,25 @@ import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
 import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { redirect } from "next/navigation"
 import { Suspense } from "react"
 
 export const metadata: Metadata = {
   title: "Checkout",
 }
 
-export default async function Checkout() {
+export default async function Checkout(props: {
+  params: Promise<{ countryCode: string }>
+}) {
+  const { countryCode } = await props.params
   const cart = await retrieveCart()
 
+  // No cart: the cookie is not there (a page moved from Instagram's browser
+  // to the phone's own, or Back after an order) or the cart could not be
+  // read. The cart page says what to do next, where a 404 said only "Page
+  // not found".
   if (!cart) {
-    return notFound()
+    redirect(`/${countryCode}/cart`)
   }
 
   const customer = await retrieveCustomer()
