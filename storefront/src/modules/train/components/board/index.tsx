@@ -77,7 +77,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
     // Every legend unlit, the same on every key, except the key to press.
     let ink = UNLIT
     // The light under the caps: the keys in play, the space bars included.
-    let glow = known ? 0.3 : 0
+    let glow = known ? 0.42 : 0
     let rim = "#24211d"
     let rimWidth = 0.35
     let glowColour = colour

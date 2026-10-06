@@ -5,10 +5,10 @@
 // The order is the owner's (5 Oct 2026): four home keys to start, A E T S,
 // the fewest that make a round of real words (ten of the thousand; three
 // keys make five), then one key at a time: O N U H I D to finish the home
-// row, then the top row (right hand G C R L F, left hand P . , ' Y), then the
-// bottom row's right hand (M W V Z B). The bottom row's left hand, the rarest
-// letters, comes last of all, after the numbers, symbols and Fn layer, and
-// the game ends on X (owner, 6 Oct 2026). Then the number row, the middle
+// row, then (owner, 6 Oct 2026) the top row's G C R L and P . , ', the
+// pointer fingers' reaches F Y, the bottom row's right hand B M W V Z, then
+// the numbers, symbols and Fn layer, and last of all the bottom row's left
+// hand, the rarest letters, X K J Q ;, so the game ends on the semicolon. Then the number row, the middle
 // columns, the modifiers and the Fn layer, a few keys a level.
 //
 // One key a level makes the levels themselves the build-up, so each is a
@@ -181,8 +181,9 @@ function round(src: Source, known: string) {
 // go after words.
 const LETTER_STEPS = [
   "aets", "o", "n", "u", "h", "i", "d",
-  "g", "c", "r", "l", "f", "p", ".", ",", "'", "y",
-  "m", "w", "v", "z", "b", "k", "j", "q", ";", "x",
+  "g", "c", "r", "l", "p", ".", ",", "'", "f", "y",
+  "b", "m", "w", "v", "z",
+  "x", "k", "j", "q", ";",
 ]
 
 const wordsUsing = (known: string, fresh: string) => {
@@ -343,22 +344,22 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-c", "Top row", "C", "Straight up from T, with the right middle finger."],
   ["key-r", "Top row", "R", "Straight up from N, with the right ring finger."],
   ["key-l", "Top row", "L", "Straight up from S, with the right pinky."],
-  ["key-f", "Top row", "F", "Up from D, with the right pointer finger."],
   ["key-p", "Top row", "P", "Straight up from U, with the left pointer finger."],
   ["key-period", "Top row", "Period", "Straight up from E, with the left middle finger."],
   ["key-comma", "Top row", "Comma", "Straight up from O, with the left ring finger."],
   ["key-apostrophe", "Top row", "Apostrophe", "Straight up from A, with the left pinky."],
+  ["key-f", "Top row", "F", "Up from D, with the right pointer finger."],
   ["key-y", "Top row", "Y", "Up from I, with the left pointer finger. That is every top-row letter."],
+  ["key-b", "Bottom row, right hand", "B", "Down from D, with the right pointer finger."],
   ["key-m", "Bottom row, right hand", "M", "Straight down from H, with the right pointer finger."],
   ["key-w", "Bottom row, right hand", "W", "Straight down from T, with the right middle finger."],
   ["key-v", "Bottom row, right hand", "V", "Straight down from N, with the right ring finger."],
   ["key-z", "Bottom row, right hand", "Z", "Straight down from S, with the right pinky."],
-  ["key-b", "Bottom row, right hand", "B", "Down from D, with the right pointer finger."],
+  ["key-x", "Bottom row, left hand", "X", "Down from I, with the left pointer finger."],
   ["key-k", "Bottom row, left hand", "K", "Straight down from U, with the left pointer finger."],
   ["key-j", "Bottom row, left hand", "J", "Straight down from E, with the left middle finger."],
   ["key-q", "Bottom row, left hand", "Q", "Straight down from O, with the left ring finger."],
-  ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon."],
-  ["key-x", "Bottom row, left hand", "X", "Down from I, with the left pointer finger. That is every letter, and the last level."],
+  ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon. That is every letter, and the last level."],
 ]
 
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
@@ -522,8 +523,8 @@ const FN_DEFS: Def[] = [
   },
 ]
 
-// The letters up to B, everything else, then K J Q ; X.
-const LAST_LETTERS = LETTER_DEFS.findIndex((d) => d.id === "key-k")
+// The letters up to Z, everything else, then X K J Q ;.
+const LAST_LETTERS = LETTER_DEFS.findIndex((d) => d.id === "key-x")
 const DEFS = [
   ...LETTER_DEFS.slice(0, LAST_LETTERS),
   ...NUMBER_DEFS,
