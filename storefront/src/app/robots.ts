@@ -3,9 +3,6 @@ import { MetadataRoute } from "next"
 import { storefrontCountries } from "@lib/data/seo"
 import { absoluteUrl } from "@lib/util/seo"
 
-// A new region shows up within the hour.
-export const revalidate = 3600
-
 // A visitor's own cart, checkout, account and orders: nothing in them for a
 // search engine. Each is noindex in its own metadata as well.
 const PRIVATE = ["/cart", "/checkout", "/account", "/order/"]

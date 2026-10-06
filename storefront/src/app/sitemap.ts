@@ -7,10 +7,6 @@ import {
   productImageUrls,
 } from "@lib/util/seo"
 
-// Prices and products move in Admin; the backend's revalidate call clears
-// this with every other page, and it refreshes within the hour regardless.
-export const revalidate = 3600
-
 // The pages anyone can land on, in every storefront country. Cart, checkout,
 // account and order pages are left out (robots.ts disallows them).
 const PAGES = ["", "/store", "/train", "/privacy"]
@@ -21,6 +17,7 @@ type ProductEntry = {
   images: string[]
 }
 
+// Built on each request from data at most an hour old (lib/data/seo.ts).
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const countries = await storefrontCountries()
   const listed = await Promise.all(

@@ -12,11 +12,14 @@ export const listProducts = async ({
   queryParams,
   countryCode,
   regionId,
+  revalidate,
 }: {
   pageParam?: number
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductListParams
   countryCode?: string
   regionId?: string
+  // Seconds before a cached answer is fetched again (lib/data/regions.ts).
+  revalidate?: number
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
@@ -51,6 +54,7 @@ export const listProducts = async ({
 
   const next = {
     ...(await getCacheOptions("products")),
+    ...(revalidate ? { revalidate } : {}),
   }
 
   return sdk.client

@@ -6,13 +6,20 @@ import { listProducts } from "@lib/data/products"
 import { listRegions } from "@lib/data/regions"
 import { absoluteUrl, languageAlternates } from "@lib/util/seo"
 
+// What search engines, feeds and AI crawlers read is at most an hour old; the
+// backend's revalidate call (api/revalidate) refreshes it sooner, along with
+// every page. Without it the store's cached answers expire on that call
+// alone: a local build's .next/cache still answered with the regions of 30
+// Sept, before the US one (5 Oct 2026).
+const SEO_REVALIDATE = 3600
+
 // Every country in a Medusa region is a storefront: the middleware sends
 // /<iso_2>/... to that region. Sorted, so the sitemap and the hreflang links
 // come out in the same order every time. Empty when the backend cannot be
 // read; callers treat that as "unknown", never as "no such country".
 export const storefrontCountries = async (): Promise<string[]> => {
   try {
-    const regions = await listRegions()
+    const regions = await listRegions({ revalidate: SEO_REVALIDATE })
     const codes = (regions ?? []).flatMap(
       (r) => r.countries?.map((c) => c.iso_2?.toLowerCase() ?? "") ?? []
     )
@@ -28,7 +35,7 @@ export const storefrontCountryNames = async (): Promise<
   Record<string, string>
 > => {
   try {
-    const regions = await listRegions()
+    const regions = await listRegions({ revalidate: SEO_REVALIDATE })
     const names: Record<string, string> = {}
     for (const r of regions ?? []) {
       for (const c of r.countries ?? []) {
@@ -66,6 +73,7 @@ export const listStoreProducts = async (
   const { response } = await listProducts({
     countryCode,
     queryParams: { limit: 100 },
+    revalidate: SEO_REVALIDATE,
   })
   return response.products
 }
