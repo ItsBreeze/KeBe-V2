@@ -76,9 +76,12 @@ export default function Board({ learned, adds, next, flash, className, style }: 
     // The legend: unlit, readable on the keys in play and dim on the rest,
     // and lit only on the key to press.
     let ink = known ? "#a7a197" : "#4a4540"
-    // The light spilling round the cap: only the keys in play.
-    let glow = known ? (isNew ? 0.5 : 0.28) : 0
-    let rim = known ? mix("#2e2b26", colour, isNew ? 0.55 : 0.2) : "#1f1d1a"
+    // The light spilling round the cap: only the keys in play. The space
+    // bars have no legend to light, so they glow only when one is the key to
+    // press, or nothing would say which thumb (owner, 6 Oct 2026).
+    const bar = k.w === 2
+    let glow = known && !bar ? (isNew ? 0.5 : 0.28) : 0
+    let rim = known && !bar ? mix("#2e2b26", colour, isNew ? 0.55 : 0.2) : "#1f1d1a"
     let rimWidth = isNew ? 0.5 : 0.35
     let glowColour = colour
     if (wrong) {
