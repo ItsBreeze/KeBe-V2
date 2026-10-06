@@ -21,6 +21,13 @@ import { useRouter } from "next/navigation"
 // submits it through its form attribute.
 const PREORDER_FORM_ID = "preorder-form"
 
+// Whether this page's Pre-order form has been sent and has not come back
+// (6 Oct 2026). The buy box's error boundary also catches a buy box that
+// failed to render, with no tap at all; only a sent form is a failed
+// pre-order, to the visitor and to the pixel.
+let preorderSent = false
+export const wasPreorderSent = () => preorderSent
+
 // What a failed add says, with the address to write to instead. The buy
 // box's error boundary says the same.
 export const addErrorText = (lead: string) => (
@@ -182,6 +189,20 @@ export default function ProductActions({
     }
   }, [state, product.id])
 
+  // The sent form has come back ({ error }), or this buy box is new or gone
+  // (the page went on to checkout). When the post itself fails, this render
+  // throws instead, and the boundary reads the flag before either runs.
+  useEffect(() => {
+    if (!pending) preorderSent = false
+  }, [pending])
+
+  useEffect(
+    () => () => {
+      preorderSent = false
+    },
+    []
+  )
+
   // Add the selected variant to the cart. This is for products without a
   // presale: Pre-order is a form (preorderNow), which posts even before this
   // script has loaded. A pre-order is one board: the cart holds exactly one,
@@ -301,12 +322,13 @@ export default function ProductActions({
           <form
             id={PREORDER_FORM_ID}
             action={formAction}
-            onSubmit={() =>
+            onSubmit={() => {
+              preorderSent = true
               trackPixelCustom("PreorderTap", {
                 content_ids: [product.id],
                 content_type: "product",
               })
-            }
+            }}
           >
             <input
               type="hidden"

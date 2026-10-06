@@ -3,6 +3,7 @@
 import { sdk } from "@lib/config"
 import { getCheckoutStep } from "@lib/util/checkout-step"
 import medusaError from "@lib/util/medusa-error"
+import { POSTAL_CODES, postalCode } from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { cookies as nextCookies } from "next/headers"
@@ -640,6 +641,23 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get("billing_address.province"),
         phone: formData.get("billing_address.phone"),
       }
+
+    // A postal or ZIP code that is not one stops here, with the field's own
+    // words, for a browser that let it past the field's pattern. The order
+    // keeps it trimmed, and a Canadian one as "M5H 2N2".
+    for (const [address, which] of [
+      [data.shipping_address, ""],
+      [data.billing_address, "Billing address: "],
+    ]) {
+      const code = postalCode(address.country_code, address.postal_code)
+      if (code === null) {
+        throw new Error(
+          which + POSTAL_CODES[address.country_code.toLowerCase()].title
+        )
+      }
+      address.postal_code = code
+    }
+
     const updated = await updateCart(data)
 
     // Delivery opens with the cheapest option already chosen (Expedited in

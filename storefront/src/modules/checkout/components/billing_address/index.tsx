@@ -1,5 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import {
+  POSTAL_CODES,
   SUBDIVISIONS,
   addressLabels,
   formSubdivision,
@@ -75,6 +76,7 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   const country = formData["billing_address.country_code"]
   const labels = addressLabels(country)
   const subdivisions = SUBDIVISIONS[country]
+  const postal = POSTAL_CODES[country]
 
   return (
     <>
@@ -174,6 +176,8 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
           autoComplete="billing postal-code"
           autoCapitalize={country === "us" ? undefined : "characters"}
           inputMode={country === "us" ? "numeric" : undefined}
+          pattern={postal?.pattern}
+          title={postal?.title}
           value={formData["billing_address.postal_code"]}
           onChange={handleChange}
           required

@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { Container } from "@medusajs/ui"
 import {
+  POSTAL_CODES,
   SUBDIVISIONS,
   addressLabels,
   formSubdivision,
@@ -130,6 +131,7 @@ const ShippingAddress = ({
   const country = formData["shipping_address.country_code"]
   const labels = addressLabels(country)
   const subdivisions = SUBDIVISIONS[country]
+  const postal = POSTAL_CODES[country]
 
   return (
     <>
@@ -283,6 +285,8 @@ const ShippingAddress = ({
           autoComplete="shipping postal-code"
           autoCapitalize={country === "us" ? undefined : "characters"}
           inputMode={country === "us" ? "numeric" : undefined}
+          pattern={postal?.pattern}
+          title={postal?.title}
           value={formData["shipping_address.postal_code"]}
           onChange={handleChange}
           required

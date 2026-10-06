@@ -3,8 +3,11 @@
 import { trackPixelCustom } from "@lib/util/meta-pixel"
 import { Button } from "@medusajs/ui"
 import { unstable_rethrow } from "next/navigation"
-import { Component, ReactNode, useEffect } from "react"
-import { addErrorText } from "@modules/products/components/product-actions"
+import { Component, ReactNode, useEffect, useRef } from "react"
+import {
+  addErrorText,
+  wasPreorderSent,
+} from "@modules/products/components/product-actions"
 
 type BuyBoxBoundaryProps = {
   productId: string
@@ -23,15 +26,21 @@ type BuyBoxBoundaryProps = {
 // says what the inline error says, and counts the PreorderError the inline
 // error would. A redirect is not a failure: unstable_rethrow hands it on to
 // Next.
+//
+// The boundary also catches a buy box that failed to render, with no tap:
+// ProductActionsWrapper's product read failing while the backend is down.
+// That one says the button didn't load and sends nothing, so a PreorderError
+// always follows a PreorderTap. Whether a Pre-order was sent is read here,
+// while rendering, before the buy box it came from unmounts and resets it.
 export default class BuyBoxBoundary extends Component<
   BuyBoxBoundaryProps,
-  { failed: boolean }
+  { failed: boolean; sent: boolean }
 > {
-  state = { failed: false }
+  state = { failed: false, sent: false }
 
   static getDerivedStateFromError(error: unknown) {
     unstable_rethrow(error)
-    return { failed: true }
+    return { failed: true, sent: wasPreorderSent() }
   }
 
   render() {
@@ -40,6 +49,7 @@ export default class BuyBoxBoundary extends Component<
         <BuyBoxFailed
           productId={this.props.productId}
           preorder={this.props.preorder}
+          sent={this.state.sent}
         />
       )
     }
@@ -51,16 +61,25 @@ export default class BuyBoxBoundary extends Component<
 function BuyBoxFailed({
   productId,
   preorder,
+  sent,
 }: {
   productId: string
   preorder: boolean
+  sent: boolean
 }) {
+  const ref = useRef<HTMLDivElement>(null)
+
   // The product only, as the inline error sends it: never the error itself.
+  // A Pre-order tapped in the sticky bar left the button far above the
+  // screen, and the bar goes with the buy box, so the visitor watched the bar
+  // vanish and nothing else (6 Oct 2026). The message and Try again are
+  // brought into view, clear of the 64 px sticky nav (scroll-mt-20).
   useEffect(() => {
-    if (preorder) {
+    if (sent) {
       trackPixelCustom("PreorderError", { content_ids: [productId] })
+      ref.current?.scrollIntoView({ block: "nearest" })
     }
-  }, [preorder, productId])
+  }, [sent, productId])
 
   // A fresh load of the page rather than a reset: a page loaded before a
   // deploy keeps failing until it has the new deploy's script. assign, not
@@ -68,16 +87,16 @@ function BuyBoxFailed({
   const retry = () => window.location.assign(window.location.href)
 
   return (
-    <div className="flex flex-col gap-y-4">
+    <div ref={ref} className="flex flex-col gap-y-4 scroll-mt-20">
       <p
         role="alert"
         className="text-base text-rose-400"
         data-testid="buy-box-error"
       >
         {addErrorText(
-          preorder
+          sent
             ? "We couldn't start your pre-order."
-            : "We couldn't add it to your cart."
+            : `The ${preorder ? "Pre-order" : "Add to cart"} button didn't load.`
         )}
       </p>
       <Button

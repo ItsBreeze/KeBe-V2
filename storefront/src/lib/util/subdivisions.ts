@@ -106,3 +106,46 @@ export const addressLabels = (countryCode: string | null | undefined) =>
   countryCode?.toLowerCase() === "us"
     ? { subdivision: "State", postal: "ZIP code" }
     : { subdivision: "Province", postal: "Postal code" }
+
+// What a postal or ZIP code has to look like (6 Oct 2026): until then "ABC"
+// or "123" went through to Delivery and was saved on the order. The pattern
+// is the field's <input pattern>, which has no i flag, so it lists both
+// cases; the title is what the field and setAddresses say when it fails.
+// Canada Post never uses D, F, I, O, Q or U, nor W or Z first.
+const CA_FIRST = "[ABCEGHJ-NPRSTVXYabceghj-nprstvxy]"
+const CA_LETTER = "[ABCEGHJ-NPRSTV-Zabceghj-nprstv-z]"
+
+export const POSTAL_CODES: Record<string, { pattern: string; title: string }> =
+  {
+    ca: {
+      pattern: `\\s*${CA_FIRST}\\d${CA_LETTER}\\s*\\d${CA_LETTER}\\d\\s*`,
+      title: "Enter a postal code like M5H 2N2.",
+    },
+    us: {
+      pattern: "\\s*\\d{5}(-\\d{4})?\\s*",
+      title: "Enter a 5-digit ZIP code.",
+    },
+  }
+
+// The code as the order keeps it: trimmed, and a Canadian one as "M5H 2N2".
+// null when it is not a code of this country. A country without a rule keeps
+// whatever was typed, trimmed.
+export const postalCode = (
+  countryCode: string | null | undefined,
+  value: string | null | undefined
+): string | null => {
+  const country = countryCode?.toLowerCase() ?? ""
+  const rule = POSTAL_CODES[country]
+  const code = (value ?? "").trim()
+  if (!rule) {
+    return code
+  }
+  if (!new RegExp(`^(?:${rule.pattern})$`).test(code)) {
+    return null
+  }
+  if (country === "ca") {
+    const compact = code.replace(/\s+/g, "").toUpperCase()
+    return `${compact.slice(0, 3)} ${compact.slice(3)}`
+  }
+  return code
+}
