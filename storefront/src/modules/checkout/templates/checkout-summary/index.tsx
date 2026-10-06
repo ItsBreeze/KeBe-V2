@@ -19,9 +19,13 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
         <Divider className="my-6" />
         <CartTotals totals={cart} />
         <ItemsPreviewTemplate cart={cart} />
-        <div className="my-6">
-          <DiscountCode cart={cart} />
-        </div>
+        {/* Only on a cart that already has a promotion, as on the cart page
+            (6 Oct 2026): KeBe runs none. */}
+        {!!cart.promotions?.length && (
+          <div className="my-6">
+            <DiscountCode cart={cart} />
+          </div>
+        )}
       </div>
     </div>
   )

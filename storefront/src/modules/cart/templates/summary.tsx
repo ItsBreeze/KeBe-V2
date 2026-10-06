@@ -13,9 +13,10 @@ type SummaryProps = {
   cart: HttpTypes.StoreCart & {
     promotions: HttpTypes.StorePromotion[]
   }
+  shippingNote?: string
 }
 
-const Summary = ({ cart }: SummaryProps) => {
+const Summary = ({ cart, shippingNote }: SummaryProps) => {
   const step = getCheckoutStep(cart)
 
   return (
@@ -23,9 +24,12 @@ const Summary = ({ cart }: SummaryProps) => {
       <Heading level="h2" className="text-[2rem] leading-[2.75rem]">
         Summary
       </Heading>
-      <DiscountCode cart={cart} />
+      {/* The promotion code field shows only on a cart that already has a
+          promotion (6 Oct 2026): KeBe runs none, and the field sent buyers
+          looking for a code that does not exist. */}
+      {!!cart.promotions?.length && <DiscountCode cart={cart} />}
       <Divider />
-      <CartTotals totals={cart} />
+      <CartTotals totals={cart} shippingNote={shippingNote} />
       <LocalizedClientLink
         href={"/checkout?step=" + step}
         data-testid="checkout-button"

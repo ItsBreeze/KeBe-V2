@@ -7,9 +7,11 @@ import SkeletonLineItem from "@modules/skeletons/components/skeleton-line-item"
 
 type ItemsTemplateProps = {
   cart?: HttpTypes.StoreCart
+  // The presale board's ship line in force now, for its row.
+  shipLine?: string | null
 }
 
-const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
+const ItemsTemplate = ({ cart, shipLine }: ItemsTemplateProps) => {
   const items = cart?.items
   return (
     <div>
@@ -19,8 +21,14 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
       <Table>
         <Table.Header className="border-t-0">
           <Table.Row className="text-ui-fg-subtle txt-medium-plus">
-            <Table.HeaderCell className="!pl-0">Item</Table.HeaderCell>
-            <Table.HeaderCell></Table.HeaderCell>
+            {/* Below 1024px the row leaves its picture out (cart/components/
+                item), so "Item" heads the name's column there. */}
+            <Table.HeaderCell className="!pl-0 hidden small:table-cell">
+              Item
+            </Table.HeaderCell>
+            <Table.HeaderCell>
+              <span className="small:hidden">Item</span>
+            </Table.HeaderCell>
             <Table.HeaderCell>Quantity</Table.HeaderCell>
             <Table.HeaderCell className="hidden small:table-cell">
               Price
@@ -42,6 +50,7 @@ const ItemsTemplate = ({ cart }: ItemsTemplateProps) => {
                       key={item.id}
                       item={item}
                       currencyCode={cart?.currency_code}
+                      shipLine={shipLine}
                     />
                   )
                 })
