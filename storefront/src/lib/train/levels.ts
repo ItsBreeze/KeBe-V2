@@ -2,10 +2,11 @@
 // from the 1,000 most common English words (words.ts); a level takes only the
 // ones its keys can type.
 //
-// The order is the owner's (5 Oct 2026): the eight resting keys, then one key
-// at a time working out from them: I and D to finish the home row, G C R L
-// straight up on the right, F and B the pointer finger's other column, the
-// same on the left hand, then the bottom row. Then the number row, the middle
+// The order is the owner's (5 Oct 2026): four home keys to start, A E T S,
+// the fewest that make a round of real words (ten of the thousand; three
+// keys make five), then one key at a time: O N U H I D to finish the home
+// row, G C R L straight up on the right, F and B the pointer finger's other
+// column, the same on the left hand, then the bottom row. Then the number row, the middle
 // columns, the modifiers and the Fn layer, a few keys a level.
 //
 // One key a level makes the levels themselves the build-up, so each is a
@@ -173,8 +174,8 @@ function round(src: Source, known: string) {
 // Letters: each step's new key. "'" makes contractions typeable, and , . ;
 // go after words.
 const LETTER_STEPS = [
-  "aoeuhtns",
-  "i", "d",
+  "aets",
+  "o", "n", "u", "h", "i", "d",
   "g", "c", "r", "l", "f", "b",
   "p", ".", ",", "'", "y", "x",
   "m", "w", "v", "z", "k", "j", "q", ";",
@@ -319,7 +320,11 @@ type Def = Omit<Level, "n" | "make" | "pass"> & {
 
 // [id, group, title, blurb] for each letter step.
 const LETTER_INFO: [string, string, string, string][] = [
-  ["home-rest", "Home row", "The resting keys", "Rest your fingers on A O E U and H T N S. Every other key is a reach from one of these. Space goes to the thumb of the hand that did not type the word's last letter."],
+  ["home-aets", "Home row", "A E T S", "Four keys to start: A and E under the left pinky and middle finger, T and S under the right middle finger and pinky. Space goes to the thumb of the hand that did not type the word's last letter."],
+  ["key-o", "Home row", "O", "The left ring finger's home key, between A and E."],
+  ["key-n", "Home row", "N", "The right ring finger's home key, between T and S."],
+  ["key-u", "Home row", "U", "The left pointer finger's home key, beside E."],
+  ["key-h", "Home row", "H", "The right pointer finger's home key, beside T."],
   ["key-i", "Home row", "I", "The left pointer finger reaches in from U."],
   ["key-d", "Home row", "D", "The right pointer finger reaches in from H. That is the whole home row."],
   ["key-g", "Right hand", "G", "Straight up from H, with the right pointer finger."],
