@@ -117,6 +117,22 @@ export const presaleShipDate = (
     : metadataIsoDate(product, "ships_by_next")
 }
 
+// Whether a cart's or an order's lines hold the presale board, found by its
+// handle the way the checkout page finds it. The pre-order terms' cancel
+// promise and the Stripe description follow it.
+export const holdsPresaleBoard = (
+  items:
+    | {
+        product_handle?: string | null
+        product?: { handle?: string | null } | null
+      }[]
+    | null
+    | undefined
+) =>
+  !!items?.some(
+    (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
+  )
+
 // What a cart holds, in a few words, for checkout's order lines: the name
 // before the " — " in the title ("KeBe v2"), as the product page's sticky
 // bar shows it, and "pre-order" for the presale board; "3 items" for more

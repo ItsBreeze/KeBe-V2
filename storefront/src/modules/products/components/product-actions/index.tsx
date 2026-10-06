@@ -6,6 +6,7 @@ import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import Divider from "@modules/common/components/divider"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
@@ -356,9 +357,19 @@ export default function ProductActions({
             className="text-base leading-relaxed text-ui-fg-muted"
             data-testid="presale-note"
           >
+            {/* The cancel promise sits inside the first sentence, not on a
+                line of its own, and the note is under the button, so the
+                button stays where it was (6 Oct 2026). */}
             Pre-order: plus shipping, calculated at checkout, and charged in
-            full there.{" "}
-            {shipLine ? `${shipLine}, to Canada and the US.` : "Ships to Canada and the US."}
+            full there; you can cancel for a full refund until it ships.{" "}
+            {shipLine ? `${shipLine}, to Canada and the US.` : "Ships to Canada and the US."}{" "}
+            <LocalizedClientLink
+              href="/terms"
+              className="underline underline-offset-4 hover:text-ui-fg-base"
+              data-testid="presale-terms-link"
+            >
+              Pre-order terms
+            </LocalizedClientLink>
           </p>
         )}
         <MobileActions

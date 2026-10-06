@@ -69,7 +69,7 @@ export default async function OrderCompletedTemplate({
           <CartTotals totals={order} />
           <ShippingDetails order={order} />
           <PaymentDetails order={order} />
-          <Help />
+          <Help order={order} />
         </div>
       </div>
     </div>

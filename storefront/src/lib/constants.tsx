@@ -78,3 +78,14 @@ export const noDivisionCurrencies = [
 // forwards it to the owner's inbox. (support@keberds.ca is dead: the .ca
 // domain lapsed.)
 export const CONTACT_EMAIL = "support@grounders.app"
+
+// Who sells KeBe, as the pre-order terms and the contact page name it (owner,
+// 6 Oct 2026): the business, its province and its phone. KeBe is the brand.
+// No street address and no personal name are published. Alberta's Internet
+// Sales Contract Regulation (s.4) lists the seller's name and telephone
+// number among what a buyer is told before ordering.
+export const SELLER_NAME = "KEBERDS"
+export const SELLER_PLACE = "Alberta, Canada"
+export const CONTACT_PHONE = "780-901-1304"
+// The same number for a tel: link.
+export const CONTACT_PHONE_TEL = "+17809011304"

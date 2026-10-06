@@ -5,7 +5,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import { Heading, Text, clx } from "@medusajs/ui"
 
 import { convertToLocale } from "@lib/util/money"
-import { cartItemsLabel } from "@lib/util/presale"
+import { cartItemsLabel, holdsPresaleBoard } from "@lib/util/presale"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
@@ -31,6 +31,10 @@ const Review = ({
     cart.shipping_address &&
     !!shippingMethod &&
     (cart.payment_collection || paidByGiftcard)
+
+  // The presale board's cart: the pre-order terms' cancel promise and the
+  // link to them join the line.
+  const preorder = holdsPresaleBoard(cart.items)
 
   const money = (amount?: number | null) =>
     convertToLocale({ amount: amount ?? 0, currency_code: cart.currency_code })
@@ -91,12 +95,25 @@ const Review = ({
                 data-testid="review-order-line"
               >
                 {sum}. Placing the order charges {money(cart.total)} to your
-                card now, in full.{shipLine ? ` ${shipLine}.` : ""} How we
-                handle your details is set out in our{" "}
+                card now, in full.{shipLine ? ` ${shipLine}.` : ""}
+                {preorder ? " You can cancel for a full refund until it ships." : ""}{" "}
+                How we handle your details is set out in our{" "}
                 <LocalizedClientLink href="/privacy" className="underline">
                   privacy notice
                 </LocalizedClientLink>
                 .
+                {preorder && (
+                  <>
+                    {" "}
+                    <LocalizedClientLink
+                      href="/terms"
+                      className="underline"
+                      data-testid="review-terms-link"
+                    >
+                      Pre-order terms
+                    </LocalizedClientLink>
+                  </>
+                )}
               </Text>
             </div>
           </div>

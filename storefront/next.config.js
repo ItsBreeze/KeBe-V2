@@ -85,6 +85,21 @@ const nextConfig = {
       },
     ]
   },
+  // The addresses a buyer guesses for a store's policies all land on the
+  // pre-order terms, which hold the cancel, late-delivery, return and
+  // warranty terms (6 Oct 2026); before it each was a 404. Temporary, so a
+  // page of its own can take one over later. These run before the
+  // middleware: an address without a country, such as /refunds, is first
+  // sent to /<country>/refunds by the middleware and then lands here.
+  async redirects() {
+    return [
+      {
+        source: "/:cc(ca|us)/:page(refunds|returns|shipping|faq)",
+        destination: "/:cc/terms",
+        permanent: false,
+      },
+    ]
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

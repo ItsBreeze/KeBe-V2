@@ -163,6 +163,9 @@ export async function GET() {
     `- [Privacy](${absoluteUrl(
       `/${home}/privacy`
     )}): what the site collects, why, where it is stored and how to have it deleted`,
+    `- [Pre-order terms](${absoluteUrl(
+      `/${home}/terms`
+    )}): a pre-order can be cancelled for a full refund until it ships, defects in the board under normal use are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
     `- [Instagram @kebe_keyboards](${INSTAGRAM_URL})`,
     `- Questions about an order: ${CONTACT_EMAIL}`,
     "",

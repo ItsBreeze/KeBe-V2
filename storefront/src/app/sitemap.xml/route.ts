@@ -13,7 +13,7 @@ import {
 
 // The pages anyone can land on, in every storefront country. Cart, checkout,
 // account and order pages are left out (robots.ts disallows them).
-const PAGES = ["", "/store", "/train", "/privacy"]
+const PAGES = ["", "/store", "/train", "/privacy", "/terms", "/contact"]
 
 type ProductEntry = {
   countries: string[]
@@ -75,7 +75,8 @@ export async function GET() {
     PAGES.map((path) => ({
       url: absoluteUrl(`/${cc}${path}`),
       // The home page and the store show the products, so they change when
-      // one does; the trainer and the privacy notice carry no date here.
+      // one does; the trainer, the privacy notice, the pre-order terms and
+      // the contact page carry no date here.
       lastModified: path === "" || path === "/store" ? latest : undefined,
       languages: languageAlternates(countries, path),
     }))

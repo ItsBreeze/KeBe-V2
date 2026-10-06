@@ -11,8 +11,9 @@ type BeforeYouPreorderProps = {
 
 // Short answers under the presale board's button to what a first-time buyer
 // asks before paying: the learning curve, whether it works with their
-// computer and how payment works. Before this they were several screens
-// down, only on the homepage, or nowhere (6 Oct 2026). Native <details>
+// computer, how payment works and whether they can cancel. Before this they
+// were several screens down, only on the homepage, or nowhere (6 Oct 2026).
+// Native <details>
 // open and close before the page's script has loaded, and at most four rows
 // keep the section short on a phone. No counts, no prices and no pixel
 // events.
@@ -64,11 +65,27 @@ const BeforeYouPreorder = ({ product }: BeforeYouPreorderProps) => {
         {/* What shipping costs goes here once its price is settled: the
             Canada Post services, their transit times and, for US orders,
             the duties line. */}
-        <Row question="How do I pay?">
+        {/* The cancel and late-delivery sentences are the owner's terms of
+            6 Oct 2026, word for word, as the terms page has them. */}
+        <Row question="How do I pay, and can I cancel?">
           <p>
             By card, in full at checkout, through Stripe. The card number goes
             to Stripe, not to us. You check out as a guest, with no account
             needed.
+          </p>
+          <p className="mt-3">
+            Cancel any time before your board ships for a full refund within
+            5 business days. If it hasn&apos;t shipped 30 days after the date
+            shown when you ordered, we email you and you choose a full refund
+            or keep waiting.
+          </p>
+          <p className="mt-3">
+            <LocalizedClientLink
+              href="/terms"
+              className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+            >
+              Pre-order terms
+            </LocalizedClientLink>
           </p>
         </Row>
       </div>

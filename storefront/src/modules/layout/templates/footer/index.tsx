@@ -125,6 +125,18 @@ export default async function Footer() {
               Privacy
             </LocalizedClientLink>
             <LocalizedClientLink
+              href="/terms"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Pre-order terms
+            </LocalizedClientLink>
+            <LocalizedClientLink
+              href="/contact"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Contact
+            </LocalizedClientLink>
+            <LocalizedClientLink
               href="/train"
               className="txt-compact-small hover:text-ui-fg-base"
             >
