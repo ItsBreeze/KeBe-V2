@@ -44,7 +44,7 @@ const BeforeYouPreorder = ({ product }: BeforeYouPreorderProps) => {
             KeBe as a new instrument instead of unpicking old habits one key
             at a time. Switching takes practice, and the first weeks are
             slower. The free typing trainer on this site teaches the layout
-            one key at a time, so you can start before your board arrives.
+            one letter at a time, so you can start before your board arrives.
           </p>
           <p className="mt-3">
             <LocalizedClientLink

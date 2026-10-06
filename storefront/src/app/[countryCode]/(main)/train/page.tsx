@@ -11,9 +11,9 @@ import Trainer from "@modules/train/components/trainer"
 // trainer", "dvorak typing game"), in what the page does: four home-row
 // keys, then a key a level, the board coloured by finger, the 10-word test.
 // The letters are Dvorak's on any keyboard, so the title says Dvorak.
-const TITLE = "Free Dvorak Typing Trainer: Learn One Key at a Time"
+const TITLE = "Free Dvorak Typing Trainer: Learn One Letter at a Time"
 const DESCRIPTION =
-  "Learn Dvorak with a free typing game: four home-row keys to start, then one new key a level, a board coloured by finger and a 10-word speed test."
+  "Learn Dvorak with a free typing game: four home-row keys to start, then one new letter a level, then numbers, symbols and the Fn pad, on a board coloured by finger, with a 10-word speed test."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -64,8 +64,10 @@ export default async function TrainPage(props: {
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-kebe-line pt-8 text-sm text-kebe-muted small:flex-row small:items-center">
           <p className="max-w-xl leading-relaxed">
             It reads the letters your computer receives, so it works on a KeBe,
-            or on any keyboard with your computer set to Dvorak. The board
-            above is KeBe v2&apos;s, legends and all.
+            or on any keyboard with your computer set to Dvorak. On a KeBe,
+            turn autocorrect off with Fn + A while you practise: words it
+            fixes don&apos;t count. The board above is KeBe v2&apos;s, legends
+            and all.
           </p>
           <LocalizedClientLink
             href={`/products/${PRESALE_HANDLE}`}

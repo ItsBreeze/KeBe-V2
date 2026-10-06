@@ -27,7 +27,6 @@ import {
   learnedBefore,
   starsFor,
   LEVELS,
-  PASS_WPM,
   speedTest,
   TEST_WORDS,
 } from "@lib/train/levels"
@@ -61,13 +60,17 @@ type Run = {
   end: number | null
   strokes: number
   good: number
+  // Words KeBe's own autocorrect changed (see BURST), and the last key's time.
+  fixed: boolean[]
+  lastT: number | null
+  lastBack: boolean
 }
 
 type Action =
   | { type: "reset"; words: string[] }
   | { type: "char"; ch: string; t: number }
   | { type: "space"; t: number }
-  | { type: "back"; word: boolean }
+  | { type: "back"; word: boolean; t: number }
 
 const blank = (id: number, words: string[]): Run => ({
   id,
@@ -78,9 +81,35 @@ const blank = (id: number, words: string[]): Run => ({
   end: null,
   strokes: 0,
   good: 0,
+  fixed: words.map(() => false),
+  lastT: null,
+  lastBack: false,
 })
 
+// KeBe's firmware fixes typos itself as a word ends: it sends Backspaces and
+// the right letters far faster than anyone types. A Backspace, or a key just
+// after one, arriving within BURST ms of the key before is the board's work,
+// so that word does not count (review, 6 Oct 2026). People are tens of ms
+// apart even when rolling keys; the board's keys are a millisecond or two.
+const BURST = 12
+
 function reducer(r: Run, a: Action): Run {
+  const next = apply(r, a)
+  if (a.type === "reset" || next === r) return next
+  const quick =
+    r.lastT !== null && a.t - r.lastT < BURST && (a.type === "back" || r.lastBack)
+  let fixed = next.fixed
+  if (quick) {
+    const i = a.type === "space" ? r.idx : next.idx
+    if (!fixed[i]) {
+      fixed = fixed.slice()
+      fixed[i] = true
+    }
+  }
+  return { ...next, fixed, lastT: a.t, lastBack: a.type === "back" }
+}
+
+function apply(r: Run, a: Action): Run {
   if (a.type === "reset") return blank(r.id + 1, a.words)
   if (r.end !== null || r.words.length === 0) return r
   const target = r.words[r.idx]
@@ -138,10 +167,10 @@ function stats(r: Run, now: number) {
     const space = i < r.words.length - 1 ? 1 : 0
     if (done) {
       raw += t.length + space
-      if (t === w) chars += w.length + space
+      if (t === w && !r.fixed[i]) chars += w.length + space
     } else if (i === r.idx) {
       raw += t.length
-      if (w.startsWith(t)) chars += t.length
+      if (w.startsWith(t) && !r.fixed[i]) chars += t.length
     }
   })
   const perMin = 60000 / ms
@@ -167,9 +196,13 @@ function nextChar(r: Run): string | null {
 function streakOf(r: Run): number {
   let n = 0
   const done = r.end !== null ? r.words.length : r.idx
-  for (let i = done - 1; i >= 0 && r.typed[i] === r.words[i]; i--) n++
+  for (let i = done - 1; i >= 0 && r.typed[i] === r.words[i] && !r.fixed[i]; i--) n++
   return n
 }
+
+// Finished words the board's autocorrect changed.
+const fixedCount = (r: Run) =>
+  r.fixed.filter((f, i) => f && (r.end !== null || i < r.idx)).length
 
 type Result = {
   key: string
@@ -180,6 +213,7 @@ type Result = {
   prevBest: number
   newTop: boolean
   opened: number | null
+  fixed: number
 }
 
 type KeyLike = {
@@ -193,33 +227,46 @@ type KeyLike = {
   getModifierState(k: "AltGraph"): boolean
 }
 
-// The browser's copy names the customer it belongs to (null: nobody signed
-// in), so on a shared computer one customer's scores never reach the next
-// one's account, and every write merges with what is stored, so a second tab
-// cannot wipe out the first one's passes.
-type Local = { owner: string | null; progress: Progress }
+// The browser keeps one copy per customer, and one for nobody signed in, so
+// on a shared computer one customer's scores never reach another's account,
+// and a score that failed to reach its account waits in the browser for that
+// customer's next visit instead of being wiped (review, 6 Oct 2026). Every
+// write merges with what is stored, so a second tab cannot undo the first.
+const slot = (owner: string | null) => `${STORAGE_KEY}:${owner ?? "guest"}`
 
-function readLocal(): Local {
+function readSlot(owner: string | null): Progress {
   try {
-    const raw = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "null")
-    return {
-      owner: typeof raw?.owner === "string" ? raw.owner : null,
-      progress: cleanProgress(raw),
-    }
+    return cleanProgress(JSON.parse(localStorage.getItem(slot(owner)) ?? "null"))
   } catch {
-    return { owner: null, progress: { best: {} } }
+    return { best: {} }
   }
 }
 
-function writeLocal(owner: string | null, p: Progress): Progress {
+function writeSlot(owner: string | null, p: Progress): Progress {
   try {
-    const cur = readLocal()
-    const all = cur.owner === owner ? mergeProgress(cur.progress, p) : p
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ owner, ...all }))
+    const all = mergeProgress(readSlot(owner), p)
+    localStorage.setItem(slot(owner), JSON.stringify(all))
     return all
   } catch {
     return p
   }
+}
+
+function clearSlot(owner: string | null) {
+  try {
+    localStorage.removeItem(slot(owner))
+  } catch {}
+}
+
+// The single copy of 5 Oct 2026, { owner, best }, moves to its owner's slot.
+function migrateLocal() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return
+    const old = JSON.parse(raw)
+    writeSlot(typeof old?.owner === "string" ? old.owner : null, cleanProgress(old))
+    localStorage.removeItem(STORAGE_KEY)
+  } catch {}
 }
 
 const BOARD_PREF = "kebe-trainer-board"
@@ -246,6 +293,7 @@ export default function Trainer({
   const [coarse, setCoarse] = useState(false)
 
   const area = useRef<HTMLDivElement>(null)
+  const strip = useRef<HTMLOListElement>(null)
   const lastWords = useRef<Set<string>>(new Set())
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const recorded = useRef(-1)
@@ -260,7 +308,7 @@ export default function Trainer({
   const owner = account?.id ?? null
   const persist = useCallback(
     (p: Progress) => {
-      const all = writeLocal(owner, p)
+      const all = writeSlot(owner, p)
       setProgress((cur) => mergeProgress(cur, all))
       if (!account) return
       setSave("saving")
@@ -268,7 +316,9 @@ export default function Trainer({
         .then((merged) => {
           if (!merged) return setSave("failed")
           setSave("saved")
-          setProgress((cur) => mergeProgress(cur, writeLocal(owner, merged)))
+          // The account now holds what was played signed out on this browser.
+          clearSlot(null)
+          setProgress((cur) => mergeProgress(cur, writeSlot(owner, merged)))
         })
         .catch(() => setSave("failed"))
     },
@@ -276,18 +326,15 @@ export default function Trainer({
   )
 
   useEffect(() => {
-    const local = readLocal()
-    // Practice done signed out joins the account that signs in; a copy that
-    // belongs to another customer, or to anyone while signed out, does not.
-    const mine = local.owner === owner || (local.owner === null && !!account)
-    const merged = mergeProgress(
-      mine ? local.progress : EMPTY_PROGRESS,
-      account?.progress ?? EMPTY_PROGRESS
-    )
+    migrateLocal()
+    // Signed in: this customer's copy, plus anything played signed out on
+    // this browser, which joins the account. Signed out: the guest copy only.
+    const mine = readSlot(owner)
+    const local = account ? mergeProgress(mine, readSlot(null)) : mine
+    const merged = mergeProgress(local, account?.progress ?? EMPTY_PROGRESS)
     setProgress(merged)
     goLevel(openCount(merged))
-    if (!mine) writeLocal(owner, EMPTY_PROGRESS)
-    writeLocal(owner, merged)
+    writeSlot(owner, merged)
     if (account && !sameProgress(merged, account.progress)) persist(merged)
     try {
       setShowBoard(localStorage.getItem(BOARD_PREF) !== "hidden")
@@ -300,9 +347,8 @@ export default function Trainer({
   // Another tab's results, as they land.
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
-      if (e.key !== STORAGE_KEY) return
-      const l = readLocal()
-      if (l.owner === owner) setProgress((cur) => mergeProgress(cur, l.progress))
+      if (e.key !== slot(owner)) return
+      setProgress((cur) => mergeProgress(cur, readSlot(owner)))
     }
     window.addEventListener("storage", onStorage)
     return () => window.removeEventListener("storage", onStorage)
@@ -323,6 +369,13 @@ export default function Trainer({
   useEffect(() => {
     newWords()
   }, [newWords])
+
+  // The level being played stays in view in the strip on narrow screens.
+  useEffect(() => {
+    strip.current
+      ?.querySelector('[aria-current="step"]')
+      ?.scrollIntoView({ block: "nearest", inline: "nearest" })
+  }, [levelN, mode])
 
   // Live speed while a test runs.
   useEffect(() => {
@@ -347,6 +400,7 @@ export default function Trainer({
       prevBest: progress.best[key] ?? 0,
       newTop: (after.best[key] ?? 0) > (progress.best[key] ?? 0),
       opened: mode === "levels" && is > was ? is : null,
+      fixed: fixedCount(run),
     })
     if (!sameProgress(after, progress)) {
       setProgress(after)
@@ -370,32 +424,41 @@ export default function Trainer({
         el?.closest?.("button, a")
       )
         return
-      if (e.key === "Escape") {
+      // With Fn held on the Fn levels, Backspace's key sends Delete and
+      // Esc's sends `: read them as Backspace and Escape there.
+      const key = opts.fn
+        ? e.key === "Delete"
+          ? "Backspace"
+          : e.key === "`"
+          ? "Escape"
+          : e.key
+        : e.key
+      if (key === "Escape") {
         e.preventDefault()
         newWords()
         return
       }
       if (result || run.end !== null) {
-        if (e.key === "Enter") {
+        if (key === "Enter") {
           e.preventDefault()
           if (mode === "levels" && openCount(progress) > levelN) goLevel(levelN + 1)
           else newWords()
-        } else if (e.key.length === 1) {
+        } else if (key.length === 1) {
           e.preventDefault()
         }
         return
       }
       const altGr = e.getModifierState?.("AltGraph")
       if ((e.ctrlKey || e.metaKey || e.altKey) && !altGr) {
-        if (e.key === "Backspace") {
+        if (key === "Backspace") {
           e.preventDefault()
-          dispatch({ type: "back", word: true })
+          dispatch({ type: "back", word: true, t: performance.now() })
         }
         return
       }
-      if (e.key === "Backspace") {
+      if (key === "Backspace") {
         e.preventDefault()
-        dispatch({ type: "back", word: false })
+        dispatch({ type: "back", word: false, t: performance.now() })
         return
       }
       if (e.key === " " || e.key.length === 1) {
@@ -427,8 +490,9 @@ export default function Trainer({
       if (el !== document.body && !el.closest?.("[data-trainer]")) return
       // A button or link keeps Space and Enter; any other key types.
       if (el !== document.body && (e.key === " " || e.key === "Enter")) return
-      if (e.ctrlKey || e.metaKey || e.altKey) return
-      if (e.key.length !== 1 && !["Escape", "Backspace", "Enter"].includes(e.key)) return
+      const erase = e.key === "Backspace" || e.key === "Delete"
+      if ((e.ctrlKey || e.metaKey || e.altKey) && !erase) return
+      if (e.key.length !== 1 && !erase && !["Escape", "Enter"].includes(e.key)) return
       area.current?.focus({ preventScroll: true })
       handleKey(e)
     }
@@ -474,6 +538,17 @@ export default function Trainer({
     setMode("levels")
     goLevel(n)
   }
+  const said = result
+    ? verdict(result, {
+        mode,
+        levelN,
+        open,
+        best: progress.best[result.key] ?? 0,
+        pass: level.pass,
+        signedIn: !!account,
+        save,
+      })
+    : null
   const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= l.pass).length
   const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id], l.pass), 0)
   const streak = streakOf(run)
@@ -541,6 +616,7 @@ export default function Trainer({
           before it is passed. Scrolls sideways where the screen is narrow. */}
       {mode === "levels" && (
         <ol
+          ref={strip}
           aria-label="Levels"
           className="mt-4 flex items-center gap-[2px] overflow-x-auto pb-1 [scrollbar-width:thin]"
         >
@@ -551,7 +627,7 @@ export default function Trainer({
             const current = l.n === levelN
             const newGroup = i > 0 && LEVELS[i - 1].group !== l.group
             return (
-              <li key={l.id} className={clx("shrink-0", newGroup && "ml-1.5")}>
+              <li key={l.id} className={clx("shrink-0", newGroup && "ml-1")}>
                 <button
                   disabled={locked}
                   onClick={() => pickLevel(l.n)}
@@ -569,7 +645,7 @@ export default function Trainer({
                       : `${l.group} · ${l.title}${b ? ` · best ${b} wpm` : ""}`
                   }
                   className={clx(
-                    "flex h-6 w-6 items-center justify-center rounded-md border font-mono text-[9px] transition-colors",
+                    "flex h-5 w-5 items-center justify-center rounded border font-mono text-[8px] transition-colors",
                     current
                       ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
                       : passed
@@ -623,11 +699,11 @@ export default function Trainer({
       {/* Announced when a round ends: a region that is always present, since
           one inserted along with its text is not read out. */}
       <p role="status" className="sr-only">
-        {result
-          ? `${Math.round(result.wpm)} words a minute, ${Math.round(result.acc * 100)}% accuracy.${
-              result.opened
-                ? ` Level ${result.opened}, ${LEVELS[result.opened - 1].title}, is open.`
-                : ""
+        {said
+          ? `${said.label}. ${Math.round(result!.wpm)} words a minute, ${Math.round(
+              result!.acc * 100
+            )}% accuracy.${said.stars !== null ? ` ${said.stars} of 3 stars.` : ""} ${
+              said.line
             } Enter for next, Escape for new words.`
           : ""}
       </p>
@@ -643,18 +719,13 @@ export default function Trainer({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onMouseDown={() => area.current?.focus({ preventScroll: true })}
-        className="relative mt-3 min-h-[112px] cursor-text rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
+        className="relative mt-3 min-h-[128px] cursor-text rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
       >
         {result ? (
           <Results
             result={result}
-            mode={mode}
-            levelN={levelN}
-            open={open}
-            best={progress.best[result.key] ?? 0}
-            signedIn={!!account}
-            save={save}
-            pass={level.pass}
+            said={said!}
+            canNext={mode === "levels" && levelN < LEVELS.length && open > levelN}
             onNext={() => goLevel(levelN + 1)}
             onAgain={newWords}
           />
@@ -688,6 +759,14 @@ export default function Trainer({
                   <span className="text-[#3f9e77]">streak ×{streak}</span>
                 </>
               )}
+              {fixedCount(run) > 0 && (
+                <>
+                  {" · "}
+                  <span className="text-[#e3b04b]">
+                    autocorrected {fixedCount(run)}, not counted
+                  </span>
+                </>
+              )}
             </>
           ) : result ? (
             "Enter: next · Esc: new words"
@@ -712,7 +791,7 @@ export default function Trainer({
             next={result ? null : next}
             flash={flash}
             className="mx-auto block"
-            style={{ width: "min(100%, max(520px, calc((100svh - 480px) * 2.83)))" }}
+            style={{ width: "min(100%, max(520px, calc((100svh - 496px) * 2.83)))" }}
           />
         )}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
@@ -769,7 +848,9 @@ function Words({ run }: { run: Run }) {
       {run.words.map((word, i) => {
         const t = run.typed[i]
         const current = i === run.idx && run.end === null
-        const wrong = (i < run.idx || run.end !== null) && t !== word
+        const done = i < run.idx || run.end !== null
+        const wrong = done && t !== word
+        const fixed = done && !wrong && run.fixed[i]
         const len = Math.max(word.length, t.length)
         return (
           <span
@@ -777,14 +858,17 @@ function Words({ run }: { run: Run }) {
             className={clx(
               "relative whitespace-pre",
               wrong &&
-                "underline decoration-[#e0705f]/70 decoration-2 underline-offset-[6px]"
+                "underline decoration-[#e0705f]/70 decoration-2 underline-offset-[6px]",
+              fixed &&
+                "underline decoration-[#e3b04b] decoration-dotted decoration-2 underline-offset-[6px]"
             )}
+            title={fixed ? "Fixed by KeBe's autocorrect: it doesn't count" : undefined}
           >
             {Array.from({ length: len }, (_, j) => {
               const ch = j < word.length ? word[j] : t[j]
               const cls =
                 j >= t.length
-                  ? "text-kebe-text/40"
+                  ? "text-kebe-text/55"
                   : j >= word.length
                   ? "text-[#e0705f]/70"
                   : t[j] === word[j]
@@ -818,122 +902,135 @@ function Caret() {
   )
 }
 
+// What a finished round means, in words: the Results card and the
+// announcement for screen readers say the same thing.
+type Said = { label: string; line: string; stars: number | null; wpm: number }
+
+function verdict(
+  r: Result,
+  o: {
+    mode: Mode
+    levelN: number
+    open: number
+    best: number
+    pass: number
+    signedIn: boolean
+    save: "idle" | "saving" | "saved" | "failed"
+  }
+): Said {
+  const wpm = Math.round(r.wpm)
+  const last = o.levelN === LEVELS.length
+  const over = wpm > MAX_WPM
+  const passed = wpm >= o.pass && !over
+  const passedBefore = r.prevBest >= o.pass
+  let label: string
+  let line: string
+  if (o.mode === "test") {
+    label = r.newTop ? "Top score" : "Done"
+    if (over) line = ""
+    else if (r.newTop) {
+      line = r.prevBest ? `A new top score, up from ${r.prevBest}.` : "Your first top score."
+      line += !o.signedIn
+        ? " Sign in to keep it on your account."
+        : o.save === "saved"
+        ? " Saved to your account."
+        : o.save === "failed"
+        ? " It didn't save to your account; this browser has it."
+        : " Saving to your account…"
+    } else
+      line = o.best
+        ? `Your top score is ${o.best}.`
+        : "No top score yet: only words typed right count."
+  } else {
+    label = passed ? "Passed" : passedBefore ? `Below ${o.pass}` : "Not yet"
+    if (over) line = ""
+    else if (passed && last)
+      line = "That's every level: the letters, numbers, symbols, modifiers and the Fn number pad."
+    else if (passed)
+      line = r.opened
+        ? `Level ${r.opened}, ${LEVELS[r.opened - 1].title}, is open.`
+        : passedBefore
+        ? "Passed again."
+        : "Your first pass at this level."
+    else if (passedBefore) line = `Below ${o.pass} this time; your best here is ${o.best}.`
+    else if (last || o.open > o.levelN)
+      line = `${o.pass} wpm passes this level: ${o.pass - wpm} to go. Ten new words with Esc.`
+    else
+      line = `${o.pass} wpm opens level ${o.levelN + 1}: ${o.pass - wpm} to go. Ten new words with Esc.`
+  }
+  if (over)
+    line = `Over ${MAX_WPM} words a minute is faster than anyone types, so it isn't kept as a score.`
+  if (r.fixed)
+    line += ` ${r.fixed === 1 ? "One word was" : `${r.fixed} words were`} fixed by KeBe's autocorrect and didn't count: Fn + A turns it off.`
+  const stars = o.mode === "levels" && !over ? starsFor(wpm, o.pass) : null
+  return { label, line, stars, wpm }
+}
+
+// One row on wider screens, so the box keeps the words' height and the
+// board below doesn't jump when a round ends.
 function Results({
   result,
-  mode,
-  levelN,
-  open,
-  best,
-  signedIn,
-  save,
-  pass,
+  said,
+  canNext,
   onNext,
   onAgain,
 }: {
   result: Result
-  mode: Mode
-  levelN: number
-  open: number
-  best: number
-  signedIn: boolean
-  save: "idle" | "saving" | "saved" | "failed"
-  pass: number
+  said: Said
+  canNext: boolean
   onNext: () => void
   onAgain: () => void
 }) {
-  const wpm = Math.round(result.wpm)
-  const passed = wpm >= pass && wpm <= MAX_WPM
-  const last = levelN === LEVELS.length
-  const canNext = mode === "levels" && !last && open > levelN
-  const newTop = result.newTop
-  const passedBefore = result.prevBest >= pass
-
-  let line: string
-  if (wpm > MAX_WPM) {
-    line = `Over ${MAX_WPM} words a minute is faster than anyone types, so it isn't kept as a score.`
-  } else if (mode === "test") {
-    line = newTop
-      ? result.prevBest
-        ? `A new top score, up from ${result.prevBest}.`
-        : "Your first top score."
-      : `Your top score is ${best}.`
-    if (newTop) {
-      line += !signedIn
-        ? " Sign in to keep it on your account."
-        : save === "saved"
-        ? " Saved to your account."
-        : save === "failed"
-        ? " It didn't save to your account; this browser has it."
-        : " Saving to your account…"
-    }
-  } else if (passed && last) {
-    line = "That's every level: the letters, numbers, symbols, modifiers and the Fn number pad."
-  } else if (passed) {
-    line = result.opened
-      ? `Level ${result.opened}, ${LEVELS[result.opened - 1].title}, is open.`
-      : "Passed again."
-  } else if (passedBefore) {
-    line = `Below ${pass} this time; your best here is ${best}, so ${
-      last ? "this level is passed" : `level ${levelN + 1} is open`
-    } already.`
-  } else {
-    line = `${pass} wpm ${last ? "passes the last level" : `opens level ${levelN + 1}`}: ${pass - wpm} to go. Ten new words with Esc.`
-  }
-
   return (
-    <div className="flex flex-col gap-6 small:flex-row small:items-end small:justify-between">
-      <div>
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-          {mode === "test"
-            ? newTop
-              ? "Top score"
-              : "Done"
-            : passed
-            ? "Passed"
-            : passedBefore
-            ? `Below ${pass}`
-            : "Not yet"}
-        </p>
-        <p className="mt-2 font-display text-[clamp(3rem,8vw,4.5rem)] leading-none">
-          {wpm}
-          <span className="ml-3 font-mono text-base uppercase tracking-[0.14em] text-kebe-muted">
-            wpm
-          </span>
-        </p>
-        {mode === "levels" && wpm <= MAX_WPM && (
-          <p className="mt-3" aria-label={`${starsFor(wpm, pass)} of 3 stars`}>
-            <Stars n={starsFor(wpm, pass)} big />
+    <div className="flex flex-col gap-4 small:flex-row small:items-center small:justify-between">
+      <div className="flex items-start gap-5">
+        <div className="shrink-0">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-kebe-muted">
+            {said.label}
           </p>
-        )}
-        <p className="mt-3 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-          {Math.round(result.acc * 100)}% accuracy · {result.secs.toFixed(1)} s · raw{" "}
-          {Math.round(result.raw)}
-        </p>
-        <p className="mt-4 max-w-md text-base leading-relaxed text-kebe-text/80">
-          {line}
-        </p>
+          <p className="mt-1 flex items-baseline gap-2 font-display text-5xl leading-none">
+            {said.wpm}
+            <span className="font-mono text-sm uppercase tracking-[0.14em] text-kebe-muted">
+              wpm
+            </span>
+          </p>
+        </div>
+        <div className="min-w-0">
+          {said.stars !== null && (
+            <span role="img" aria-label={`${said.stars} of 3 stars`}>
+              <Stars n={said.stars} big />
+            </span>
+          )}
+          <p className="mt-1 font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted">
+            {Math.round(result.acc * 100)}% accuracy · {result.secs.toFixed(1)} s · raw{" "}
+            {Math.round(result.raw)}
+          </p>
+          <p className="mt-1 max-w-lg text-sm leading-snug text-kebe-text/80">
+            {said.line}
+          </p>
+        </div>
       </div>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex shrink-0 flex-wrap gap-2">
         {canNext && (
           <button
             onClick={onNext}
-            className="rounded-xl bg-kebe-text px-6 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+            className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-white"
           >
             Next level{" "}
-            <span className="ml-1 font-mono text-xs opacity-60">Enter</span>
+            <span className="ml-1 font-mono text-[11px] opacity-60">Enter</span>
           </button>
         )}
         <button
           onClick={onAgain}
           className={clx(
-            "rounded-xl px-6 py-3 text-base transition-colors",
+            "rounded-xl px-4 py-2 text-sm transition-colors",
             canNext
               ? "border border-kebe-line hover:border-kebe-muted"
               : "bg-kebe-text font-medium text-kebe-page hover:bg-white"
           )}
         >
           Ten new words{" "}
-          <span className="ml-1 font-mono text-xs opacity-60">Esc</span>
+          <span className="ml-1 font-mono text-[11px] opacity-60">Esc</span>
         </button>
       </div>
     </div>

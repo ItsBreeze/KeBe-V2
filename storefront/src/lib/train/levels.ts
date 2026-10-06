@@ -161,11 +161,15 @@ function round(src: Source, known: string) {
   return (avoid: Set<string>) => {
     const words = focused(src.pool(known), src.fresh, TEST_WORDS, avoid)
     if (words.length < TEST_WORDS && src.fallback) {
-      // In the fallback's order (the key before's words first), each once.
-      const more = Array.from(new Set(src.fallback(known))).filter(
-        (w) => !words.includes(w) && !avoid.has(bare(w))
+      // In the fallback's order (the key before's words first), each once,
+      // the last round's words only after the others: O has three words and
+      // a fallback of ten, so leaving those out would repeat words.
+      const fb = Array.from(new Set(src.fallback(known))).filter(
+        (w) => !words.includes(w)
       )
-      words.push(...more.slice(0, TEST_WORDS - words.length))
+      const fresh = fb.filter((w) => !avoid.has(bare(w)))
+      const seen = fb.filter((w) => avoid.has(bare(w)))
+      words.push(...[...fresh, ...seen].slice(0, TEST_WORDS - words.length))
     }
     return punctuate(shuffle(fill(words, TEST_WORDS)), known, src.fresh)
   }
@@ -324,7 +328,7 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-u", "Home row", "U", "The left pointer finger's home key, beside E."],
   ["key-h", "Home row", "H", "The right pointer finger's home key, beside T."],
   ["key-i", "Home row", "I", "The left pointer finger reaches in from U."],
-  ["key-d", "Home row", "D", "The right pointer finger reaches in from H. That is the whole home row."],
+  ["key-d", "Home row", "D", "The right pointer finger reaches in from H. That is every home-row letter."],
   ["key-g", "Top row", "G", "Straight up from H, with the right pointer finger."],
   ["key-c", "Top row", "C", "Straight up from T, with the right middle finger."],
   ["key-r", "Top row", "R", "Straight up from N, with the right ring finger."],
@@ -334,7 +338,7 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-period", "Top row", "Period", "Straight up from E, with the left middle finger."],
   ["key-comma", "Top row", "Comma", "Straight up from O, with the left ring finger."],
   ["key-apostrophe", "Top row", "Apostrophe", "Straight up from A, with the left pinky."],
-  ["key-y", "Top row", "Y", "Up from I, with the left pointer finger. That is the whole top row."],
+  ["key-y", "Top row", "Y", "Up from I, with the left pointer finger. That is every top-row letter."],
   ["key-m", "Bottom row", "M", "Straight down from H, with the right pointer finger."],
   ["key-w", "Bottom row", "W", "Straight down from T, with the right middle finger."],
   ["key-v", "Bottom row", "V", "Straight down from N, with the right ring finger."],
@@ -473,7 +477,7 @@ const FN_DEFS: Def[] = [
     adds: [FN.left, FN.right, ...padKeys(PAD_DIGITS)],
     fn: PAD_DIGITS,
     blurb:
-      "Hold Fn with the left hand and the right hand becomes a number pad: 7 8 9 on G C R, 4 5 6 on H T N, 1 2 3 on M W V, 0 on B and . on Z.",
+      "Hold Fn with the left hand and the right hand becomes a number pad: 7 8 9 on G C R, 4 5 6 on H T N, 1 2 3 on M W V, 0 on B and . on Z. Backspace and Esc still work with Fn held.",
     source: {
       fresh: PAD_DIGITS,
       pool: padNumbers,
@@ -488,7 +492,7 @@ const FN_DEFS: Def[] = [
     adds: padKeys(PAD_OPS),
     fn: PAD_DIGITS + PAD_OPS,
     blurb:
-      "Still holding Fn: * on F, / on L, + on D, − on S and = on the right Tab. The rest of the Fn layer is arrows, F-keys, media and lighting, which type no text, and ` on Fn + Esc (~ with Shift).",
+      "Still holding Fn: * on F, / on L, + on D, − on S and = on the right Tab. The rest of the Fn layer types no text: arrows, Home/End, PgUp/PgDn, F-keys, Delete, Insert, Print Screen, Menu, Calculator, media, lighting, Num Lock and AUTO (autocorrect on and off); ` is on Fn + Esc (~ with Shift).",
     source: {
       fresh: PAD_OPS,
       pool: padSums,

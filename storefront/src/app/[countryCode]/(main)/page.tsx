@@ -369,7 +369,7 @@ export default async function Home(props: {
               Start learning the layout
             </LocalizedClientLink>
             <p className="text-base text-kebe-text/60">
-              A free typing game, one key at a time.
+              A free typing game, one letter at a time.
             </p>
           </div>
         </div>

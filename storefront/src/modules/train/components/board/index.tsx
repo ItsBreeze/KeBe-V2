@@ -36,10 +36,20 @@ function mix(a: string, b: string, t: number) {
     .join("")}`
 }
 
-// Dark legends on the lighter finger colours, light ones on the darker.
+// Whichever legend colour, dark or white, has the higher WCAG contrast on a
+// solid finger colour (white on the thumb's green, dark on the others).
+function luminance(hex: string) {
+  const [r, g, b] = [1, 3, 5].map((i) => {
+    const v = parseInt(hex.slice(i, i + 2), 16) / 255
+    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
+  })
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+}
 function inkOn(hex: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255)
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.3 ? "#12110f" : "#ffffff"
+  const l = luminance(hex)
+  const dark = (l + 0.05) / (luminance("#12110f") + 0.05)
+  const white = 1.05 / (l + 0.05)
+  return dark >= white ? "#12110f" : "#ffffff"
 }
 
 type Props = {
