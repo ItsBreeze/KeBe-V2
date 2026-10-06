@@ -1,6 +1,10 @@
 import { HttpTypes } from "@medusajs/types"
 import { getBaseURL } from "@lib/util/env"
-import { presaleShipsBy, variantOpen } from "@lib/util/presale"
+import {
+  presaleShipLine,
+  presaleShipsBy,
+  variantOpen,
+} from "@lib/util/presale"
 
 // Helpers for what the store tells machines: search engines, shopping feeds
 // and AI answer engines. The rules the copy obeys hold here too (owner, 1 Oct
@@ -66,6 +70,27 @@ export const clipSentences = (text: string, max: number) => {
   const cut = text.slice(0, max - 1)
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 0)) || cut}…`
 }
+
+// A search result's snippet for a product: its subtitle, else whole opening
+// sentences of its description, then, when there is room, when an order
+// placed now ships, in the ship line's own words. Never a price, never a
+// count; at most 155 characters, where Google cuts.
+export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
+  const text =
+    plainText(product.subtitle) ||
+    plainText(product.description) ||
+    product.title ||
+    BRAND
+  const base = clipSentences(text, 155)
+  const shipLine = presaleShipLine(product)
+  if (!shipLine) return base
+  const withShip = `${base} Pre-order: ${shipLine.charAt(0).toLowerCase()}${shipLine.slice(1)}.`
+  return withShip.length <= 155 ? withShip : base
+}
+
+// Cart, checkout, account and order pages: a visitor's own, never a search
+// result. robots.txt keeps crawlers out of them as well.
+export const PRIVATE_PAGE_ROBOTS = { index: false, follow: false }
 
 // A product's name before the " — " in its title: "KeBe v2".
 export const productName = (product: HttpTypes.StoreProduct) =>

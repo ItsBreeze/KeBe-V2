@@ -33,6 +33,11 @@ const mono = IBM_Plex_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  // Every page's title ends with the brand; the home page sets its own whole.
+  title: {
+    default: "KeBe",
+    template: "%s | KeBe",
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {

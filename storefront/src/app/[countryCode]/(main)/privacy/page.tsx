@@ -1,10 +1,17 @@
 import { Metadata } from "next"
 import { CONTACT_EMAIL } from "@lib/constants"
+import { pageAlternates } from "@lib/data/seo"
 
-export const metadata: Metadata = {
-  title: "Privacy",
-  description:
-    "What KeBe collects, why, where it is stored, and how to have it deleted.",
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  return {
+    title: "Privacy",
+    description:
+      "What KeBe collects, why, where it is stored, and how to have it deleted.",
+    alternates: await pageAlternates(countryCode, "/privacy"),
+  }
 }
 
 

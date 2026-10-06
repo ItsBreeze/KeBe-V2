@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
 import { listRegions } from "@lib/data/regions"
+import { pageAlternates } from "@lib/data/seo"
 import { StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -47,16 +48,17 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   try {
     const productCategory = await getCategoryByHandle(params.category)
 
-    const title = productCategory.name + " | KeBe"
-
-    const description = productCategory.description ?? `${title} category.`
-
+    // The title said " | KeBe" twice, and the canonical was the bare handle,
+    // which resolved to /keyboards: a page that does not exist.
     return {
-      title: `${title} | KeBe`,
-      description,
-      alternates: {
-        canonical: `${params.category.join("/")}`,
-      },
+      title: productCategory.name,
+      description:
+        productCategory.description ||
+        `${productCategory.name} from KeBe, a one-person keyboard workshop in Canada.`,
+      alternates: await pageAlternates(
+        params.countryCode,
+        `/categories/${params.category.join("/")}`
+      ),
     }
   } catch (error) {
     notFound()

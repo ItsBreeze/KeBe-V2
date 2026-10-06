@@ -2,6 +2,8 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { pageAlternates } from "@lib/data/seo"
+import { productMetaDescription, productUrl } from "@lib/util/seo"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -87,12 +89,22 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  // The description was the title again; now it is the product's own words.
+  const description = productMetaDescription(product)
+  const alternates = await pageAlternates(
+    params.countryCode,
+    `/products/${handle}`
+  )
+
   return {
-    title: `${product.title} | KeBe`,
-    description: `${product.title}`,
+    // The root layout's template adds " | KeBe".
+    title: product.title,
+    description,
+    alternates,
     openGraph: {
       title: `${product.title} | KeBe`,
-      description: `${product.title}`,
+      description,
+      url: productUrl(params.countryCode, handle),
       images: product.thumbnail ? [product.thumbnail] : [],
     },
   }

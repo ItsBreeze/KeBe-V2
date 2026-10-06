@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 
+import { pageAlternates } from "@lib/data/seo"
 import { getTrainerAccount } from "@lib/data/trainer"
 import { PRESALE_HANDLE } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -8,14 +9,20 @@ import Trainer from "@modules/train/components/trainer"
 const DESCRIPTION =
   "Learn KeBe's Matrix-Dvorak layout one key at a time: whole words from the thousand most common, a target speed to open the next level, and a 10-word speed test for your top score."
 
-export const metadata: Metadata = {
-  title: "Learn the layout",
-  description: DESCRIPTION,
-  openGraph: {
-    title: "Learn KeBe's layout",
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  return {
+    title: "Learn the Matrix-Dvorak layout: a free typing trainer",
     description: DESCRIPTION,
-    images: ["/products/kebe-v2-top.jpg"],
-  },
+    alternates: await pageAlternates(countryCode, "/train"),
+    openGraph: {
+      title: "Learn KeBe's layout",
+      description: DESCRIPTION,
+      images: ["/products/kebe-v2-top.jpg"],
+    },
+  }
 }
 
 // The trainer is the page: no introduction above it (owner, 5 Oct 2026),

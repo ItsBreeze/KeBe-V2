@@ -2,6 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { listProducts } from "@lib/data/products"
+import { pageAlternates } from "@lib/data/seo"
 import { getProductPrice } from "@lib/util/get-product-price"
 import {
   PRESALE_HANDLE,
@@ -16,17 +17,26 @@ import ProductModel from "@modules/products/components/product-model"
 const DESCRIPTION =
   "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Assembled by hand in Canada."
 
-export const metadata: Metadata = {
-  title: "KeBe",
-  // The old site's description ended "Aluminium design". Every KeBe case that
-  // exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP order --
-  // so that claim is gone and not coming back.
-  description: DESCRIPTION,
-  openGraph: {
-    title: "KeBe",
+// What the board is, for a search result: the title used to be just "KeBe".
+const TITLE = "KeBe v2: 68-key ortholinear Dvorak keyboard with a USB hub"
+
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  return {
+    title: { absolute: TITLE },
+    // The old site's description ended "Aluminium design". Every KeBe case
+    // that exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP
+    // order -- so that claim is gone and not coming back.
     description: DESCRIPTION,
-    images: ["/products/kebe-v2-og.jpg"],
-  },
+    alternates: await pageAlternates(countryCode),
+    openGraph: {
+      title: TITLE,
+      description: DESCRIPTION,
+      images: ["/products/kebe-v2-og.jpg"],
+    },
+  }
 }
 
 // The board the kebe repo calls v3 (PCBs/v3/README.md, Case_Files/v3/README.md):
