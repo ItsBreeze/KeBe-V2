@@ -96,24 +96,32 @@ const Review = ({
               >
                 {sum}. Placing the order charges {money(cart.total)} to your
                 card now, in full.{shipLine ? ` ${shipLine}.` : ""}
-                {preorder ? " You can cancel for a full refund until it ships." : ""}{" "}
-                How we handle your details is set out in our{" "}
-                <LocalizedClientLink href="/privacy" className="underline">
-                  privacy notice
-                </LocalizedClientLink>
-                .
+                {/* The terms link sits in the cancel sentence it belongs to,
+                    a sentence apart from the privacy link, and neither link
+                    breaks across lines: on a phone the two used to sit 8 px
+                    apart on one line. */}
                 {preorder && (
                   <>
                     {" "}
+                    You can cancel for a full refund until it ships; see the{" "}
                     <LocalizedClientLink
                       href="/terms"
-                      className="underline"
+                      className="underline whitespace-nowrap"
                       data-testid="review-terms-link"
                     >
-                      Pre-order terms
+                      pre-order terms
                     </LocalizedClientLink>
+                    .
                   </>
-                )}
+                )}{" "}
+                How we handle your details is set out in our{" "}
+                <LocalizedClientLink
+                  href="/privacy"
+                  className="underline whitespace-nowrap"
+                >
+                  privacy notice
+                </LocalizedClientLink>
+                .
               </Text>
             </div>
           </div>

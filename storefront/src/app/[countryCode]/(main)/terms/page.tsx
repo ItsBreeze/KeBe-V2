@@ -118,9 +118,11 @@ export default async function TermsPage(props: {
               When it ships
             </h2>
             {/* The second and third sentences are the product page's
-                Shipping section (product-tabs), word for word. */}
+                Shipping section (product-tabs), word for word. No "by": the
+                shown date is not a deadline here, and "If it is late" is the
+                only commitment about it (owner, 6 Oct 2026). */}
             <p className="mt-3">
-              Your board ships by the date the site showed when you ordered.
+              Before you order, the site shows the date your board ships.
               Shipping goes by Canada Post. US orders go by Canada Post with
               the US duties already paid, so there is nothing more to pay on
               delivery.
@@ -150,19 +152,20 @@ export default async function TermsPage(props: {
 
           <section>
             <h2 className="font-display text-2xl text-ui-fg-base">Returns</h2>
+            {/* The first sentence is the owner's (6 Oct 2026). No address is
+                published, so the second says where to get one; it is not a
+                condition of the refund. */}
             <p className="mt-3">
               Return the board within 30 days of delivery, in its original
-              condition, for a refund; buyer pays return shipping. Email {email}{" "}
-              with your order number before you send it back.
+              condition, for a refund; buyer pays return shipping. For the
+              return address, email {email} with your order number.
             </p>
           </section>
 
           <section>
             <h2 className="font-display text-2xl text-ui-fg-base">Warranty</h2>
-            <p className="mt-3">
-              Defects in the board under normal use are repaired or replaced
-              for a year.
-            </p>
+            {/* The owner's words (6 Oct 2026), with no exclusion added. */}
+            <p className="mt-3">Defects repaired or replaced for a year.</p>
           </section>
 
           <p>

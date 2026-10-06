@@ -143,7 +143,7 @@ export async function GET() {
       shipsTo ? `, which ships to ${shipsTo}` : ""
     }.`,
     "",
-    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is calculated at checkout from the address. KeBe's keyboards are wired.",
+    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is chosen at checkout. KeBe's keyboards are wired.",
     "",
     ...handles.map((h) => productSection(byHandle[h], names) + "\n"),
     "## Learn the layout",
@@ -165,7 +165,7 @@ export async function GET() {
     )}): what the site collects, why, where it is stored and how to have it deleted`,
     `- [Pre-order terms](${absoluteUrl(
       `/${home}/terms`
-    )}): a pre-order can be cancelled for a full refund until it ships, defects in the board under normal use are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
+    )}): a pre-order can be cancelled for a full refund until it ships, defects are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
     `- [Instagram @kebe_keyboards](${INSTAGRAM_URL})`,
     `- Questions about an order: ${CONTACT_EMAIL}`,
     "",
