@@ -5,8 +5,8 @@
 // The order is the owner's (5 Oct 2026): four home keys to start, A E T S,
 // the fewest that make a round of real words (ten of the thousand; three
 // keys make five), then one key at a time: O N U H I D to finish the home
-// row, G C R L straight up on the right, F and B the pointer finger's other
-// column, the same on the left hand, then the bottom row. Then the number row, the middle
+// row, then the top row (right hand G C R L F, left hand P . , ' Y), then the
+// bottom row (M W V Z B, then K J Q ; X). Grouped by row, simply (owner). Then the number row, the middle
 // columns, the modifiers and the Fn layer, a few keys a level.
 //
 // One key a level makes the levels themselves the build-up, so each is a
@@ -174,11 +174,9 @@ function round(src: Source, known: string) {
 // Letters: each step's new key. "'" makes contractions typeable, and , . ;
 // go after words.
 const LETTER_STEPS = [
-  "aets",
-  "o", "n", "u", "h", "i", "d",
-  "g", "c", "r", "l", "f", "b",
-  "p", ".", ",", "'", "y", "x",
-  "m", "w", "v", "z", "k", "j", "q", ";",
+  "aets", "o", "n", "u", "h", "i", "d",
+  "g", "c", "r", "l", "f", "p", ".", ",", "'", "y",
+  "m", "w", "v", "z", "b", "k", "j", "q", ";", "x",
 ]
 
 const wordsUsing = (known: string, fresh: string) => {
@@ -327,26 +325,26 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-h", "Home row", "H", "The right pointer finger's home key, beside T."],
   ["key-i", "Home row", "I", "The left pointer finger reaches in from U."],
   ["key-d", "Home row", "D", "The right pointer finger reaches in from H. That is the whole home row."],
-  ["key-g", "Right hand", "G", "Straight up from H, with the right pointer finger."],
-  ["key-c", "Right hand", "C", "Straight up from T, with the right middle finger."],
-  ["key-r", "Right hand", "R", "Straight up from N, with the right ring finger."],
-  ["key-l", "Right hand", "L", "Straight up from S, with the right pinky."],
-  ["key-f", "Right hand", "F", "Up from D, with the right pointer finger."],
-  ["key-b", "Right hand", "B", "Down from D, with the right pointer finger."],
-  ["key-p", "Left hand", "P", "Straight up from U, with the left pointer finger."],
-  ["key-period", "Left hand", "Period", "Straight up from E, with the left middle finger."],
-  ["key-comma", "Left hand", "Comma", "Straight up from O, with the left ring finger."],
-  ["key-apostrophe", "Left hand", "Apostrophe", "Straight up from A, with the left pinky."],
-  ["key-y", "Left hand", "Y", "Up from I, with the left pointer finger."],
-  ["key-x", "Left hand", "X", "Down from I, with the left pointer finger."],
+  ["key-g", "Top row", "G", "Straight up from H, with the right pointer finger."],
+  ["key-c", "Top row", "C", "Straight up from T, with the right middle finger."],
+  ["key-r", "Top row", "R", "Straight up from N, with the right ring finger."],
+  ["key-l", "Top row", "L", "Straight up from S, with the right pinky."],
+  ["key-f", "Top row", "F", "Up from D, with the right pointer finger."],
+  ["key-p", "Top row", "P", "Straight up from U, with the left pointer finger."],
+  ["key-period", "Top row", "Period", "Straight up from E, with the left middle finger."],
+  ["key-comma", "Top row", "Comma", "Straight up from O, with the left ring finger."],
+  ["key-apostrophe", "Top row", "Apostrophe", "Straight up from A, with the left pinky."],
+  ["key-y", "Top row", "Y", "Up from I, with the left pointer finger. That is the whole top row."],
   ["key-m", "Bottom row", "M", "Straight down from H, with the right pointer finger."],
   ["key-w", "Bottom row", "W", "Straight down from T, with the right middle finger."],
   ["key-v", "Bottom row", "V", "Straight down from N, with the right ring finger."],
   ["key-z", "Bottom row", "Z", "Straight down from S, with the right pinky."],
+  ["key-b", "Bottom row", "B", "Down from D, with the right pointer finger."],
   ["key-k", "Bottom row", "K", "Straight down from U, with the left pointer finger."],
   ["key-j", "Bottom row", "J", "Straight down from E, with the left middle finger."],
   ["key-q", "Bottom row", "Q", "Straight down from O, with the left ring finger."],
-  ["key-semicolon", "Bottom row", "Semicolon", "Straight down from A, with the left pinky. That is every letter."],
+  ["key-semicolon", "Bottom row", "Semicolon", "Straight down from A, with the left pinky."],
+  ["key-x", "Bottom row", "X", "Down from I, with the left pointer finger. That is every letter."],
 ]
 
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
