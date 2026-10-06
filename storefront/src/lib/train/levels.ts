@@ -6,7 +6,9 @@
 // the fewest that make a round of real words (ten of the thousand; three
 // keys make five), then one key at a time: O N U H I D to finish the home
 // row, then the top row (right hand G C R L F, left hand P . , ' Y), then the
-// bottom row (M W V Z B, then K J Q ; X). Grouped by row, simply (owner). Then the number row, the middle
+// bottom row's right hand (M W V Z B). The bottom row's left hand, the rarest
+// letters, comes last of all, after the numbers, symbols and Fn layer, and
+// the game ends on X (owner, 6 Oct 2026). Then the number row, the middle
 // columns, the modifiers and the Fn layer, a few keys a level.
 //
 // One key a level makes the levels themselves the build-up, so each is a
@@ -249,6 +251,14 @@ const listSource = (list: string[], fresh: string): Source => ({
 
 // Capitals: Shift held with the other hand.
 const UPPER = LETTERS.toUpperCase()
+// The capitals level teaches Shift, not new keys: after it, a capital is
+// typeable once its letter is, so the levels after it (K J Q ; X) bring
+// their own capitals with them. "⇧" in what is known stands for it.
+const SHIFT_MARK = "⇧"
+const withCapitals = (known: string) =>
+  known.includes(SHIFT_MARK)
+    ? known + chars(known).filter((c) => LETTERS.includes(c)).join("").toUpperCase()
+    : known
 const capital = (w: string) => w[0].toUpperCase() + w.slice(1)
 const PROPER = [
   "KeBe", "Dvorak", "QMK", "USB", "Canada", "English", "Monday", "Friday", "July",
@@ -339,16 +349,16 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-comma", "Top row", "Comma", "Straight up from O, with the left ring finger."],
   ["key-apostrophe", "Top row", "Apostrophe", "Straight up from A, with the left pinky."],
   ["key-y", "Top row", "Y", "Up from I, with the left pointer finger. That is every top-row letter."],
-  ["key-m", "Bottom row", "M", "Straight down from H, with the right pointer finger."],
-  ["key-w", "Bottom row", "W", "Straight down from T, with the right middle finger."],
-  ["key-v", "Bottom row", "V", "Straight down from N, with the right ring finger."],
-  ["key-z", "Bottom row", "Z", "Straight down from S, with the right pinky."],
-  ["key-b", "Bottom row", "B", "Down from D, with the right pointer finger."],
-  ["key-k", "Bottom row", "K", "Straight down from U, with the left pointer finger."],
-  ["key-j", "Bottom row", "J", "Straight down from E, with the left middle finger."],
-  ["key-q", "Bottom row", "Q", "Straight down from O, with the left ring finger."],
-  ["key-semicolon", "Bottom row", "Semicolon", "Straight down from A, with the left pinky."],
-  ["key-x", "Bottom row", "X", "Down from I, with the left pointer finger. That is every letter."],
+  ["key-m", "Bottom row, right hand", "M", "Straight down from H, with the right pointer finger."],
+  ["key-w", "Bottom row, right hand", "W", "Straight down from T, with the right middle finger."],
+  ["key-v", "Bottom row, right hand", "V", "Straight down from N, with the right ring finger."],
+  ["key-z", "Bottom row, right hand", "Z", "Straight down from S, with the right pinky."],
+  ["key-b", "Bottom row, right hand", "B", "Down from D, with the right pointer finger."],
+  ["key-k", "Bottom row, left hand", "K", "Straight down from U, with the left pointer finger."],
+  ["key-j", "Bottom row, left hand", "J", "Straight down from E, with the left middle finger."],
+  ["key-q", "Bottom row, left hand", "Q", "Straight down from O, with the left ring finger."],
+  ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon."],
+  ["key-x", "Bottom row, left hand", "X", "Down from I, with the left pointer finger. That is every letter, and the last level."],
 ]
 
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
@@ -426,9 +436,9 @@ const MODIFIER_DEFS: Def[] = [
     source: {
       fresh: UPPER,
       pool: (known) =>
-        [...TOP_WORDS.map(capital), ...PROPER].filter(only(known + UPPER)),
+        [...TOP_WORDS.map(capital), ...PROPER].filter(only(withCapitals(known + SHIFT_MARK))),
     },
-    teaches: UPPER,
+    teaches: SHIFT_MARK,
   },
   {
     id: "mod-parens",
@@ -462,8 +472,19 @@ const MODIFIER_DEFS: Def[] = [
     adds: [],
     taps: "()[]=_",
     blurb:
-      "Shift with the number row and the punctuation: ! @ # $ % & * over the digits, and ? : \" | < > { } + from the keys you know.",
-    source: listSource(SHIFTED, SHIFTED_CHARS),
+      "Shift with the number row and the punctuation: ! @ # $ % & * over the digits, and ? \" | < > { } + from the keys you know.",
+    source: {
+      fresh: SHIFTED_CHARS,
+      // Only the symbols whose key is learned: the colon waits for the
+      // semicolon key, which comes last.
+      pool: (known) => {
+        const ok = KEYS.filter((k) => k.base && k.shift && known.includes(k.base))
+          .map((k) => k.shift)
+          .filter((c) => SHIFTED_CHARS.includes(c!))
+          .join("")
+        return SHIFTED.filter((t) => only(known + ok)(t) && some(ok)(t))
+      },
+    },
     teaches: SHIFTED_CHARS,
   },
 ]
@@ -501,13 +522,27 @@ const FN_DEFS: Def[] = [
   },
 ]
 
-const DEFS = [...LETTER_DEFS, ...NUMBER_DEFS, ...MIDDLE_DEFS, ...MODIFIER_DEFS, ...FN_DEFS]
+// The letters up to B, everything else, then K J Q ; X.
+const LAST_LETTERS = LETTER_DEFS.findIndex((d) => d.id === "key-k")
+const DEFS = [
+  ...LETTER_DEFS.slice(0, LAST_LETTERS),
+  ...NUMBER_DEFS,
+  ...MIDDLE_DEFS,
+  ...MODIFIER_DEFS,
+  ...FN_DEFS,
+  ...LETTER_DEFS.slice(LAST_LETTERS),
+]
 
 export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, ...d }, i) => {
   const known = DEFS.slice(0, i)
     .map((p) => p.teaches)
     .join("")
-  return { ...d, n: i + 1, pass: pass ?? PASS_WPM, make: round(source, known) }
+  return {
+    ...d,
+    n: i + 1,
+    pass: pass ?? PASS_WPM,
+    make: round(source, withCapitals(known)),
+  }
 })
 
 export const GROUPS = LEVELS.reduce<string[]>(

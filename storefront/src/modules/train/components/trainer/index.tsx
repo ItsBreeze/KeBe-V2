@@ -945,7 +945,7 @@ function verdict(
     label = passed ? "Passed" : passedBefore ? `Below ${o.pass}` : "Not yet"
     if (over) line = ""
     else if (passed && last)
-      line = "That's every level: the letters, numbers, symbols, modifiers and the Fn number pad."
+      line = "That's every level: every letter, number and symbol, the modifiers and the Fn number pad."
     else if (passed)
       line = r.opened
         ? `Level ${r.opened}, ${LEVELS[r.opened - 1].title}, is open.`

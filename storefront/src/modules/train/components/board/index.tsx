@@ -8,12 +8,12 @@ import { Finger, KEYS, Stroke, Touch, touchOf } from "@lib/train/layout"
 // key glows in the colour of the finger that strikes it, so the map of
 // which finger goes where is the board itself (owner, 6 Oct 2026).
 //
-// Only the keys in play glow, from underneath, each in its finger's colour
-// (learned: the levels so far; adds: this level's new key, glowing more).
-// Only the key to press has its legend lit, brightest, its glow pulsing; a
-// Shift or Fn to hold is lit and outlined too. Every other legend is unlit,
-// as a shine-through cap looks with its light off (owner, 6 Oct 2026).
-// flash: the key just pressed.
+// The caps stay off: every legend unlit and every rim plain. The keys in
+// play (learned: the levels so far; adds: this level's new key; both space
+// bars, always) show by the light under them, each in its finger's colour.
+// The key to press has its legend lit and extra light under it, pulsing;
+// for Space that is the bar of the thumb to use. A Shift or Fn to hold is
+// lit and outlined too (owner, 6 Oct 2026). flash: the key just pressed.
 
 // The five fingers' colours, the same on both hands. Chosen with the dataviz
 // validator on the cap colour: every pair of fingers whose keys sit side by
@@ -31,6 +31,8 @@ const CAP = 16.5
 const PITCH_X = 18
 const PITCH_Y = 17
 const DARK = "#1c1a17"
+// A legend with its light off: readable grey on the black cap.
+const UNLIT = "#85807a"
 const WHITE = "#ffffff"
 
 function mix(a: string, b: string, t: number) {
@@ -66,23 +68,18 @@ export default function Board({ learned, adds, next, flash, className, style }: 
 
   const keys = KEYS.map((k) => {
     const colour = FINGER_COLOUR[touchOf(k).finger]
-    const isNew = adds.has(k.id)
-    const known = learned.has(k.id) || isNew
+    const known = learned.has(k.id) || adds.has(k.id)
     const isNext = nextKeys.has(k.id)
     const isHold = holdKeys.has(k.id)
     const isFlash = flashKeys.has(k.id)
     const wrong = isFlash && !flash?.ok
 
-    // The legend: unlit, readable on the keys in play and dim on the rest,
-    // and lit only on the key to press.
-    let ink = known ? "#a7a197" : "#4a4540"
-    // The light spilling round the cap: only the keys in play. The space
-    // bars have no legend to light, so they glow only when one is the key to
-    // press, or nothing would say which thumb (owner, 6 Oct 2026).
-    const bar = k.w === 2
-    let glow = known && !bar ? (isNew ? 0.5 : 0.28) : 0
-    let rim = known && !bar ? mix("#2e2b26", colour, isNew ? 0.55 : 0.2) : "#1f1d1a"
-    let rimWidth = isNew ? 0.5 : 0.35
+    // Every legend unlit, the same on every key, except the key to press.
+    let ink = UNLIT
+    // The light under the caps: the keys in play, the space bars included.
+    let glow = known ? 0.3 : 0
+    let rim = "#24211d"
+    let rimWidth = 0.35
     let glowColour = colour
     if (wrong) {
       ink = "#ff8a7a"
@@ -99,7 +96,6 @@ export default function Board({ learned, adds, next, flash, className, style }: 
       rim = colour
       rimWidth = 0.9
     } else if (isFlash) {
-      ink = lit(colour, 1, 0.5)
       glow = 0.6
     }
     return { k, ink, glow, glowColour, rim, rimWidth, isNext }
