@@ -84,9 +84,12 @@ export const StripeCardContainer = ({
     return {
       style: {
         // Stripe draws the card field in its own iframe, so the store's dark
-        // theme has to be passed in: bone text, as the other fields.
+        // theme has to be passed in: bone text, as the other fields. 16px
+        // text, as the other fields too: iOS zooms in on a smaller field
+        // when it is focused, and stays zoomed.
         base: {
           fontFamily: "Inter, sans-serif",
+          fontSize: "16px",
           color: "#f5f1ea",
           iconColor: "#f5f1ea",
           "::placeholder": {

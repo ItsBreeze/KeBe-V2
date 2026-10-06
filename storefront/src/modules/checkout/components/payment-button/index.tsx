@@ -2,6 +2,7 @@
 
 import { isManual, isStripeLike } from "@lib/constants"
 import { placeOrder } from "@lib/data/cart"
+import { subdivisionCode } from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
@@ -99,7 +100,9 @@ const StripePaymentButton = ({
               line1: cart.billing_address?.address_1 ?? undefined,
               line2: cart.billing_address?.address_2 ?? undefined,
               postal_code: cart.billing_address?.postal_code ?? undefined,
-              state: cart.billing_address?.province ?? undefined,
+              // The cart stores the province as its tax code, "ca-on";
+              // the card's billing state is the two letters, "ON".
+              state: subdivisionCode(cart.billing_address?.province),
             },
             email: cart.email,
             phone: cart.billing_address?.phone ?? undefined,

@@ -1,6 +1,8 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
+import { getPresaleShipInfo } from "@lib/data/products"
 import { PRESALE_HANDLE } from "@lib/util/presale"
+import MobileOrderBar from "@modules/checkout/components/mobile-order-bar"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import AddedToCart from "@modules/common/components/meta-pixel/added-to-cart"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
@@ -30,8 +32,18 @@ export default async function Checkout() {
     (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
   )
 
+  // The ship line the product page shows now, for the phone's order bar. It
+  // is the cached product read: the line on the cart item is from when the
+  // board was added, and placeOrder records the line in force at payment.
+  const shipLine =
+    presaleLine && cart.region_id
+      ? (await getPresaleShipInfo({ regionId: cart.region_id }))?.shipLine ??
+        null
+      : null
+
   return (
     <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
+      <MobileOrderBar cart={cart} shipLine={shipLine} />
       {presaleLine?.product_id && (
         <Suspense fallback={null}>
           <AddedToCart
