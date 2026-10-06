@@ -152,8 +152,11 @@ export async function middleware(request: NextRequest) {
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
+  // The whole first segment, not a substring of it: with "ca" the default,
+  // /cart counted as already carrying a country code, skipped the redirect to
+  // /ca/cart and rendered the home page as a store called "cart" (5 Oct 2026).
   const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
+    countryCode && request.nextUrl.pathname.split("/")[1] === countryCode
 
   // if one of the country codes is in the url and the cache id is set, return next
   if (urlHasCountryCode && cacheIdCookie) {

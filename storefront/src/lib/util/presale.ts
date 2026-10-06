@@ -2,11 +2,10 @@ import { HttpTypes } from "@medusajs/types"
 
 export const PRESALE_HANDLE = "kebe-v2-keyboard"
 
-// A YYYY-MM-DD date from the product's metadata, written the one way the site
-// writes a ship date ("October 31": the owner's wording, no year), or null. A date that does not
-// exist (2026-13-01, or 2026-02-30 rolling into March) reads as null rather
-// than promising "Invalid Date" or a different day.
-const metadataDate = (
+// A YYYY-MM-DD date from the product's metadata, or null. A date that does
+// not exist (2026-13-01, or 2026-02-30 rolling into March) reads as null
+// rather than promising "Invalid Date" or a different day.
+const metadataIsoDate = (
   product: HttpTypes.StoreProduct,
   key: "ships_by" | "ships_by_next"
 ): string | null => {
@@ -18,11 +17,23 @@ const metadataDate = (
   if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== raw) {
     return null
   }
-  return d.toLocaleDateString("en-CA", {
-    day: "numeric",
-    month: "long",
-    timeZone: "UTC",
-  })
+  return raw
+}
+
+// The same date, written the one way the site writes a ship date ("October
+// 31": the owner's wording, no year).
+const metadataDate = (
+  product: HttpTypes.StoreProduct,
+  key: "ships_by" | "ships_by_next"
+): string | null => {
+  const iso = metadataIsoDate(product, key)
+  return iso
+    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-CA", {
+        day: "numeric",
+        month: "long",
+        timeZone: "UTC",
+      })
+    : null
 }
 
 // A product is on presale when the backend's start-presale script has put a
@@ -52,13 +63,17 @@ export const isPreorderPrice = (
 const unlimited = (v: HttpTypes.StoreProductVariant) =>
   !v.manage_inventory || !!v.allow_backorder
 
+// Whether this one variant can still be bought: the Pre-order button's rule.
+export const variantOpen = (v: HttpTypes.StoreProductVariant) =>
+  unlimited(v) || (v.inventory_quantity ?? 0) > 0
+
 // open: whether any variant can still be bought. fromStock: whether a counted
 // board is still unsold, so an order placed now is one of them. Neither is a
 // count: the site never says how many boards there are (owner, 1 Oct 2026).
 export const presaleAvailability = (product: HttpTypes.StoreProduct) => {
   const variants = product.variants ?? []
   return {
-    open: variants.some((v) => unlimited(v) || (v.inventory_quantity ?? 0) > 0),
+    open: variants.some(variantOpen),
     fromStock: variants.some(
       (v) => !!v.manage_inventory && (v.inventory_quantity ?? 0) > 0
     ),
@@ -85,4 +100,19 @@ export const presaleShipLine = (
   }
   const next = metadataDate(product, "ships_by_next")
   return next ? `Ships ${next}` : null
+}
+
+// The YYYY-MM-DD behind presaleShipLine, for machines: the product feeds'
+// availability_date, the product page's JSON-LD and llms.txt. Null exactly
+// when the line says nothing, so no feed promises a date the page does not.
+export const presaleShipDate = (
+  product: HttpTypes.StoreProduct
+): string | null => {
+  const { open, fromStock } = presaleAvailability(product)
+  if (!presaleShipsBy(product) || !open) {
+    return null
+  }
+  return fromStock
+    ? metadataIsoDate(product, "ships_by")
+    : metadataIsoDate(product, "ships_by_next")
 }
