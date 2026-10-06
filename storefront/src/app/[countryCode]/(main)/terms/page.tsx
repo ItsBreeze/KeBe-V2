@@ -5,6 +5,7 @@ import {
   CONTACT_PHONE_TEL,
   SELLER_NAME,
   SELLER_PLACE,
+  STATEMENT_DESCRIPTOR,
 } from "@lib/constants"
 import { getRegion } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
@@ -109,7 +110,8 @@ export default async function TermsPage(props: {
             <h2 className="font-display text-2xl text-ui-fg-base">Paying</h2>
             <p className="mt-3">
               You pay in full when you order, by card through Stripe. We never
-              see your card number.
+              see your card number. The charge shows on your card statement as{" "}
+              {STATEMENT_DESCRIPTOR}.
             </p>
           </section>
 

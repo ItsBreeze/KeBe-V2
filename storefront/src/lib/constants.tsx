@@ -96,3 +96,10 @@ export const SELLER_PLACE = "Alberta, Canada"
 export const CONTACT_PHONE = "780-901-1304"
 // The same number for a tel: link.
 export const CONTACT_PHONE_TEL = "+17809011304"
+
+// What a KeBe charge is called on the buyer's card statement: the Stripe
+// account's statement descriptor, checked in its Public details on 6 Oct 2026.
+// The account is shared with Offhand, so it is not renamed for KeBe; the site
+// says what the charge will be called instead, so a buyer recognises it.
+// Change this if the descriptor changes in Stripe.
+export const STATEMENT_DESCRIPTOR = "GROUNDERS.APP"

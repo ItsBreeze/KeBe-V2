@@ -1,7 +1,7 @@
 import { Heading, Text } from "@medusajs/ui"
 import { cookies as nextCookies } from "next/headers"
 
-import { CONTACT_EMAIL } from "@lib/constants"
+import { CONTACT_EMAIL, STATEMENT_DESCRIPTOR } from "@lib/constants"
 import { convertToLocale } from "@lib/util/money"
 import CartTotals from "@modules/common/components/cart-totals"
 import Help from "@modules/order/components/help"
@@ -52,7 +52,8 @@ export default async function OrderCompletedTemplate({
                 amount: order.total,
                 currency_code: order.currency_code,
               })}
-              , in full. Questions:{" "}
+              , in full; it shows on your statement as {STATEMENT_DESCRIPTOR}.
+              Questions:{" "}
               <a
                 href={`mailto:${CONTACT_EMAIL}`}
                 className="underline underline-offset-4"
