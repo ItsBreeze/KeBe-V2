@@ -77,3 +77,34 @@ export const listStoreProducts = async (
   })
   return response.products
 }
+
+// Every storefront country with its products, or null when the store cannot
+// be read: no regions, or a country whose products would not load. The
+// sitemap and llms.txt then answer storeUnavailable() rather than a list
+// with the products missing, which a crawler would keep until it next came
+// (review, 6 Oct 2026).
+export const listStorefront = async (): Promise<
+  { cc: string; products: HttpTypes.StoreProduct[] }[] | null
+> => {
+  const countries = await storefrontCountries()
+  if (!countries.length) return null
+  try {
+    return await Promise.all(
+      countries.map(async (cc) => ({
+        cc,
+        products: await listStoreProducts(cc),
+      }))
+    )
+  } catch {
+    return null
+  }
+}
+
+// What a machine route answers when the store cannot be read: a crawler or
+// feed reader retries a 503 after Retry-After, where it would drop the
+// products on a 404 or take an empty 200 for a store with none.
+export const storeUnavailable = () =>
+  new Response("Store unavailable", {
+    status: 503,
+    headers: { "Retry-After": "600" },
+  })

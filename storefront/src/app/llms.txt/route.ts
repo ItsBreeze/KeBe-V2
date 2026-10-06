@@ -1,8 +1,8 @@
 import { HttpTypes } from "@medusajs/types"
 import { CONTACT_EMAIL } from "@lib/constants"
 import {
-  listStoreProducts,
-  storefrontCountries,
+  listStorefront,
+  storeUnavailable,
   storefrontCountryNames,
 } from "@lib/data/seo"
 import {
@@ -103,16 +103,14 @@ const productSection = (
 }
 
 export async function GET() {
-  const countries = await storefrontCountries()
+  // Without the store this would be a page with no products and no
+  // countries, which an answer engine keeps until it next calls; a 503 asks
+  // it to come back (review, 6 Oct 2026).
+  const listed = await listStorefront()
+  if (!listed) return storeUnavailable()
+  const countries = listed.map(({ cc }) => cc)
   const names = await storefrontCountryNames()
   const home = defaultCountry(countries) ?? "ca"
-
-  const listed = await Promise.all(
-    countries.map(async (cc) => ({
-      cc,
-      products: await listStoreProducts(cc).catch(() => []),
-    }))
-  )
 
   // Each product once, with its listing in every country that sells it;
   // the ones that can be bought first.
