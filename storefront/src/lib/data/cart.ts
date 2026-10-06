@@ -617,7 +617,48 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get("billing_address.province"),
         phone: formData.get("billing_address.phone"),
       }
-    await updateCart(data)
+    const updated = await updateCart(data)
+
+    // Delivery opens with the cheapest option already chosen (Expedited in
+    // Canada, Tracked Packet in the US), so Continue to payment works without
+    // a tap. The options are read past the cache for the address just saved.
+    // Without an address Medusa lists every zone's options, with no amount in
+    // this cart's currency, so only options with an amount count. A delivery
+    // the visitor already chose is kept. Any failure leaves Delivery as it
+    // was, with nothing chosen: setShippingMethod logs and returns its own
+    // failure, and this catch takes a failed read.
+    try {
+      if (updated.shipping_methods?.length === 0) {
+        const headers = {
+          ...(await getAuthHeaders()),
+        }
+
+        const { shipping_options } =
+          await sdk.client.fetch<HttpTypes.StoreShippingOptionListResponse>(
+            `/store/shipping-options`,
+            {
+              method: "GET",
+              query: { cart_id: cartId },
+              headers,
+              cache: "no-store",
+            }
+          )
+
+        const cheapest = shipping_options
+          .filter(
+            (option) =>
+              typeof option.amount === "number" &&
+              option.service_zone?.fulfillment_set?.type !== "pickup"
+          )
+          .sort((a, b) => a.amount - b.amount)[0]
+
+        if (cheapest) {
+          await setShippingMethod({ cartId, shippingMethodId: cheapest.id })
+        }
+      }
+    } catch (e) {
+      console.error("Choosing the cheapest delivery option failed:", e)
+    }
   } catch (e: any) {
     return e.message
   }

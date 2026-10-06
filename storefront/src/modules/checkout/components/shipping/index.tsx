@@ -19,6 +19,29 @@ const PICKUP_OPTION_OFF = "__PICKUP_OFF"
 type ShippingProps = {
   cart: HttpTypes.StoreCart
   availableShippingMethods: HttpTypes.StoreCartShippingOption[] | null
+  // The presale's ship line in force now, read from the product by the page
+  // (never the cart line's metadata, which keeps the line from when the
+  // board was added). Null for any other cart.
+  shipLine: string | null
+}
+
+// How long the option takes once the parcel is sent (6 Oct 2026), from its
+// type's description, less the option's name where the description repeats
+// it: "Canada Post Tracked Packet USA, 4 to 7 business days." under "Canada
+// Post Tracked Packet USA" gives "4 to 7 business days.". Null when nothing
+// is left, as for "Canada Post Expedited Parcel.".
+function transitTime(option: HttpTypes.StoreCartShippingOption) {
+  const description = option.type?.description?.trim()
+
+  if (!description) {
+    return null
+  }
+
+  const rest = description.startsWith(option.name)
+    ? description.slice(option.name.length).replace(/^[\s,.;:]+/, "")
+    : description
+
+  return rest || null
 }
 
 function formatAddress(address: HttpTypes.StoreCartAddress) {
@@ -50,6 +73,7 @@ function formatAddress(address: HttpTypes.StoreCartAddress) {
 const Shipping: React.FC<ShippingProps> = ({
   cart,
   availableShippingMethods,
+  shipLine,
 }) => {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingPrices, setIsLoadingPrices] = useState(true)
@@ -79,6 +103,10 @@ const Shipping: React.FC<ShippingProps> = ({
   )
 
   const hasPickupOptions = !!_pickupMethods?.length
+
+  // The ship line says when the board leaves; the times under the options
+  // start from then. The second sentence is only there when a time is.
+  const showsTransitTimes = !!_shippingMethods?.some((sm) => transitTime(sm))
 
   useEffect(() => {
     setIsLoadingPrices(true)
@@ -190,7 +218,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 className="text-ui-fg-interactive hover:text-ui-fg-interactive-hover"
                 data-testid="edit-delivery-button"
               >
-                Edit
+                Change
               </button>
             </Text>
           )}
@@ -203,7 +231,7 @@ const Shipping: React.FC<ShippingProps> = ({
                 Shipping method
               </span>
               <span className="mb-4 text-ui-fg-muted txt-medium">
-                How would you like you order delivered
+                How would you like your order delivered?
               </span>
             </div>
             <div data-testid="delivery-options-container">
@@ -260,6 +288,8 @@ const Shipping: React.FC<ShippingProps> = ({
                       !isLoadingPrices &&
                       typeof calculatedPricesMap[option.id] !== "number"
 
+                    const time = transitTime(option)
+
                     return (
                       <Radio
                         key={option.id}
@@ -280,9 +310,19 @@ const Shipping: React.FC<ShippingProps> = ({
                           <MedusaRadio
                             checked={option.id === shippingMethodId}
                           />
-                          <span className="text-base-regular">
-                            {option.name}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-base-regular">
+                              {option.name}
+                            </span>
+                            {time && (
+                              <span
+                                className="text-base-regular text-ui-fg-muted"
+                                data-testid="delivery-option-time"
+                              >
+                                {time}
+                              </span>
+                            )}
+                          </div>
                         </div>
                         <span className="justify-self-end text-ui-fg-base">
                           {option.price_type === "flat" ? (
@@ -305,6 +345,16 @@ const Shipping: React.FC<ShippingProps> = ({
                     )
                   })}
                 </RadioGroup>
+                {shipLine && (
+                  <Text
+                    className="txt-medium text-ui-fg-subtle mt-2"
+                    data-testid="delivery-ship-line"
+                  >
+                    {shipLine}.
+                    {showsTransitTimes &&
+                      " These are Canada Post's times once it ships."}
+                  </Text>
+                )}
               </div>
             </div>
           </div>

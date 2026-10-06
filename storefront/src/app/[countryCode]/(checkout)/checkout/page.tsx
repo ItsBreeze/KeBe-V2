@@ -39,9 +39,10 @@ export default async function Checkout(props: {
     (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
   )
 
-  // The ship line the product page shows now, for the phone's order bar. It
-  // is the cached product read: the line on the cart item is from when the
-  // board was added, and placeOrder records the line in force at payment.
+  // The ship line the product page shows now, for the phone's order bar,
+  // Delivery and Review. It is the cached product read: the line on the cart
+  // item is from when the board was added, and placeOrder records the line
+  // in force at payment.
   const shipLine =
     presaleLine && cart.region_id
       ? (await getPresaleShipInfo({ regionId: cart.region_id }))?.shipLine ??
@@ -73,7 +74,7 @@ export default async function Checkout(props: {
         }}
       />
       <PaymentWrapper cart={cart}>
-        <CheckoutForm cart={cart} customer={customer} />
+        <CheckoutForm cart={cart} customer={customer} shipLine={shipLine} />
       </PaymentWrapper>
       <CheckoutSummary cart={cart} />
     </div>

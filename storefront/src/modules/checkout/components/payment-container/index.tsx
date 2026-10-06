@@ -78,10 +78,47 @@ export const StripeCardContainer = ({
   setError: (error: string | null) => void
   setCardComplete: (complete: boolean) => void
 }) => {
+  return (
+    <PaymentContainer
+      paymentProviderId={paymentProviderId}
+      selectedPaymentOptionId={selectedPaymentOptionId}
+      paymentInfoMap={paymentInfoMap}
+      disabled={disabled}
+    >
+      {selectedPaymentOptionId === paymentProviderId && (
+        <StripeCardField
+          label="Enter your card details:"
+          setCardBrand={setCardBrand}
+          setError={setError}
+          setCardComplete={setCardComplete}
+        />
+      )}
+    </PaymentContainer>
+  )
+}
+
+// The card field on its own, so Payment can show it without a radio when
+// the card is the only way to pay. A grey placeholder until the payment
+// session has loaded Stripe.
+export const StripeCardField = ({
+  label,
+  setCardBrand,
+  setError,
+  setCardComplete,
+}: {
+  label: string
+  setCardBrand: (brand: string) => void
+  setError: (error: string | null) => void
+  setCardComplete: (complete: boolean) => void
+}) => {
   const stripeReady = useContext(StripeContext)
 
   const useOptions: StripeCardElementOptions = useMemo(() => {
     return {
+      // The billing address already has the postal code, and the payment
+      // button sends it to Stripe with the card, so the field does not ask
+      // for it a second time.
+      hidePostalCode: true,
       style: {
         // Stripe draws the card field in its own iframe, so the store's dark
         // theme has to be passed in: bone text, as the other fields. 16px
@@ -107,33 +144,21 @@ export const StripeCardContainer = ({
     }
   }, [])
 
-  return (
-    <PaymentContainer
-      paymentProviderId={paymentProviderId}
-      selectedPaymentOptionId={selectedPaymentOptionId}
-      paymentInfoMap={paymentInfoMap}
-      disabled={disabled}
-    >
-      {selectedPaymentOptionId === paymentProviderId &&
-        (stripeReady ? (
-          <div className="my-4 transition-all duration-150 ease-in-out">
-            <Text className="txt-medium-plus text-ui-fg-base mb-1">
-              Enter your card details:
-            </Text>
-            <CardElement
-              options={useOptions as StripeCardElementOptions}
-              onChange={(e) => {
-                setCardBrand(
-                  e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
-                )
-                setError(e.error?.message || null)
-                setCardComplete(e.complete)
-              }}
-            />
-          </div>
-        ) : (
-          <SkeletonCardDetails />
-        ))}
-    </PaymentContainer>
+  return stripeReady ? (
+    <div className="my-4 transition-all duration-150 ease-in-out">
+      <Text className="txt-medium-plus text-ui-fg-base mb-1">{label}</Text>
+      <CardElement
+        options={useOptions as StripeCardElementOptions}
+        onChange={(e) => {
+          setCardBrand(
+            e.brand && e.brand.charAt(0).toUpperCase() + e.brand.slice(1)
+          )
+          setError(e.error?.message || null)
+          setCardComplete(e.complete)
+        }}
+      />
+    </div>
+  ) : (
+    <SkeletonCardDetails />
   )
 }

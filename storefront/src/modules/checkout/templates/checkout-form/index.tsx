@@ -10,9 +10,12 @@ import Shipping from "@modules/checkout/components/shipping"
 export default async function CheckoutForm({
   cart,
   customer,
+  shipLine,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
+  // The presale's ship line in force now, for Delivery and Review.
+  shipLine: string | null
 }) {
   if (!cart) {
     return null
@@ -39,11 +42,15 @@ export default async function CheckoutForm({
     <div className="w-full grid grid-cols-1 gap-y-8">
       <Addresses cart={cart} customer={customer} />
 
-      <Shipping cart={cart} availableShippingMethods={shippingMethods} />
+      <Shipping
+        cart={cart}
+        availableShippingMethods={shippingMethods}
+        shipLine={shipLine}
+      />
 
       <Payment cart={cart} availablePaymentMethods={paymentMethods} />
 
-      <Review cart={cart} />
+      <Review cart={cart} shipLine={shipLine} />
     </div>
   )
 }

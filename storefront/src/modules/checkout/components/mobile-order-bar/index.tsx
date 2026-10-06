@@ -1,5 +1,5 @@
 import { convertToLocale } from "@lib/util/money"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { cartItemsLabel } from "@lib/util/presale"
 import { HttpTypes } from "@medusajs/types"
 import CartTotals from "@modules/common/components/cart-totals"
 import ChevronDown from "@modules/common/icons/chevron-down"
@@ -24,18 +24,8 @@ export default function MobileOrderBar({
   const money = (amount?: number | null) =>
     convertToLocale({ amount: amount ?? 0, currency_code: cart.currency_code })
 
-  // The name before the " — " in the title ("KeBe v2"), as the product
-  // page's sticky bar shows it, and "pre-order" for the presale board.
-  const only = items.length === 1 ? items[0] : undefined
-  const what = only
-    ? `${only.quantity > 1 ? `${only.quantity} × ` : ""}${
-        (only.product_title ?? only.title ?? "").split(" — ")[0]
-      }${
-        (only.product_handle ?? only.product?.handle) === PRESALE_HANDLE
-          ? " pre-order"
-          : ""
-      }`
-    : `${items.reduce((n, i) => n + i.quantity, 0)} items`
+  // "KeBe v2 pre-order", as the Review step says it.
+  const what = cartItemsLabel(items)
 
   // Taxes join the sum only when the cart has them, so it still adds up.
   const sum = cart.shipping_methods?.length
