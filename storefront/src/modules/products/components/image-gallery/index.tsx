@@ -1,5 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
+import { productImageAlt } from "@lib/util/image-alt"
 
 type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
@@ -20,7 +21,7 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
             <Image
               src={image.url}
               priority={index < 2}
-              alt={`${title}, picture ${index + 1}`}
+              alt={productImageAlt(image, title, index)}
               fill
               sizes="(max-width: 640px) 100vw, 720px"
               className="object-cover"

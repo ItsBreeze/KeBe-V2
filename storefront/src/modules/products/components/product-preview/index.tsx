@@ -2,6 +2,7 @@ import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { isPreorderPrice } from "@lib/util/presale"
+import { productImageAlt } from "@lib/util/image-alt"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Thumbnail from "../thumbnail"
@@ -35,6 +36,14 @@ export default async function ProductPreview({
         <Thumbnail
           thumbnail={product.thumbnail}
           images={product.images}
+          alt={productImageAlt(
+            {
+              url: product.thumbnail || product.images?.[0]?.url || "",
+              metadata: product.thumbnail ? null : product.images?.[0]?.metadata,
+            },
+            product.title ?? "",
+            0
+          )}
           size="full"
           isFeatured={isFeatured}
         />

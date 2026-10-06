@@ -12,6 +12,7 @@ import { notFound } from "next/navigation"
 import { HttpTypes } from "@medusajs/types"
 import Image from "next/image"
 import { productSpecs } from "@lib/util/specs"
+import { productImageAlt } from "@lib/util/image-alt"
 import { getProductPrice } from "@lib/util/get-product-price"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -95,7 +96,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised">
                 <Image
                   src={lead.url}
-                  alt={product.title ?? ""}
+                  alt={productImageAlt(lead, product.title ?? "", 0)}
                   priority
                   fill
                   sizes="(max-width: 1024px) 100vw, 800px"
