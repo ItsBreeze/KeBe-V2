@@ -152,9 +152,17 @@ export default function ProductActions({
   const shipLine = presaleShipLine(product)
   const buyLabel = shipsBy ? "Pre-order" : "Add to cart"
 
-  const actionsRef = useRef<HTMLDivElement>(null)
+  // The sticky bar shows while the inline button is not all on screen. It
+  // watched the whole price, button and note block, and any pixel of that
+  // counted, so at 375 x 650 a 12 px sliver of the button hid the bar
+  // (6 Oct 2026). It starts as seen, so the server's HTML has no bar over
+  // the presale note before the page's script has loaded.
+  const buttonRef = useRef<HTMLDivElement>(null)
 
-  const inView = useIntersection(actionsRef, "0px")
+  const inView = useIntersection(buttonRef, "0px", {
+    full: true,
+    initial: true,
+  })
 
   // A failed pre-order is a PreorderError to the pixel. It carries the
   // product only: never the error, the cart or anything the visitor typed.
@@ -209,29 +217,33 @@ export default function ProductActions({
     ? addErrorText("We couldn't add it to your cart.")
     : null
 
+  // Wrapped for buttonRef, in the form or not, so the bar follows the
+  // button on products without a presale too.
   const buyButton = (
-    <Button
-      type={shipsBy ? "submit" : undefined}
-      onClick={shipsBy ? undefined : handleAddToCart}
-      disabled={
-        !inStock || !selectedVariant || !!disabled || busy || !isValidVariant
-      }
-      variant="primary"
-      className="w-full h-12 text-base"
-      isLoading={busy}
-      data-testid="add-product-button"
-    >
-      {!selectedVariant && !options
-        ? "Select variant"
-        : !inStock || !isValidVariant
-        ? "Out of stock"
-        : buyLabel}
-    </Button>
+    <div ref={buttonRef}>
+      <Button
+        type={shipsBy ? "submit" : undefined}
+        onClick={shipsBy ? undefined : handleAddToCart}
+        disabled={
+          !inStock || !selectedVariant || !!disabled || busy || !isValidVariant
+        }
+        variant="primary"
+        className="w-full h-12 text-base"
+        isLoading={busy}
+        data-testid="add-product-button"
+      >
+        {!selectedVariant && !options
+          ? "Select variant"
+          : !inStock || !isValidVariant
+          ? "Out of stock"
+          : buyLabel}
+      </Button>
+    </div>
   )
 
   return (
     <>
-      <div className="flex flex-col gap-y-4" ref={actionsRef}>
+      <div className="flex flex-col gap-y-4">
         <div>
           {(product.variants?.length ?? 0) > 1 && (
             <div className="flex flex-col gap-y-4">

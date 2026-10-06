@@ -84,13 +84,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
       <section className="content-container pt-6 pb-12 small:pt-10 small:pb-16">
         <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-center small:gap-14">
           <div className="small:col-span-7">
+            {/* On a phone the model is 16/10, about 40 px shorter than 4/3
+                at 375 wide, so at 375 x 650 (an Instagram ad's screen) the
+                whole Pre-order button is on screen at landing (6 Oct 2026).
+                Anything added above the button has to replace text, not
+                add to it. fitRadius frames the board to whichever box. */}
             {model ? (
               <ProductModel
                 src={model}
                 poster={modelPoster}
                 alt={`${product.title}, a 3D model you can turn`}
                 eager
-                className="aspect-[4/3]"
+                className="aspect-[16/10] small:aspect-[4/3]"
               />
             ) : lead?.url ? (
               <div className="relative aspect-[4/3] w-full overflow-hidden rounded-2xl border border-kebe-line bg-kebe-raised">
