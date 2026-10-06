@@ -2,14 +2,16 @@ import type { CSSProperties } from "react"
 
 import { Finger, KEYS, Stroke, Touch, touchOf } from "@lib/train/layout"
 
-// KeBe drawn to scale: 16.5 mm caps on the 18 x 17 mm grid, each carrying
-// its printed legends (public/train/caps.svg, the laser's own art), every key
-// tinted by the finger that strikes it, so the whole map of which finger goes
-// where is on the board at once (owner, 5 Oct 2026).
+// KeBe drawn to scale and lit the way the board is: black caps on the 18 x
+// 17 mm grid, each carrying its printed legends (public/train/caps.svg, the
+// laser's own art), and the per-key lighting showing through them. Every
+// key glows in the colour of the finger that strikes it, so the map of
+// which finger goes where is the board itself (owner, 6 Oct 2026).
 //
-// learned: keys the levels so far have taught. adds: the keys this level
-// introduces. next: what to press now, filled with its finger's colour, and
-// the Shift or Fn to hold, outlined. flash: the key just pressed.
+// learned: keys the levels so far have taught, lit. adds: the keys this
+// level introduces, brighter. next: what to press now, brightest, with its
+// glow pulsing; a Shift or Fn to hold is outlined in its colour. Keys still
+// to come stay nearly dark. flash: the key just pressed.
 
 // The five fingers' colours, the same on both hands. Chosen with the dataviz
 // validator on the cap colour: every pair of fingers whose keys sit side by
@@ -26,7 +28,8 @@ export const FINGER_COLOUR: Record<Finger, string> = {
 const CAP = 16.5
 const PITCH_X = 18
 const PITCH_Y = 17
-const CAP_FILL = "#1c1a17"
+const DARK = "#1c1a17"
+const WHITE = "#ffffff"
 
 function mix(a: string, b: string, t: number) {
   const p = (h: string) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
@@ -36,21 +39,11 @@ function mix(a: string, b: string, t: number) {
     .join("")}`
 }
 
-// Whichever legend colour, dark or white, has the higher WCAG contrast on a
-// solid finger colour (white on the thumb's green, dark on the others).
-function luminance(hex: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => {
-    const v = parseInt(hex.slice(i, i + 2), 16) / 255
-    return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)
-  })
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b
-}
-function inkOn(hex: string) {
-  const l = luminance(hex)
-  const dark = (l + 0.05) / (luminance("#12110f") + 0.05)
-  const white = 1.05 / (l + 0.05)
-  return dark >= white ? "#12110f" : "#ffffff"
-}
+// A legend lit in a finger's colour: lifted towards white so the darker
+// colours (the thumb's green) still read on a black cap, then dimmed by how
+// strongly the key is lit.
+const lit = (colour: string, strength: number, lift = 0.25) =>
+  mix(DARK, mix(colour, WHITE, lift), strength)
 
 type Props = {
   learned: Set<string>
@@ -69,6 +62,44 @@ export default function Board({ learned, adds, next, flash, className, style }: 
   const h = 4 * PITCH_Y + CAP
   const pad = 3
 
+  const keys = KEYS.map((k) => {
+    const colour = FINGER_COLOUR[touchOf(k).finger]
+    const isNew = adds.has(k.id)
+    const known = learned.has(k.id) || isNew
+    const isNext = nextKeys.has(k.id)
+    const isHold = holdKeys.has(k.id)
+    const isFlash = flashKeys.has(k.id)
+    const wrong = isFlash && !flash?.ok
+
+    // The legend: dark until learned, then lit, brighter when new, near
+    // white-hot when it is the key to press.
+    let ink = known ? lit(colour, isNew ? 1 : 0.8) : mix(DARK, colour, 0.22)
+    // The light spilling round the cap.
+    let glow = known ? (isNew ? 0.45 : 0.22) : 0
+    let rim = known ? mix("#2e2b26", colour, isNew ? 0.55 : 0.2) : "#1f1d1a"
+    let rimWidth = isNew ? 0.5 : 0.35
+    let glowColour = colour
+    if (wrong) {
+      ink = "#ff8a7a"
+      glow = 0.8
+      glowColour = "#e0453a"
+    } else if (isNext) {
+      ink = lit(colour, 1, 0.6)
+      glow = 1
+      rim = colour
+      rimWidth = 0.7
+    } else if (isHold) {
+      ink = lit(colour, 1, 0.45)
+      glow = 0.55
+      rim = colour
+      rimWidth = 0.9
+    } else if (isFlash) {
+      ink = lit(colour, 1, 0.5)
+      glow = 0.6
+    }
+    return { k, colour, ink, glow, glowColour, rim, rimWidth, isNext, isNew }
+  })
+
   return (
     <svg
       viewBox={`${-pad} ${-pad} ${w + 2 * pad} ${h + 2 * pad}`}
@@ -77,54 +108,64 @@ export default function Board({ learned, adds, next, flash, className, style }: 
       role="img"
       aria-label={
         next
-          ? `KeBe's keys, coloured by finger, with ${next.name} lit as the next key to press`
-          : "KeBe's keys, coloured by the finger that presses each"
+          ? `KeBe's keys, each lit in the colour of the finger that presses it, with ${next.name} lit brightest as the next key`
+          : "KeBe's keys, each lit in the colour of the finger that presses it"
       }
     >
+      <defs>
+        <linearGradient id="kebe-cap" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="#2a2723" />
+          <stop offset="0.45" stopColor="#181614" />
+          <stop offset="1" stopColor="#0f0e0c" />
+        </linearGradient>
+        <filter id="kebe-spill" x="-50%" y="-50%" width="200%" height="200%">
+          <feGaussianBlur stdDeviation="1.8" />
+        </filter>
+        <filter id="kebe-legend" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="0.3" result="b" />
+          <feMerge>
+            <feMergeNode in="b" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <style>{`
+          @keyframes kebe-pulse { 0%, 100% { opacity: 0.95 } 50% { opacity: 0.55 } }
+          .kebe-next { animation: kebe-pulse 1.4s ease-in-out infinite }
+          @media (prefers-reduced-motion: reduce) { .kebe-next { animation: none } }
+        `}</style>
+      </defs>
       <rect
         x={-pad}
         y={-pad}
         width={w + 2 * pad}
         height={h + 2 * pad}
         rx={4}
-        fill="#0d0c0b"
+        fill="#0b0a09"
         stroke="#2e2b26"
         strokeWidth={0.4}
       />
-      {KEYS.map((k) => {
+      {/* The light under the caps, behind them. */}
+      {keys.map(({ k, glow, glowColour, isNext }) =>
+        glow > 0 ? (
+          <rect
+            key={`glow-${k.id}`}
+            className={isNext ? "kebe-next" : undefined}
+            x={k.col * PITCH_X - 1.6}
+            y={k.row * PITCH_Y - 1.6}
+            width={(k.w === 2 ? PITCH_X + CAP : CAP) + 3.2}
+            height={CAP + 3.2}
+            rx={3.5}
+            fill={glowColour}
+            opacity={glow}
+            filter="url(#kebe-spill)"
+            style={{ transition: "opacity 150ms ease-out" }}
+          />
+        ) : null
+      )}
+      {keys.map(({ k, ink, rim, rimWidth, isNext, isNew }) => {
         const x = k.col * PITCH_X
         const y = k.row * PITCH_Y
         const width = k.w === 2 ? PITCH_X + CAP : CAP
-        const colour = FINGER_COLOUR[touchOf(k).finger]
-        const isNew = adds.has(k.id)
-        const known = learned.has(k.id) || isNew
-        const isNext = nextKeys.has(k.id)
-        const isHold = holdKeys.has(k.id)
-        const isFlash = flashKeys.has(k.id)
-
-        // Keys still to come keep a faint tint, so the whole map shows.
-        let fill = mix(CAP_FILL, colour, isNew ? 0.34 : known ? 0.18 : 0.07)
-        let ink = !known ? "#3b3732" : isNew ? "#ffffff" : "#d8d2c8"
-        let stroke = !known ? mix(CAP_FILL, colour, 0.15) : isNew ? colour : mix(CAP_FILL, colour, 0.4)
-        let strokeWidth = isNew ? 0.6 : 0.35
-        if (isFlash && !flash?.ok) {
-          fill = "#7a2b25"
-          ink = "#ffffff"
-        } else if (isNext) {
-          fill = colour
-          ink = inkOn(colour)
-          stroke = "#ffffff"
-          strokeWidth = 0.6
-        } else if (isHold) {
-          fill = mix(CAP_FILL, colour, 0.5)
-          ink = "#ffffff"
-          stroke = colour
-          strokeWidth = 1
-        } else if (isFlash) {
-          fill = mix(CAP_FILL, colour, 0.55)
-          ink = "#ffffff"
-        }
-
         return (
           <g key={k.id}>
             <rect
@@ -133,20 +174,24 @@ export default function Board({ learned, adds, next, flash, className, style }: 
               width={width}
               height={CAP}
               rx={1.8}
-              fill={fill}
-              stroke={stroke}
-              strokeWidth={strokeWidth}
-              style={{ transition: "fill 120ms ease-out" }}
+              fill="url(#kebe-cap)"
+              stroke={rim}
+              strokeWidth={rimWidth}
             />
             {k.w === 1 && (
-              <use
-                href={`/train/caps.svg#${k.id}`}
-                x={x}
-                y={y}
-                width={CAP}
-                height={CAP}
-                fill={ink}
-              />
+              // The glow wraps the legend in a group: a filter straight on
+              // <use> drops the legend in some renderers.
+              <g filter={isNext || isNew ? "url(#kebe-legend)" : undefined}>
+                <use
+                  href={`/train/caps.svg#${k.id}`}
+                  x={x}
+                  y={y}
+                  width={CAP}
+                  height={CAP}
+                  fill={ink}
+                  style={{ transition: "fill 120ms ease-out" }}
+                />
+              </g>
             )}
           </g>
         )
