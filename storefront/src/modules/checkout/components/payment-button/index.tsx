@@ -141,6 +141,10 @@ const StripePaymentButton = ({
               phone: cart.billing_address?.phone ?? undefined,
             },
           },
+          // Stripe's receipt is the one email the buyer gets (6 Oct 2026):
+          // the order mail reaches only KeBe's own inbox. In live mode Stripe
+          // sends it whenever this is set; test mode sends none.
+          receipt_email: cart.email ?? undefined,
         }
       )
 

@@ -15,8 +15,11 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
 
   return (
     <div>
+      {/* Only what is true (6 Oct 2026): KeBe sends the buyer no email of its
+          own. The card payment sets receipt_email, so Stripe sends the
+          receipt. */}
       <Text>
-        We have sent the order confirmation details to{" "}
+        Stripe is emailing your receipt to{" "}
         <span
           className="text-ui-fg-medium-plus font-semibold"
           data-testid="order-email"

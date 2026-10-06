@@ -166,14 +166,14 @@ const ShippingAddress = ({
             aria-describedby="shipping-email-help"
             data-testid="shipping-email-input"
           />
-          {/* Only what is true: nothing emails the buyer a receipt yet, and
-              no line here promises updates. Once a receipt is sent, this
-              line can say so. */}
+          {/* Only what is true: Stripe emails the receipt to this address,
+              since the card payment sets receipt_email (6 Oct 2026), and no
+              line here promises updates. */}
           <p
             id="shipping-email-help"
             className="mt-1 px-1 txt-compact-small text-ui-fg-muted"
           >
-            So we can reach you about this order.
+            For your Stripe receipt, and so we can reach you about this order.
           </p>
         </div>
         {onlyCountry ? (
