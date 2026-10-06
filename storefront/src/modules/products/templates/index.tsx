@@ -15,7 +15,11 @@ import Image from "next/image"
 import { productSpecs } from "@lib/util/specs"
 import { productImageAlt } from "@lib/util/image-alt"
 import { getProductPrice } from "@lib/util/get-product-price"
-import { presaleShipsBy } from "@lib/util/presale"
+import {
+  PRESALE_HANDLE,
+  presaleAvailability,
+  presaleShipsBy,
+} from "@lib/util/presale"
 import { BUYBOX_REASONS } from "@lib/util/kebe-copy"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -72,6 +76,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // place, the argument the reel and the ad make, and the same four facts
   // shrink to one line after them (6 Oct 2026).
   const shipsBy = presaleShipsBy(product)
+  // v1's page, once it cannot be bought, points at the board that can,
+  // rather than ending at a disabled button (6 Oct 2026). The handle check
+  // keeps the line off v2's own page should its presale ever end.
+  const soldOutToV2 =
+    !shipsBy &&
+    product.handle !== PRESALE_HANDLE &&
+    !presaleAvailability(product).open
   const alsoFacts = ["Layout", "Ports", "Switches", "Lighting"]
     .map((label) => specs.find((s) => s.label === label)?.value)
     .filter((v): v is string => !!v)
@@ -143,6 +154,17 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
+            {soldOutToV2 && (
+              <p className="text-base text-ui-fg-subtle">
+                v1 is sold out. KeBe v2 is on pre-order.{" "}
+                <LocalizedClientLink
+                  href={`/products/${PRESALE_HANDLE}`}
+                  className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
+                >
+                  See KeBe v2
+                </LocalizedClientLink>
+              </p>
+            )}
             {/* The presale's short answers, directly under the button and
                 its note; nothing on other products. */}
             <BeforeYouPreorder product={product} countryCode={countryCode} />
@@ -194,17 +216,20 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               )
             )}
             {/* Every KeBe has the same layout, so every product page points
-                at the trainer that teaches it. */}
-            <p className="text-base text-ui-fg-subtle">
-              New to Dvorak?{" "}
-              <LocalizedClientLink
-                href="/train"
-                className="text-ui-fg-base underline underline-offset-4 hover:text-white"
-              >
-                Learn the layout
-              </LocalizedClientLink>{" "}
-              with the typing trainer, before your board arrives.
-            </p>
+                at the trainer: v2 from Before you pre-order, v1 here
+                (6 Oct 2026). */}
+            {!shipsBy && (
+              <p className="text-base text-ui-fg-subtle">
+                New to Dvorak?{" "}
+                <LocalizedClientLink
+                  href="/train"
+                  className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                >
+                  Learn the layout
+                </LocalizedClientLink>{" "}
+                with the typing trainer, before your board arrives.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -269,14 +294,19 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         </div>
       </section>
 
-      <div
-        className="content-container pb-16 small:pb-32"
-        data-testid="related-products-container"
-      >
-        <Suspense fallback={<SkeletonRelatedProducts />}>
-          <RelatedProducts product={product} countryCode={countryCode} />
-        </Suspense>
-      </div>
+      {/* No "Also from KeBe" on the presale board: its one card was v1,
+          sold out and at a lower price, a way off the page at its end.
+          v1's page still shows v2 here (6 Oct 2026). */}
+      {!shipsBy && (
+        <div
+          className="content-container pb-16 small:pb-32"
+          data-testid="related-products-container"
+        >
+          <Suspense fallback={<SkeletonRelatedProducts />}>
+            <RelatedProducts product={product} countryCode={countryCode} />
+          </Suspense>
+        </div>
+      )}
     </div>
   )
 }
