@@ -10,6 +10,8 @@ import {
   presaleShipLine,
   presaleShipsBy,
 } from "@lib/util/presale"
+import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
+import JsonLd from "@modules/common/components/json-ld"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import WaitlistForm from "@modules/home/components/waitlist-form"
 import ProductModel from "@modules/products/components/product-model"
@@ -168,6 +170,10 @@ export default async function Home(props: {
 
   return (
     <div className="bg-kebe-page text-kebe-text">
+      {/* Who sells the board and what the site is called, for search
+          engines and AI answers. */}
+      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={websiteJsonLd()} />
       {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2) fills it,
           still, with the name and Pre-order laid over its top. A click on
           the model (not the text) hands it the pointer to turn and zoom. */}

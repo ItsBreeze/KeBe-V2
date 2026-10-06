@@ -1,0 +1,195 @@
+import { HttpTypes } from "@medusajs/types"
+import { CONTACT_EMAIL } from "@lib/constants"
+import { presaleShipDate } from "@lib/util/presale"
+import {
+  Availability,
+  BRAND,
+  INSTAGRAM_URL,
+  absoluteUrl,
+  plainText,
+  productImageUrls,
+  productUrl,
+  variantAvailability,
+  variantColour,
+  variantPrice,
+} from "@lib/util/seo"
+import { productSpecs } from "@lib/util/specs"
+
+// schema.org entities for the pages' JSON-LD. Only what the pages themselves
+// state (owner, 5 Oct 2026): no rating or review, no stock level, no return
+// policy or shipping rates (the site publishes neither), and the price is
+// the region's calculated price, never the one after pre-orders close.
+
+const SCHEMA_AVAILABILITY: Record<Availability, string> = {
+  preorder: "https://schema.org/PreOrder",
+  in_stock: "https://schema.org/InStock",
+  out_of_stock: "https://schema.org/OutOfStock",
+}
+
+const organizationId = () => absoluteUrl("/#organization")
+
+// The seller, as each offer names it.
+const seller = () => ({
+  "@type": "Organization",
+  name: BRAND,
+  url: absoluteUrl("/"),
+})
+
+export const organizationJsonLd = () => ({
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": organizationId(),
+  name: BRAND,
+  url: absoluteUrl("/"),
+  // The site's own icon, 180 px square: Google wants at least 112.
+  logo: absoluteUrl("/apple-icon.png"),
+  // The privacy notice's own words.
+  description: "A one-person keyboard workshop in Canada.",
+  email: CONTACT_EMAIL,
+  contactPoint: {
+    "@type": "ContactPoint",
+    contactType: "customer support",
+    email: CONTACT_EMAIL,
+  },
+  sameAs: [INSTAGRAM_URL],
+})
+
+export const websiteJsonLd = () => ({
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "@id": absoluteUrl("/#website"),
+  name: BRAND,
+  url: absoluteUrl("/"),
+  inLanguage: "en",
+  publisher: { "@id": organizationId() },
+})
+
+// One variant's offer in this country. A pre-order says when an order placed
+// now ships (availabilityStarts), the date the page's ship line gives; no
+// variant without a price in the region gets an offer.
+const offerFor = (
+  product: HttpTypes.StoreProduct,
+  variant: HttpTypes.StoreProductVariant,
+  url: string
+) => {
+  const price = variantPrice(variant)
+  if (!price) return null
+  const availability = variantAvailability(product, variant)
+  const startsAt =
+    availability === "preorder" ? presaleShipDate(product) : null
+  return {
+    "@type": "Offer",
+    url,
+    ...(variant.sku ? { sku: variant.sku } : {}),
+    price: price.amount,
+    priceCurrency: price.currency,
+    availability: SCHEMA_AVAILABILITY[availability],
+    ...(startsAt ? { availabilityStarts: startsAt } : {}),
+    itemCondition: "https://schema.org/NewCondition",
+    seller: seller(),
+  }
+}
+
+// A product page's entity: a Product for a product with one variant (KeBe
+// v2), a ProductGroup of variant Products for one with several (v1's colours
+// and keycaps). The specification is the list the page shows.
+export const productJsonLd = (
+  product: HttpTypes.StoreProduct,
+  countryCode: string
+) => {
+  const url = productUrl(countryCode, product.handle ?? "")
+  const images = productImageUrls(product)
+  const variants = product.variants ?? []
+  const common = {
+    name: product.title,
+    description: plainText(product.description) || undefined,
+    image: images,
+    brand: { "@type": "Brand", name: BRAND },
+    url,
+    ...(product.material ? { material: product.material } : {}),
+    additionalProperty: productSpecs(product).map((s) => ({
+      "@type": "PropertyValue",
+      name: s.label,
+      value: s.value,
+    })),
+  }
+
+  const identity = (variant: HttpTypes.StoreProductVariant) => {
+    const colour = variantColour(product, variant)
+    return {
+      ...(variant.sku ? { sku: variant.sku, mpn: variant.sku } : {}),
+      ...(colour ? { color: colour } : {}),
+    }
+  }
+
+  if (variants.length <= 1) {
+    const variant = variants[0]
+    const offer = variant ? offerFor(product, variant, url) : null
+    return {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "@id": `${url}#product`,
+      ...common,
+      ...(variant ? identity(variant) : {}),
+      ...(offer ? { offers: offer } : {}),
+    }
+  }
+
+  const hasColour = !!product.options?.some((o) =>
+    /^colou?r$/i.test(o.title ?? "")
+  )
+  return {
+    "@context": "https://schema.org",
+    "@type": "ProductGroup",
+    "@id": `${url}#product`,
+    ...common,
+    productGroupID: product.handle,
+    ...(hasColour ? { variesBy: ["https://schema.org/color"] } : {}),
+    hasVariant: variants.map((variant) => {
+      const offer = offerFor(product, variant, url)
+      const own = (variant.images ?? [])
+        .map((i) => i.url)
+        .filter((u): u is string => !!u)
+        .map(absoluteUrl)
+      return {
+        "@type": "Product",
+        name: variant.title
+          ? `${product.title} (${variant.title})`
+          : product.title,
+        ...identity(variant),
+        image: own.length ? own : images.slice(0, 1),
+        ...(offer ? { offers: offer } : {}),
+      }
+    }),
+  }
+}
+
+// Home > Store > the product. The site has no breadcrumb trail on the page;
+// this is the path a visitor takes to it.
+export const breadcrumbJsonLd = (
+  countryCode: string,
+  product: HttpTypes.StoreProduct
+) => ({
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: [
+    {
+      "@type": "ListItem",
+      position: 1,
+      name: BRAND,
+      item: absoluteUrl(`/${countryCode}`),
+    },
+    {
+      "@type": "ListItem",
+      position: 2,
+      name: "Store",
+      item: absoluteUrl(`/${countryCode}/store`),
+    },
+    {
+      "@type": "ListItem",
+      position: 3,
+      name: product.title,
+      item: productUrl(countryCode, product.handle ?? ""),
+    },
+  ],
+})

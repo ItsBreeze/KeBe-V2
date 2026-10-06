@@ -4,6 +4,8 @@ import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
 import { productMetaDescription, productUrl } from "@lib/util/seo"
+import { breadcrumbJsonLd, productJsonLd } from "@lib/util/structured-data"
+import JsonLd from "@modules/common/components/json-ld"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -126,18 +128,25 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
+  // After the check: an unknown handle read .images off undefined first.
   if (!pricedProduct) {
     notFound()
   }
 
+  const images = getImagesForVariant(pricedProduct, selectedVariantId)
+
+  // The product and the way to it, for search engines and shopping surfaces,
+  // in the HTML itself.
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />
+      <JsonLd data={breadcrumbJsonLd(params.countryCode, pricedProduct)} />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }
