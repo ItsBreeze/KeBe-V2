@@ -1,16 +1,27 @@
 import { Metadata } from "next"
 import { CONTACT_EMAIL } from "@lib/constants"
 import { pageAlternates } from "@lib/data/seo"
+import { BRAND, socialMetadata } from "@lib/util/seo"
+
+// "KeBe keyboard store": the brand alone is easily read as "keeb" or Keebio.
+const DESCRIPTION =
+  "What the KeBe keyboard store collects, why, where it is stored, and how to have it deleted."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
 }): Promise<Metadata> {
   const { countryCode } = await props.params
   return {
+    // The root layout's template adds " | KeBe".
     title: "Privacy",
-    description:
-      "What KeBe collects, why, where it is stored, and how to have it deleted.",
+    description: DESCRIPTION,
     alternates: await pageAlternates(countryCode, "/privacy"),
+    ...socialMetadata({
+      title: `Privacy | ${BRAND}`,
+      description: DESCRIPTION,
+      path: "/privacy",
+      countryCode,
+    }),
   }
 }
 

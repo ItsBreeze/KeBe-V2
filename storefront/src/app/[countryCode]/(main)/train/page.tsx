@@ -1,27 +1,44 @@
 import { Metadata } from "next"
 
 import { pageAlternates } from "@lib/data/seo"
+import { BRAND, socialMetadata } from "@lib/util/seo"
 import { getTrainerAccount } from "@lib/data/trainer"
 import { PRESALE_HANDLE } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Trainer from "@modules/train/components/trainer"
 
+// What people search for a trainer by (Google's suggestions: "dvorak typing
+// trainer", "dvorak typing game"), in what the page does: four home-row
+// keys, then a key a level, the board coloured by finger, the 10-word test.
+// The letters are Dvorak's on any keyboard, so the title says Dvorak.
+const TITLE = "Free Dvorak Typing Trainer: Learn One Key at a Time"
 const DESCRIPTION =
-  "Learn KeBe's Matrix-Dvorak layout one key at a time: whole words from the thousand most common, a target speed to open the next level, and a 10-word speed test for your top score."
+  "Learn Dvorak with a free typing game: four home-row keys to start, then one new key a level, a board coloured by finger and a 10-word speed test."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
 }): Promise<Metadata> {
   const { countryCode } = await props.params
   return {
-    title: "Learn the Matrix-Dvorak layout: a free typing trainer",
+    // The root layout's template adds " | KeBe".
+    title: TITLE,
     description: DESCRIPTION,
     alternates: await pageAlternates(countryCode, "/train"),
-    openGraph: {
-      title: "Learn KeBe's layout",
+    // The board the trainer draws, from above: a CAD render.
+    ...socialMetadata({
+      title: `${TITLE} | ${BRAND}`,
       description: DESCRIPTION,
-      images: ["/products/kebe-v2-top.jpg"],
-    },
+      path: "/train",
+      countryCode,
+      images: [
+        {
+          url: "/products/kebe-v2-top.jpg",
+          width: 2400,
+          height: 1800,
+          alt: "KeBe v2 from above, rendered from its CAD: 68 keys in straight columns, the Dvorak letters in the middle.",
+        },
+      ],
+    }),
   }
 }
 

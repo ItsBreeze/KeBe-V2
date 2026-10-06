@@ -3,7 +3,14 @@ import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
-import { productMetaDescription, productUrl } from "@lib/util/seo"
+import { productImageAlt } from "@lib/util/image-alt"
+import {
+  SOCIAL_IMAGE,
+  listingImageUrls,
+  productMetaDescription,
+  productSeoTitle,
+  socialMetadata,
+} from "@lib/util/seo"
 import { breadcrumbJsonLd, productJsonLd } from "@lib/util/structured-data"
 import JsonLd from "@modules/common/components/json-ld"
 import ProductTemplate from "@modules/products/templates"
@@ -91,24 +98,38 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
-  // The description was the title again; now it is the product's own words.
+  // The description was the title again; now it is what the board is, then
+  // this country's price and its ship date while they fit (lib/util/seo.ts).
+  const title = productSeoTitle(product)
   const description = productMetaDescription(product)
   const alternates = await pageAlternates(
     params.countryCode,
     `/products/${handle}`
   )
+  // The link preview is the product's first CAD render or photograph. The
+  // thumbnail it used is v2's AI desk scene, which no preview, feed or
+  // structured data shows (image-alt.ts).
+  const [image] = listingImageUrls(product)
 
   return {
-    // The root layout's template adds " | KeBe".
-    title: product.title,
+    // Whole: the brand is already in it.
+    title: { absolute: title },
     description,
     alternates,
-    openGraph: {
-      title: `${product.title} | KeBe`,
+    ...socialMetadata({
+      title,
       description,
-      url: productUrl(params.countryCode, handle),
-      images: product.thumbnail ? [product.thumbnail] : [],
-    },
+      path: `/products/${handle}`,
+      countryCode: params.countryCode,
+      images: image
+        ? [
+            {
+              url: image,
+              alt: productImageAlt({ url: image }, product.title, 0),
+            },
+          ]
+        : [SOCIAL_IMAGE],
+    }),
   }
 }
 

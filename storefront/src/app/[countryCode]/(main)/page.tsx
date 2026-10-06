@@ -5,6 +5,11 @@ import { listProducts } from "@lib/data/products"
 import { pageAlternates } from "@lib/data/seo"
 import { getProductPrice } from "@lib/util/get-product-price"
 import {
+  fitSentences,
+  productOfferSentence,
+  socialMetadata,
+} from "@lib/util/seo"
+import {
   PRESALE_HANDLE,
   presaleAvailability,
   presaleShipLine,
@@ -16,28 +21,36 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import WaitlistForm from "@modules/home/components/waitlist-form"
 import ProductModel from "@modules/products/components/product-model"
 
-const DESCRIPTION =
-  "KeBe v2: the Matrix-Dvorak ortholinear keyboard with a built-in USB hub. All black and hot-swappable, with per-key RGB through shine-through legends. Assembled by hand in Canada."
-
 // What the board is, for a search result: the title used to be just "KeBe".
-const TITLE = "KeBe v2: 68-key ortholinear Dvorak keyboard with a USB hub"
+// The words people search for it by come first (ortholinear, Dvorak, USB
+// hub), in at most 60 characters; the product page's title takes the
+// low-profile ones, so the two do not compete.
+const TITLE = "KeBe v2: Ortholinear Dvorak Keyboard with USB Hub"
+
+// The snippet's opening, in facts this page and the product page state, at
+// most 123 characters so this country's price sentence fits in Google's 155.
+// The old site's description ended "Aluminium design". Every KeBe case that
+// exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP order
+// -- so that claim is gone and not coming back.
+const LEAD =
+  "An ortholinear Dvorak keyboard with a built-in USB hub, Kailh Choc hot-swap and per-key RGB, assembled by hand in Canada."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
 }): Promise<Metadata> {
   const { countryCode } = await props.params
+  // The same request the page makes for its button, so the snippet's price
+  // is the button's; without the backend there is no price in it.
+  const product = await presaleProduct(countryCode)
+  const description = fitSentences([
+    LEAD,
+    product ? productOfferSentence(product) : null,
+  ])
   return {
     title: { absolute: TITLE },
-    // The old site's description ended "Aluminium design". Every KeBe case
-    // that exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP
-    // order -- so that claim is gone and not coming back.
-    description: DESCRIPTION,
+    description,
     alternates: await pageAlternates(countryCode),
-    openGraph: {
-      title: TITLE,
-      description: DESCRIPTION,
-      images: ["/products/kebe-v2-og.jpg"],
-    },
+    ...socialMetadata({ title: TITLE, description, path: "", countryCode }),
   }
 }
 
@@ -135,19 +148,25 @@ type Presale =
       shipLine: string | null
     }
 
-// The homepage must render with the backend down, so any failure reads as
-// "no presale yet" and falls back to the waitlist.
-async function getPresale(countryCode: string): Promise<Presale> {
-  let product: HttpTypes.StoreProduct | undefined
+// The presale board in this country, or undefined when the backend cannot
+// be read: the homepage must render with it down.
+async function presaleProduct(
+  countryCode: string
+): Promise<HttpTypes.StoreProduct | undefined> {
   try {
     const { response } = await listProducts({
       countryCode,
       queryParams: { handle: PRESALE_HANDLE, limit: 1 },
     })
-    product = response.products[0]
+    return response.products[0]
   } catch {
-    return { state: "none" }
+    return undefined
   }
+}
+
+// Any failure reads as "no presale yet" and falls back to the waitlist.
+async function getPresale(countryCode: string): Promise<Presale> {
+  const product = await presaleProduct(countryCode)
   if (!product || !presaleShipsBy(product)) return { state: "none" }
 
   // "sold-out" only once every counted board is sold with backorders off;

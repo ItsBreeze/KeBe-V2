@@ -5,6 +5,7 @@ import {
   PIXEL_ON,
 } from "@modules/common/components/meta-pixel"
 import PixelPageViews from "@modules/common/components/meta-pixel/page-views"
+import { BRAND, SOCIAL_IMAGE } from "@lib/util/seo"
 import { Metadata } from "next"
 import { DM_Serif_Display, IBM_Plex_Mono, Inter } from "next/font/google"
 import "styles/globals.css"
@@ -38,6 +39,11 @@ export const metadata: Metadata = {
     default: "KeBe",
     template: "%s | KeBe",
   },
+  // The link preview of any page without its own: v2's CAD render. Until 6
+  // Oct 2026 the Medusa starter's opengraph-image.jpg and twitter-image.jpg,
+  // a "Next.js Starter Template" card, stood in on every such page.
+  openGraph: { type: "website", siteName: BRAND, images: [SOCIAL_IMAGE] },
+  twitter: { card: "summary_large_image", images: [SOCIAL_IMAGE] },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
