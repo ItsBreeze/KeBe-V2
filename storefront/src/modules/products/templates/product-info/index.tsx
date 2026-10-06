@@ -1,5 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
 import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { BUYBOX_TAGLINE } from "@lib/util/kebe-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type ProductInfoProps = {
@@ -14,6 +15,11 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product)
+  // On the presale board the line under the name continues the reel's
+  // argument instead (kebe-copy.ts). Only this line changes: the title, and
+  // with it the cart, link previews, feeds and Admin, stays as it is
+  // (6 Oct 2026).
+  const subtitle = shipsBy ? BUYBOX_TAGLINE : kind
 
   return (
     <div id="product-info" className="flex flex-col gap-y-3">
@@ -37,9 +43,9 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
       >
         {name}
       </h1>
-      {kind && (
+      {subtitle && (
         <p className="text-[clamp(1.05rem,2vw,1.25rem)] leading-snug text-ui-fg-subtle">
-          {kind}
+          {subtitle}
         </p>
       )}
     </div>

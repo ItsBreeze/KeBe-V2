@@ -20,8 +20,10 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
 
   return (
     <div className="flex flex-col gap-12">
+      {/* The presale buy box's "Full specifications" link lands here;
+          scroll-mt keeps the heading clear of the sticky nav (6 Oct 2026). */}
       {specs.length > 0 && (
-        <div>
+        <div id="specifications" className="scroll-mt-20">
           <h2 className="font-display text-2xl text-ui-fg-base">
             Specifications
           </h2>

@@ -14,6 +14,8 @@ import Image from "next/image"
 import { productSpecs } from "@lib/util/specs"
 import { productImageAlt } from "@lib/util/image-alt"
 import { getProductPrice } from "@lib/util/get-product-price"
+import { presaleShipsBy } from "@lib/util/presale"
+import { BUYBOX_REASONS } from "@lib/util/kebe-copy"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -61,9 +63,17 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   const lead = model ? null : images[0]
   const gallery = model ? images : images.slice(1)
   // The buy box repeats the four facts that sell it; the full list is below.
-  const highlights = productSpecs(product).filter((s) =>
+  const specs = productSpecs(product)
+  const highlights = specs.filter((s) =>
     ["Ports", "Switches", "Lighting", "Layout"].includes(s.label)
   )
+  // On the presale board the reasons for the layout take the highlights'
+  // place, the argument the reel and the ad make, and the same four facts
+  // shrink to one line after them (6 Oct 2026).
+  const shipsBy = presaleShipsBy(product)
+  const alsoFacts = ["Layout", "Ports", "Switches", "Lighting"]
+    .map((label) => specs.find((s) => s.label === label)?.value)
+    .filter((v): v is string => !!v)
   const paragraphs = (product.description ?? "")
     .split(/\n\s*\n/)
     .map((p) => p.trim())
@@ -85,8 +95,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         }}
       />
       <section className="content-container pt-6 pb-12 small:pt-10 small:pb-16">
-        <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-center small:gap-14">
-          <div className="small:col-span-7">
+        {/* On a wide screen the buy box is taller than the model, so the
+            two align at the top and the model column stays in view while
+            the buy box scrolls. Centred, the model sank as the buy box grew
+            (6 Oct 2026). */}
+        <div className="grid grid-cols-1 gap-8 small:grid-cols-12 small:items-start small:gap-14">
+          <div className="small:col-span-7 small:sticky small:top-20 small:self-start">
             {/* On a phone the model is 16/10, about 40 px shorter than 4/3
                 at 375 wide, so at 375 x 650 (an Instagram ad's screen) the
                 whole Pre-order button is on screen at landing (6 Oct 2026).
@@ -128,15 +142,52 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             >
               <ProductActionsWrapper id={product.id} region={region} />
             </Suspense>
-            {highlights.length > 0 && (
-              <ul className="flex flex-col divide-y divide-ui-border-base border-y border-ui-border-base text-base text-ui-fg-subtle">
-                {highlights.map((h) => (
-                  <li key={h.label} className="flex justify-between gap-6 py-3">
-                    <span className="text-ui-fg-muted">{h.label}</span>
-                    <span className="text-right">{h.value}</span>
-                  </li>
-                ))}
-              </ul>
+            {shipsBy ? (
+              <section
+                aria-labelledby="why-keys"
+                className="flex flex-col gap-4"
+              >
+                <h2
+                  id="why-keys"
+                  className="font-display text-xl text-ui-fg-base"
+                >
+                  Why the keys are where they are
+                </h2>
+                <ul className="flex flex-col divide-y divide-ui-border-base border-y border-ui-border-base">
+                  {BUYBOX_REASONS.map((r) => (
+                    <li key={r.title} className="py-3">
+                      <p className="text-base text-ui-fg-base">{r.title}</p>
+                      <p className="mt-1 text-base leading-relaxed text-ui-fg-subtle">
+                        {r.body}
+                      </p>
+                    </li>
+                  ))}
+                </ul>
+                {alsoFacts.length > 0 && (
+                  <p className="text-base leading-relaxed text-ui-fg-subtle">
+                    Also: {alsoFacts.join(" · ")}.{" "}
+                    {/* A plain link: LocalizedClientLink would prefix the
+                        country and leave the page for the homepage. */}
+                    <a
+                      href="#specifications"
+                      className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
+                    >
+                      Full specifications
+                    </a>
+                  </p>
+                )}
+              </section>
+            ) : (
+              highlights.length > 0 && (
+                <ul className="flex flex-col divide-y divide-ui-border-base border-y border-ui-border-base text-base text-ui-fg-subtle">
+                  {highlights.map((h) => (
+                    <li key={h.label} className="flex justify-between gap-6 py-3">
+                      <span className="text-ui-fg-muted">{h.label}</span>
+                      <span className="text-right">{h.value}</span>
+                    </li>
+                  ))}
+                </ul>
+              )
             )}
             {/* Every KeBe has the same layout, so every product page points
                 at the trainer that teaches it. */}
