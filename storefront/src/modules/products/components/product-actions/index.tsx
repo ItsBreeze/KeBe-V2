@@ -108,6 +108,12 @@ export default function ProductActions({
   }, [product.variants, options])
 
   useEffect(() => {
+    // With one variant, v_id selects nothing: its pictures are the product's.
+    // The page is rendered per request, so router.replace rendered every
+    // landing a second time on the server, while the phone was still
+    // fetching the model and the script (6 Oct 2026).
+    if ((product.variants?.length ?? 0) <= 1) return
+
     const params = new URLSearchParams(searchParams.toString())
     const value = isValidVariant ? selectedVariant?.id : null
 

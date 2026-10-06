@@ -57,6 +57,34 @@ const nextConfig = {
       fullUrl: true,
     },
   },
+  // Each named import from these two barrels is rewritten to the one module
+  // it needs. Without it, every page that drew a Medusa Button also shipped
+  // the whole of @medusajs/ui (DatePicker, CommandBar, Prism and the rest),
+  // 242 KB gzip that a phone parses before the Pre-order button works
+  // (6 Oct 2026).
+  experimental: {
+    optimizePackageImports: ["@medusajs/ui", "@medusajs/icons"],
+  },
+  // The pictures, clips and 3D model in public/products were served with
+  // max-age=0, so every visit asked for each one again. A day fresh and a week
+  // stale-while-revalidate, not immutable: their names carry no hash, and a
+  // replaced file has to reach visitors. Media extensions only, so the
+  // middleware's redirect of an address without a country, such as
+  // /products/kebe-v2-keyboard, is not cached (6 Oct 2026).
+  async headers() {
+    return [
+      {
+        source:
+          "/products/:file((?:.*)\\.(?:jpg|jpeg|png|webp|avif|glb|webm|mp4))",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ]
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

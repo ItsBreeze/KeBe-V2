@@ -53,6 +53,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // (<model>-glow.jpg), so the poster and the lit model match. The backend's
   // model_poster is a daylight render on a pale ground, which flashed white.
   const modelPoster = model ? model.replace(/\.glb$/, "-glow.jpg") : undefined
+  // The name without the title's description, as the pictures' alt text has
+  // it: "KeBe v2".
+  const productName = (product.title ?? "").split(" — ")[0] || "KeBe"
 
   // Without a model the first picture leads, and the grid shows the rest.
   const lead = model ? null : images[0]
@@ -94,6 +97,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 src={model}
                 poster={modelPoster}
                 alt={`${product.title}, a 3D model you can turn`}
+                posterFirst
+                posterAlt={`${productName}, rendered from its CAD`}
                 eager
                 className="aspect-[16/10] small:aspect-[4/3]"
               />
@@ -162,7 +167,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 />
               </div>
             )}
-            <ImageGallery images={gallery} title={product.title ?? ""} />
+            {/* With the model leading, no picture is on the first screen,
+                so none is preloaded. */}
+            <ImageGallery
+              images={gallery}
+              title={product.title ?? ""}
+              priorityCount={model ? 0 : undefined}
+            />
           </div>
         </section>
       )}

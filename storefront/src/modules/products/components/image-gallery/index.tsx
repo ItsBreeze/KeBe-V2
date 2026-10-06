@@ -5,10 +5,18 @@ import { productImageAlt } from "@lib/util/image-alt"
 type ImageGalleryProps = {
   images: HttpTypes.StoreProductImage[]
   title: string
+  // How many pictures load first (next/image's priority, which preloads them
+  // in the <head>). The template passes 0 when the model leads, since then
+  // every picture is below the fold (6 Oct 2026).
+  priorityCount?: number
 }
 
 // Grid cells: the product template lays them out two across on wider screens.
-const ImageGallery = ({ images, title }: ImageGalleryProps) => {
+const ImageGallery = ({
+  images,
+  title,
+  priorityCount = 2,
+}: ImageGalleryProps) => {
   return (
     <>
       {images.map((image, index) =>
@@ -20,7 +28,7 @@ const ImageGallery = ({ images, title }: ImageGalleryProps) => {
           >
             <Image
               src={image.url}
-              priority={index < 2}
+              priority={index < priorityCount}
               alt={productImageAlt(image, title, index)}
               fill
               sizes="(max-width: 640px) 100vw, 720px"

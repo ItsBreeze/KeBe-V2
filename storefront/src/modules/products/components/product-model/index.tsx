@@ -1,5 +1,6 @@
 "use client"
 
+import Image from "next/image"
 import Script from "next/script"
 import {
   createElement,
@@ -52,10 +53,19 @@ function fitRadius(w: number, h: number, fill: number) {
 // `framed` is a bordered box; `backdrop` fills its parent edge to edge, and
 // `children` are laid over it (the homepage's name and Pre-order), fading out
 // while the model is in use so the whole area can be dragged.
+//
+// `posterFirst` (the product page) draws the poster as a plain image in the
+// server's HTML, labelled as a render, and loads model-viewer's script only
+// once the page has finished loading. model-viewer draws its own poster only
+// after its 1 MB script has run, so a phone's first screen was a dark, empty
+// box, and parsing that script held up the Pre-order button. The model still
+// sways on landing; it appears a moment later, behind the still (6 Oct 2026).
 export default function ProductModel({
   src,
   poster,
   alt,
+  posterFirst = false,
+  posterAlt = "",
   eager = false,
   angle = "-25deg 60deg",
   fill = 0.8,
@@ -67,6 +77,9 @@ export default function ProductModel({
   src: string
   poster?: string
   alt: string
+  posterFirst?: boolean
+  // What the still shows, for screen readers: it is a render.
+  posterAlt?: string
   // The homepage hero loads it straight away; elsewhere it waits until seen.
   eager?: boolean
   // Starting azimuth and polar angle.
@@ -82,8 +95,33 @@ export default function ProductModel({
 }) {
   const [active, setActive] = useState(false)
   const [orbit, setOrbit] = useState(`${angle} 0.7m`)
+  // posterFirst: the still stays in front until model-viewer's load event.
+  const [loaded, setLoaded] = useState(false)
+  // "Click" told phones to click. The server cannot know which it is, so the
+  // HTML says neither, and the browser picks (6 Oct 2026).
+  const [idleLabel, setIdleLabel] = useState("Turn it yourself")
   const box = useRef<HTMLDivElement>(null)
   const viewer = useRef<HTMLElement | null>(null)
+
+  useEffect(() => {
+    setIdleLabel(
+      window.matchMedia("(pointer: coarse)").matches
+        ? "Tap to turn it yourself"
+        : "Click to turn it yourself"
+    )
+  }, [])
+
+  useEffect(() => {
+    const mv = viewer.current as any
+    if (!posterFirst || !mv) return
+    if (mv.loaded) {
+      setLoaded(true)
+      return
+    }
+    const onLoad = () => setLoaded(true)
+    mv.addEventListener("load", onLoad)
+    return () => mv.removeEventListener("load", onLoad)
+  }, [posterFirst])
 
   useEffect(() => {
     const el = viewer.current
@@ -167,10 +205,14 @@ export default function ProductModel({
       )}
       data-testid="product-model"
     >
+      {/* crossOrigin: a module script is fetched in CORS mode, and Next's
+          preload of it (afterInteractive) was not, so the browser fetched
+          it twice and warned that the preload went unused (6 Oct 2026). */}
       <Script
         type="module"
         src={MODEL_VIEWER}
-        strategy={eager ? "afterInteractive" : "lazyOnload"}
+        crossOrigin="anonymous"
+        strategy={eager && !posterFirst ? "afterInteractive" : "lazyOnload"}
       />
       {createElement("model-viewer", {
         ref: viewer,
@@ -205,6 +247,34 @@ export default function ProductModel({
           "--poster-color": "transparent",
         },
       })}
+      {posterFirst && poster && (
+        // Fades out once the model has loaded behind it. unoptimized: the
+        // same URL as model-viewer's poster, so it downloads once. Cover,
+        // not contain: the still's board then spans about the width the
+        // model's does (fill), where contain drew it a sixth narrower.
+        <div
+          aria-hidden={loaded || undefined}
+          className={clx(
+            "pointer-events-none absolute inset-0 transition-opacity duration-300",
+            loaded && "opacity-0"
+          )}
+        >
+          <Image
+            src={poster}
+            alt={posterAlt}
+            fill
+            priority
+            unoptimized
+            sizes="(max-width: 1024px) 100vw, 800px"
+            className="object-cover"
+          />
+          {!active && (
+            <span className="absolute left-4 top-3 text-small-regular text-white/80">
+              CAD render
+            </span>
+          )}
+        </div>
+      )}
       {!active && (
         // Over the whole frame, so a click anywhere on the model starts it.
         <button
@@ -214,7 +284,7 @@ export default function ProductModel({
           aria-label="Turn the 3D model yourself"
         >
           <span className="rounded-xl border border-kebe-line bg-kebe-page/80 px-4 py-2 font-mono text-xs uppercase tracking-[0.14em] text-kebe-text backdrop-blur transition-colors group-hover:border-kebe-muted">
-            Click to turn it yourself
+            {idleLabel}
           </span>
         </button>
       )}
