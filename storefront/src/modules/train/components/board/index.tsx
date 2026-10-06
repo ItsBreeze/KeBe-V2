@@ -8,10 +8,12 @@ import { Finger, KEYS, Stroke, Touch, touchOf } from "@lib/train/layout"
 // key glows in the colour of the finger that strikes it, so the map of
 // which finger goes where is the board itself (owner, 6 Oct 2026).
 //
-// learned: keys the levels so far have taught, lit. adds: the keys this
-// level introduces, brighter. next: what to press now, brightest, with its
-// glow pulsing; a Shift or Fn to hold is outlined in its colour. Keys still
-// to come stay nearly dark. flash: the key just pressed.
+// Only the keys in play glow, from underneath, each in its finger's colour
+// (learned: the levels so far; adds: this level's new key, glowing more).
+// Only the key to press has its legend lit, brightest, its glow pulsing; a
+// Shift or Fn to hold is lit and outlined too. Every other legend is unlit,
+// as a shine-through cap looks with its light off (owner, 6 Oct 2026).
+// flash: the key just pressed.
 
 // The five fingers' colours, the same on both hands. Chosen with the dataviz
 // validator on the cap colour: every pair of fingers whose keys sit side by
@@ -71,11 +73,11 @@ export default function Board({ learned, adds, next, flash, className, style }: 
     const isFlash = flashKeys.has(k.id)
     const wrong = isFlash && !flash?.ok
 
-    // The legend: dark until learned, then lit, brighter when new, near
-    // white-hot when it is the key to press.
-    let ink = known ? lit(colour, isNew ? 1 : 0.8) : mix(DARK, colour, 0.22)
-    // The light spilling round the cap.
-    let glow = known ? (isNew ? 0.45 : 0.22) : 0
+    // The legend: unlit, readable on the keys in play and dim on the rest,
+    // and lit only on the key to press.
+    let ink = known ? "#a7a197" : "#4a4540"
+    // The light spilling round the cap: only the keys in play.
+    let glow = known ? (isNew ? 0.5 : 0.28) : 0
     let rim = known ? mix("#2e2b26", colour, isNew ? 0.55 : 0.2) : "#1f1d1a"
     let rimWidth = isNew ? 0.5 : 0.35
     let glowColour = colour
@@ -97,7 +99,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
       ink = lit(colour, 1, 0.5)
       glow = 0.6
     }
-    return { k, colour, ink, glow, glowColour, rim, rimWidth, isNext, isNew }
+    return { k, ink, glow, glowColour, rim, rimWidth, isNext }
   })
 
   return (
@@ -162,7 +164,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
           />
         ) : null
       )}
-      {keys.map(({ k, ink, rim, rimWidth, isNext, isNew }) => {
+      {keys.map(({ k, ink, rim, rimWidth, isNext }) => {
         const x = k.col * PITCH_X
         const y = k.row * PITCH_Y
         const width = k.w === 2 ? PITCH_X + CAP : CAP
@@ -181,7 +183,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
             {k.w === 1 && (
               // The glow wraps the legend in a group: a filter straight on
               // <use> drops the legend in some renderers.
-              <g filter={isNext || isNew ? "url(#kebe-legend)" : undefined}>
+              <g filter={isNext ? "url(#kebe-legend)" : undefined}>
                 <use
                   href={`/train/caps.svg#${k.id}`}
                   x={x}
