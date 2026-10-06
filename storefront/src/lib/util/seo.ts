@@ -92,6 +92,18 @@ export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
 // result. robots.txt keeps crawlers out of them as well.
 export const PRIVATE_PAGE_ROBOTS = { index: false, follow: false }
 
+// A country's name as a sentence needs it: "the United States", "Canada".
+export const countryInSentence = (name: string) =>
+  /^(United|Netherlands|Philippines|Czech Republic)\b/.test(name)
+    ? `the ${name}`
+    : name
+
+// "Canada and the United States"; "A, B and C".
+export const listInSentence = (names: string[]) =>
+  names.length > 1
+    ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
+    : names[0] ?? ""
+
 // A product's name before the " — " in its title: "KeBe v2".
 export const productName = (product: HttpTypes.StoreProduct) =>
   (product.title ?? "").split(" — ")[0]
