@@ -21,8 +21,9 @@ import { useRouter } from "next/navigation"
 // submits it through its form attribute.
 const PREORDER_FORM_ID = "preorder-form"
 
-// What a failed add says, with the address to write to instead.
-const addErrorText = (lead: string) => (
+// What a failed add says, with the address to write to instead. The buy
+// box's error boundary says the same.
+export const addErrorText = (lead: string) => (
   <>
     {lead} Try again, or email{" "}
     <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
@@ -162,13 +163,16 @@ export default function ProductActions({
   // watched the whole price, button and note block, and any pixel of that
   // counted, so at 375 x 650 a 12 px sliver of the button hid the bar
   // (6 Oct 2026). It starts as seen, so the server's HTML has no bar over
-  // the presale note before the page's script has loaded.
+  // the presale note before the page's script has loaded. The top 64 px are
+  // the sticky nav's, so a button under the nav counts as off screen.
   const buttonRef = useRef<HTMLDivElement>(null)
 
-  const inView = useIntersection(buttonRef, "0px", {
+  const inView = useIntersection(buttonRef, "-64px 0px 0px 0px", {
     full: true,
     initial: true,
   })
+
+  const errorRef = useRef<HTMLParagraphElement>(null)
 
   // A failed pre-order is a PreorderError to the pixel. It carries the
   // product only: never the error, the cart or anything the visitor typed.
@@ -223,6 +227,20 @@ export default function ProductActions({
     : addFailed
     ? addErrorText("We couldn't add it to your cart.")
     : null
+
+  // The inline error sits under the button, and at 375 x 650 that is below
+  // the fold while the button itself is in view, so the sticky bar, which
+  // repeats it, is hidden too (6 Oct 2026). When it appears with the button
+  // on screen, it is scrolled up into view. This also runs after hydration
+  // for the error that a tap made before the page's script loaded comes
+  // back with.
+  const hasAddError = !!addError
+
+  useEffect(() => {
+    if (hasAddError && inView) {
+      errorRef.current?.scrollIntoView({ block: "nearest" })
+    }
+  }, [hasAddError])
 
   // Wrapped for buttonRef, in the form or not, so the bar follows the
   // button on products without a presale too.
@@ -303,6 +321,7 @@ export default function ProductActions({
         )}
         {addError && (
           <p
+            ref={errorRef}
             role="alert"
             className="text-base text-rose-400"
             data-testid="add-error"

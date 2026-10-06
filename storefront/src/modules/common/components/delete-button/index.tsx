@@ -55,9 +55,12 @@ const DeleteButton = ({
           className
         )}
       >
+        {/* The cart page's row shows the bin alone, so the button is named
+            for screen readers there (6 Oct 2026). */}
         <button
           className="flex gap-x-1 text-ui-fg-subtle hover:text-ui-fg-base cursor-pointer"
           onClick={() => handleDelete(id)}
+          aria-label={children ? undefined : "Remove from cart"}
         >
           {isDeleting ? <Spinner className="animate-spin" /> : <Trash />}
           <span>{children}</span>

@@ -40,9 +40,12 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         )}
         <div className="flex relative z-0 w-full txt-compact-medium">
           {/* text-base: 16px. iOS zooms in on a field with smaller text when
-              it is focused, and does not zoom back out. */}
+              it is focused, and does not zoom back out. The id is the name,
+              which the label's htmlFor points at, so a screen reader names
+              the field by its label (6 Oct 2026); an id passed in wins. */}
           <input
             type={inputType}
+            id={name}
             name={name}
             placeholder=" "
             required={required}

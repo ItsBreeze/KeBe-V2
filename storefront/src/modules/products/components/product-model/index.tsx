@@ -275,7 +275,10 @@ export default function ProductModel({
           )}
         </div>
       )}
-      {!active && (
+      {/* Offered only once the model is there to turn: with posterFirst,
+          a tap before the 3.8 MB model had loaded gave "Drag to turn" over
+          the still, and dragging did nothing (6 Oct 2026). */}
+      {!active && (!posterFirst || loaded) && (
         // Over the whole frame, so a click anywhere on the model starts it.
         <button
           type="button"

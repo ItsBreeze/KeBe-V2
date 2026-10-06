@@ -41,7 +41,7 @@ export default async function OrderCompletedTemplate({
           <Heading level="h1" className="text-ui-fg-base text-3xl mb-4">
             Your order is placed.
           </Heading>
-          <OrderDetails order={order} />
+          <OrderDetails order={order} receipt />
           {/* What happens next for a pre-order: when it ships, what has been
               charged and who to ask (6 Oct 2026). order.total includes
               shipping. */}

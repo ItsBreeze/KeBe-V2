@@ -344,12 +344,35 @@ export async function preorderNow(
         headers
       )
     } else {
-      await sdk.store.cart.createLineItem(
+      const { cart: added } = await sdk.store.cart.createLineItem(
         cart.id,
         { variant_id: variantId, quantity: 1, metadata },
         {},
         headers
       )
+
+      // Two taps close together, before the page's script has loaded, can
+      // both get here before either has added the board. Medusa then adds
+      // the second to the first's line, or gives it a line of its own, and
+      // the cart holds two boards (6 Oct 2026). Whichever add runs second
+      // sees that and puts the cart back to one.
+      const [first, ...extra] = (added.items ?? []).filter(
+        (i) => i.variant_id === variantId
+      )
+
+      if (first && first.quantity > 1) {
+        await sdk.store.cart.updateLineItem(
+          cart.id,
+          first.id,
+          { quantity: 1 },
+          {},
+          headers
+        )
+      }
+
+      for (const twin of extra) {
+        await sdk.store.cart.deleteLineItem(cart.id, twin.id, {}, headers)
+      }
     }
 
     const cartCacheTag = await getCacheTag("carts")
@@ -733,9 +756,6 @@ export async function placeOrder(cartId?: string): Promise<{ error: string }> {
       }
     }
 
-    const cartCacheTag = await getCacheTag("carts")
-    revalidateTag(cartCacheTag)
-
     if (!order) {
       console.error(`Placing the order for ${id} failed:`, error)
       return { error }
@@ -746,8 +766,14 @@ export async function placeOrder(cartId?: string): Promise<{ error: string }> {
   }
 
   // The order exists from here on, so nothing may stand between the buyer
-  // and its confirmation page.
+  // and its confirmation page. The carts tag is refreshed only now (6 Oct
+  // 2026): refreshing it on a failure re-rendered checkout, which could not
+  // read the cart while the backend was down and sent a charged buyer to an
+  // empty cart, in place of the "do not pay again" message.
   try {
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
     const orderCacheTag = await getCacheTag("orders")
     revalidateTag(orderCacheTag)
 

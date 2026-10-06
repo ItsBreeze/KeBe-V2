@@ -7,16 +7,37 @@ import {
 import Input from "@modules/common/components/input"
 import NativeSelect from "@modules/common/components/native-select"
 import React, { useState } from "react"
-import CountrySelect from "../country-select"
+
+// The billing address is the card's, and a card can be billed in the other
+// country from the one the board ships to: a US card on the Canadian store
+// (6 Oct 2026). Medusa checks only the shipping address against the region,
+// so billing offers both countries the form has provinces and states for,
+// and any other country of the region.
+const BILLING_COUNTRIES = [
+  { value: "ca", label: "Canada" },
+  { value: "us", label: "United States" },
+]
 
 const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
-  // As in the shipping form: a region with one country has nothing to pick.
-  const onlyCountry =
+  const countries = [
+    ...BILLING_COUNTRIES,
+    ...(cart?.region?.countries ?? [])
+      .filter(
+        (c) => c.iso_2 && !BILLING_COUNTRIES.some((b) => b.value === c.iso_2)
+      )
+      .map((c) => ({ value: c.iso_2!, label: c.display_name ?? c.iso_2! })),
+  ]
+  // The cart's billing country when the list has it, otherwise the region's
+  // own country, as in the shipping form.
+  const storedCountry = cart?.billing_address?.country_code
+  const regionCountry =
     cart?.region?.countries?.length === 1
-      ? cart.region.countries[0]
+      ? cart.region.countries[0].iso_2
       : undefined
   const initialCountry =
-    onlyCountry?.iso_2 || cart?.billing_address?.country_code || ""
+    (storedCountry && countries.some((c) => c.value === storedCountry)
+      ? storedCountry
+      : regionCountry) || ""
 
   const [formData, setFormData] = useState<any>({
     "billing_address.first_name": cart?.billing_address?.first_name || "",
@@ -58,31 +79,24 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
   return (
     <>
       <div className="grid grid-cols-1 xsmall:grid-cols-2 gap-4">
-        {onlyCountry ? (
-          <p
-            className="xsmall:col-span-2 txt-medium text-ui-fg-subtle"
-            data-testid="billing-country"
+        <div className="xsmall:col-span-2">
+          <NativeSelect
+            name="billing_address.country_code"
+            autoComplete="billing country"
+            placeholder="Country"
+            aria-label="Country"
+            value={country}
+            onChange={handleChange}
+            required
+            data-testid="billing-country-select"
           >
-            Country: {onlyCountry.display_name}
-            <input
-              type="hidden"
-              name="billing_address.country_code"
-              value={onlyCountry.iso_2 ?? ""}
-            />
-          </p>
-        ) : (
-          <div className="xsmall:col-span-2">
-            <CountrySelect
-              name="billing_address.country_code"
-              autoComplete="billing country"
-              region={cart?.region}
-              value={formData["billing_address.country_code"]}
-              onChange={handleChange}
-              required
-              data-testid="billing-country-select"
-            />
-          </div>
-        )}
+            {countries.map(({ value, label }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </NativeSelect>
+        </div>
         <Input
           label="First name"
           name="billing_address.first_name"

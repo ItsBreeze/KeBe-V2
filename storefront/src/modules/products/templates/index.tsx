@@ -4,6 +4,7 @@ import ImageGallery from "@modules/products/components/image-gallery"
 import ProductModel from "@modules/products/components/product-model"
 import ProductVideo from "@modules/products/components/product-video"
 import ProductActions from "@modules/products/components/product-actions"
+import BuyBoxBoundary from "@modules/products/components/product-actions/buy-box-boundary"
 import ProductTabs from "@modules/products/components/product-tabs"
 import BeforeYouPreorder from "@modules/products/components/before-you-preorder"
 import RelatedProducts from "@modules/products/components/related-products"
@@ -21,10 +22,42 @@ import {
   presaleShipsBy,
 } from "@lib/util/presale"
 import { BUYBOX_REASONS } from "@lib/util/kebe-copy"
+import { listProducts } from "@lib/data/products"
 import PixelEvent from "@modules/common/components/meta-pixel/pixel-event"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 import ProductActionsWrapper from "./product-actions-wrapper"
+
+// v1's line pointing at v2, said only while v2 is on pre-order and can be
+// bought (6 Oct 2026). Once v2's pre-orders close as well, or it is sold
+// without a ship date, the line is left out rather than send the visitor to
+// another page that cannot sell them a board. A failed read leaves it out
+// too. It is the cached product read, which the backend refreshes when stock
+// moves.
+async function V2OnPreorder({ regionId }: { regionId: string }) {
+  const v2 = await listProducts({
+    regionId,
+    queryParams: { handle: PRESALE_HANDLE, limit: 1 },
+  })
+    .then(({ response }) => response.products[0])
+    .catch(() => undefined)
+
+  if (!v2 || !presaleShipsBy(v2) || !presaleAvailability(v2).open) {
+    return null
+  }
+
+  return (
+    <p className="text-base text-ui-fg-subtle">
+      v1 is sold out. KeBe v2 is on pre-order.{" "}
+      <LocalizedClientLink
+        href={`/products/${PRESALE_HANDLE}`}
+        className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
+      >
+        See KeBe v2
+      </LocalizedClientLink>
+    </p>
+  )
+}
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -78,7 +111,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   const shipsBy = presaleShipsBy(product)
   // v1's page, once it cannot be bought, points at the board that can,
   // rather than ending at a disabled button (6 Oct 2026). The handle check
-  // keeps the line off v2's own page should its presale ever end.
+  // keeps the line off v2's own page should its presale ever end, and
+  // V2OnPreorder says it only while v2 can be pre-ordered.
   const soldOutToV2 =
     !shipsBy &&
     product.handle !== PRESALE_HANDLE &&
@@ -143,27 +177,23 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </div>
           <div className="flex flex-col gap-8 small:col-span-5">
             <ProductInfo product={product} />
-            <Suspense
-              fallback={
-                <ProductActions
-                  disabled={true}
-                  product={product}
-                  region={region}
-                />
-              }
-            >
-              <ProductActionsWrapper id={product.id} region={region} />
-            </Suspense>
+            <BuyBoxBoundary productId={product.id} preorder={!!shipsBy}>
+              <Suspense
+                fallback={
+                  <ProductActions
+                    disabled={true}
+                    product={product}
+                    region={region}
+                  />
+                }
+              >
+                <ProductActionsWrapper id={product.id} region={region} />
+              </Suspense>
+            </BuyBoxBoundary>
             {soldOutToV2 && (
-              <p className="text-base text-ui-fg-subtle">
-                v1 is sold out. KeBe v2 is on pre-order.{" "}
-                <LocalizedClientLink
-                  href={`/products/${PRESALE_HANDLE}`}
-                  className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
-                >
-                  See KeBe v2
-                </LocalizedClientLink>
-              </p>
+              <Suspense fallback={null}>
+                <V2OnPreorder regionId={region.id} />
+              </Suspense>
             )}
             {/* The presale's short answers, directly under the button and
                 its note; nothing on other products. */}

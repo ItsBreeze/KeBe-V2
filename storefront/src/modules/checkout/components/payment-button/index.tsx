@@ -160,12 +160,14 @@ const StripePaymentButton = ({
         }
 
         // A decline or a card number Stripe rejects: its own message, which
-        // Stripe writes for buyers, and the button back for another try.
+        // Stripe writes for buyers, and the button back for another try. At
+        // Review the card field is closed, so the way back to it is named:
+        // Payment's Change.
         if (error.type === "card_error" || error.type === "validation_error") {
           setErrorMessage(
             [
               error.message,
-              "Check the card details above, or use another card.",
+              "Tap Change under Payment to check the card or use another one.",
             ]
               .filter(Boolean)
               .join(" ")
