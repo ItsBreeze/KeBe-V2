@@ -143,7 +143,7 @@ export async function GET() {
       shipsTo ? `, which ships to ${shipsTo}` : ""
     }.`,
     "",
-    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is calculated at checkout from the address. KeBe's keyboards are wired: none has a battery or Bluetooth.",
+    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is calculated at checkout from the address. KeBe's keyboards are wired.",
     "",
     ...handles.map((h) => productSection(byHandle[h], names) + "\n"),
     "## Learn the layout",

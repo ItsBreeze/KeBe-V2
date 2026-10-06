@@ -2,7 +2,7 @@ import { listStorefront, storeUnavailable } from "@lib/data/seo"
 import {
   absoluteUrl,
   languageAlternates,
-  productImageUrls,
+  listingImageUrls,
   xmlText,
 } from "@lib/util/seo"
 
@@ -64,7 +64,7 @@ export async function GET() {
       const entry = (products[p.handle] ??= {
         countries: [],
         lastModified: updated,
-        images: productImageUrls(p),
+        images: listingImageUrls(p),
       })
       entry.countries.push(cc)
       if (updated && (!latest || updated > latest)) latest = updated
