@@ -2,29 +2,29 @@
 // from the 1,000 most common English words (words.ts); a level takes only the
 // ones its keys can type.
 //
-// The order is the owner's (5 Oct 2026): the eight resting keys, then I and D
-// to finish the home row, then two keys at a time working out from the home
-// keys: G C and R L straight up on the right, F B the pointer finger's other
-// column, and the same on the left hand and the bottom row. Then the number
-// row, the middle columns, the modifiers and the Fn layer.
+// The order is the owner's (5 Oct 2026): the eight resting keys, then one key
+// at a time working out from them: I and D to finish the home row, G C R L
+// straight up on the right, F and B the pointer finger's other column, the
+// same on the left hand, then the bottom row. Then the number row, the middle
+// columns, the modifiers and the Fn layer, a few keys a level.
 //
-// Each level is practised before it is tested (owner, 5 Oct 2026): words
-// that use the new keys, building up from the ones with the fewest
-// different keys, with more practice early and less as the levels ramp.
-// Only whole words, never letters on their own. The test is ten fresh random words,
-// every one using a new key, and PASS_WPM on it opens the next level.
+// One key a level makes the levels themselves the build-up, so each is a
+// single round: ten fresh random words, every one using the new key where
+// the thousand words allow, and its target speed (`pass`) opens the next.
+// Only whole words, never letters on their own: a word is learned as one
+// movement, like a chord. The targets drop after the letters, where the
+// reaches are longer and the words are not prose (owner, 5 Oct 2026).
 import { FN, KEYS, SHIFT } from "./layout"
 import { TOP_WORDS } from "./words"
 
+// The letters' target; later levels set their own.
 export const PASS_WPM = 60
 export const TEST_WORDS = 10
 
-// Stars on a level: one for passing, more for going faster.
-export const STARS = [PASS_WPM, 75, 90]
-export const starsFor = (wpm?: number) =>
-  STARS.filter((t) => (wpm ?? 0) >= t).length
-
-export type Round = { title: string; make: (avoid: Set<string>) => string[] }
+// Stars on a level: one for reaching its target, two at 1.25 times it, three
+// at 1.5 times (60, 75, 90 on the letters).
+export const starsFor = (wpm: number | undefined, pass = PASS_WPM) =>
+  [1, 1.25, 1.5].filter((f) => (wpm ?? 0) >= Math.round(pass * f)).length
 
 export type Level = {
   id: string
@@ -37,9 +37,9 @@ export type Level = {
   // Characters this level types on the Fn layer, and by tapping a modifier.
   fn?: string
   taps?: string
-  // Untimed for the gate, easiest first, before the test.
-  practice: Round[]
-  // The test.
+  // Words a minute that pass it and open the next level.
+  pass: number
+  // Ten words for a round.
   make: (avoid: Set<string>) => string[]
 }
 
@@ -135,7 +135,9 @@ function punctuate(words: string[], known: string, fresh: string) {
   if (!marks.length && !extra.length) return words
   return words.map((w, i) => {
     if (i === words.length - 1 || !/[a-z]$/i.test(w)) return w
-    if (extra.length && Math.random() < 0.4) return w + pick(extra)
+    // A punctuation key's own level puts it after most words.
+    const often = chars(fresh).every((c) => MARKS.includes(c)) ? 0.8 : 0.4
+    if (extra.length && Math.random() < often) return w + pick(extra)
     if (marks.length && Math.random() < 0.12) return w + pick(marks)
     return w
   })
@@ -152,69 +154,30 @@ type Source = {
   fallback?: (known: string) => string[]
 }
 
-// Only whole words, never letters on their own: a word is learned as one
-// movement, like a chord (owner, 5 Oct 2026). Practice builds up: the
-// level's words in order of how many different keys they take, fewest
-// first, a slice per round, so the first rounds are the simplest chords.
-// Early levels, whose few keys make few words, practise all of them over
-// more rounds (`most`); later levels get fewer. The test draws from all.
-const complexity = (w: string) => new Set(chars(bare(w))).size
-
-function rounds(src: Source, known: string, most: number) {
-  const deco = (ws: string[]) => punctuate(ws, known, src.fresh)
-  // Ten words from a pool, topped up from the fallback rather than repeated
-  // when the pool is small (Q has five words in the thousand).
-  const ten = (pool: string[], avoid: Set<string>) => {
-    const words = focused(pool, src.fresh, TEST_WORDS, avoid)
+// Ten words for a round: the level's own, topped up from the fallback
+// rather than repeated when the thousand words have few (Z has three).
+function round(src: Source, known: string) {
+  return (avoid: Set<string>) => {
+    const words = focused(src.pool(known), src.fresh, TEST_WORDS, avoid)
     if (words.length < TEST_WORDS && src.fallback) {
-      const more = src.fallback(known).filter((w) => !words.includes(w))
-      words.push(...shuffle(more).slice(0, TEST_WORDS - words.length))
+      // In the fallback's order (the key before's words first), each once.
+      const more = Array.from(new Set(src.fallback(known))).filter(
+        (w) => !words.includes(w) && !avoid.has(bare(w))
+      )
+      words.push(...more.slice(0, TEST_WORDS - words.length))
     }
-    return deco(shuffle(fill(words, TEST_WORDS)))
+    return punctuate(shuffle(fill(words, TEST_WORDS)), known, src.fresh)
   }
-  const built = () =>
-    src
-      .pool(known)
-      .map((w, i) => ({ w, i, c: complexity(w) }))
-      .sort((a, b) => a.c - b.c || a.w.length - b.w.length || a.i - b.i)
-      .map((x) => x.w)
-  // Seven to ten words a round, at most `most` rounds, at least one.
-  const count = Math.max(1, Math.min(most, Math.floor(src.pool(known).length / 7)))
-  const slice = (k: number) => {
-    const pool = built()
-    const at = (j: number) => Math.round((j * pool.length) / count)
-    return pool.slice(at(k), at(k + 1))
-  }
-  const practice: Round[] = Array.from({ length: count }, (_, k) => ({
-    title: `Practice ${k + 1}`,
-    make: (avoid) => {
-      const words = slice(k)
-      // A slice of six or more is the round, nothing repeated; a smaller
-      // pool (Q) is topped up as the test is.
-      return words.length >= 6
-        ? deco(shuffle(focused(words, src.fresh, Math.min(TEST_WORDS, words.length), avoid)))
-        : ten(words, avoid)
-    },
-  }))
-  const make = (avoid: Set<string>) => ten(src.pool(known), avoid)
-  return { practice, make }
 }
 
-// Letters: each step's new characters. "'" makes contractions typeable, and
-// , . ; go after words.
+// Letters: each step's new key. "'" makes contractions typeable, and , . ;
+// go after words.
 const LETTER_STEPS = [
   "aoeuhtns",
-  "id",
-  "gc",
-  "rl",
-  "fb",
-  "p.",
-  ",'",
-  "yx",
-  "mw",
-  "vz",
-  "kj",
-  "q;",
+  "i", "d",
+  "g", "c", "r", "l", "f", "b",
+  "p", ".", ",", "'", "y", "x",
+  "m", "w", "v", "z", "k", "j", "q", ";",
 ]
 
 const wordsUsing = (known: string, fresh: string) => {
@@ -227,7 +190,8 @@ const wordsUsing = (known: string, fresh: string) => {
 const letterSource = (i: number): Source => ({
   fresh: LETTER_STEPS[i],
   pool: (known) => wordsUsing(known, LETTER_STEPS[i]),
-  // Short of words (Q, say): the step before's, then anything known.
+  // Short of words (Z, say, or a punctuation key): the step before's, then
+  // anything known.
   fallback: (known) =>
     i > 0
       ? [
@@ -309,7 +273,7 @@ const SHIFTED = [
   "this&that", "*note*", "*very*", "*not*", "this|that", "yes|no", "left|right",
   "<html>", "<body>", "<head>", "<title>", "<main>", "<form>", "<table>", "<style>",
   "{name}", "{value}", "{date}", "{user}", "{title}", "C++", "A+", "salt+pepper",
-  "this+that", "What?", "Why?", "Yes!", "Hello!", "Dear:",
+  "this+that", "Dear:",
 ]
 
 // The Fn layer's number pad: right-hand digits, + - * / and . beside them,
@@ -346,104 +310,48 @@ const padSums = () =>
 
 // ---- the levels -----------------------------------------------------------
 
-type Def = Omit<Level, "n" | "practice" | "make"> & {
+type Def = Omit<Level, "n" | "make" | "pass"> & {
   source: Source
   // What it adds to what later levels can type.
   teaches: string
-  most?: number
+  pass?: number
 }
 
-// Practice rounds at most, by letter level: more at the start, fewer as the
-// levels ramp up. Every level after the letters gets two.
-const LETTER_PRACTICE = [6, 6, 5, 5, 4, 4, 3, 3, 3, 2, 2, 2]
+// [id, group, title, blurb] for each letter step.
+const LETTER_INFO: [string, string, string, string][] = [
+  ["home-rest", "Home row", "The resting keys", "Rest your fingers on A O E U and H T N S. Every other key is a reach from one of these. Space goes to the thumb of the hand that did not type the word's last letter."],
+  ["key-i", "Home row", "I", "The left pointer finger reaches in from U."],
+  ["key-d", "Home row", "D", "The right pointer finger reaches in from H. That is the whole home row."],
+  ["key-g", "Right hand", "G", "Straight up from H, with the right pointer finger."],
+  ["key-c", "Right hand", "C", "Straight up from T, with the right middle finger."],
+  ["key-r", "Right hand", "R", "Straight up from N, with the right ring finger."],
+  ["key-l", "Right hand", "L", "Straight up from S, with the right pinky."],
+  ["key-f", "Right hand", "F", "Up from D, with the right pointer finger."],
+  ["key-b", "Right hand", "B", "Down from D, with the right pointer finger."],
+  ["key-p", "Left hand", "P", "Straight up from U, with the left pointer finger."],
+  ["key-period", "Left hand", "Period", "Straight up from E, with the left middle finger."],
+  ["key-comma", "Left hand", "Comma", "Straight up from O, with the left ring finger."],
+  ["key-apostrophe", "Left hand", "Apostrophe", "Straight up from A, with the left pinky."],
+  ["key-y", "Left hand", "Y", "Up from I, with the left pointer finger."],
+  ["key-x", "Left hand", "X", "Down from I, with the left pointer finger."],
+  ["key-m", "Bottom row", "M", "Straight down from H, with the right pointer finger."],
+  ["key-w", "Bottom row", "W", "Straight down from T, with the right middle finger."],
+  ["key-v", "Bottom row", "V", "Straight down from N, with the right ring finger."],
+  ["key-z", "Bottom row", "Z", "Straight down from S, with the right pinky."],
+  ["key-k", "Bottom row", "K", "Straight down from U, with the left pointer finger."],
+  ["key-j", "Bottom row", "J", "Straight down from E, with the left middle finger."],
+  ["key-q", "Bottom row", "Q", "Straight down from O, with the left ring finger."],
+  ["key-semicolon", "Bottom row", "Semicolon", "Straight down from A, with the left pinky. That is every letter."],
+]
 
-const LETTER_DEFS: Def[] = [
-  {
-    id: "home-rest",
-    group: "Home row",
-    title: "The resting keys",
-    blurb:
-      "Rest your fingers on A O E U and H T N S and keep them there: every other key is a reach from one of these eight. Space goes to the thumb of the hand that did not type the last letter, so the hands take turns.",
-  },
-  {
-    id: "home-id",
-    group: "Home row",
-    title: "I and D",
-    blurb:
-      "Each pointer finger reaches one key toward the middle: I on the left, D on the right. That is the whole home row: every vowel under the left hand, the commonest consonants under the right.",
-  },
-  {
-    id: "right-gc",
-    group: "Right hand, up",
-    title: "G and C",
-    blurb:
-      "Straight up from H and T, with the right pointer and middle fingers. KeBe's columns don't lean, so up is straight up.",
-  },
-  {
-    id: "right-rl",
-    group: "Right hand, up",
-    title: "R and L",
-    blurb: "Straight up from N and S, with the right ring finger and pinky.",
-  },
-  {
-    id: "right-fb",
-    group: "Right hand, up",
-    title: "F and B",
-    blurb:
-      "The right pointer finger's other column, above and below D: F up, B down.",
-  },
-  {
-    id: "left-p",
-    group: "Left hand, up",
-    title: "P and .",
-    blurb:
-      "Now the left hand: P straight up from U with the pointer finger, the period up from E with the middle finger.",
-  },
-  {
-    id: "left-comma",
-    group: "Left hand, up",
-    title: ", and '",
-    blurb:
-      "Up from O and A: the comma for the ring finger, the apostrophe for the pinky.",
-  },
-  {
-    id: "left-yx",
-    group: "Left hand, up",
-    title: "Y and X",
-    blurb:
-      "The left pointer finger's other column, above and below I: Y up, X down.",
-  },
-  {
-    id: "bottom-mw",
-    group: "Bottom row",
-    title: "M and W",
-    blurb: "Down from H and T, with the right pointer and middle fingers.",
-  },
-  {
-    id: "bottom-vz",
-    group: "Bottom row",
-    title: "V and Z",
-    blurb: "Down from N and S, with the right ring finger and pinky.",
-  },
-  {
-    id: "bottom-kj",
-    group: "Bottom row",
-    title: "K and J",
-    blurb: "Down from U and E, with the left pointer and middle fingers.",
-  },
-  {
-    id: "bottom-q",
-    group: "Bottom row",
-    title: "Q and ;",
-    blurb:
-      "Down from O and A: Q for the ring finger, the semicolon for the pinky. That is every letter.",
-  },
-].map((d, i) => ({
-  ...d,
+const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
+  id,
+  group,
+  title,
+  blurb,
   adds: keysFor(LETTER_STEPS[i]),
   source: letterSource(i),
   teaches: LETTER_STEPS[i],
-  most: LETTER_PRACTICE[i],
 }))
 
 const DIGIT_STEPS = ["7890", "1234", "56"]
@@ -467,6 +375,7 @@ const NUMBER_DEFS: Def[] = [
 ].map((d, i) => ({
   ...d,
   group: "Number row",
+  pass: 40,
   adds: keysFor(DIGIT_STEPS[i]),
   source: numberSource(DIGIT_STEPS[i]),
   teaches: DIGIT_STEPS[i],
@@ -492,6 +401,7 @@ const MIDDLE_DEFS: Def[] = [
 ].map((d, i) => ({
   ...d,
   group: "Middle columns",
+  pass: 40,
   adds: keysFor(MIDDLE_STEPS[i]),
   source: listSource(MIDDLE, MIDDLE_STEPS[i]),
   teaches: MIDDLE_STEPS[i],
@@ -502,6 +412,7 @@ const MODIFIER_DEFS: Def[] = [
     id: "mod-caps",
     group: "Modifiers",
     title: "Capitals",
+    pass: 50,
     adds: [SHIFT.left, SHIFT.right],
     blurb:
       "Hold Shift with the other hand: the right Shift for a left-hand letter, the left Shift for a right-hand one.",
@@ -516,6 +427,7 @@ const MODIFIER_DEFS: Def[] = [
     id: "mod-parens",
     group: "Modifiers",
     title: "( and )",
+    pass: 40,
     adds: [SHIFT.left, SHIFT.right],
     taps: "()",
     blurb:
@@ -527,6 +439,7 @@ const MODIFIER_DEFS: Def[] = [
     id: "mod-taps",
     group: "Modifiers",
     title: "[ ] = _",
+    pass: 40,
     adds: ["CH57", "CH68", "CH60", "CH65"],
     taps: "()[]=_",
     blurb:
@@ -538,6 +451,7 @@ const MODIFIER_DEFS: Def[] = [
     id: "mod-shifted",
     group: "Modifiers",
     title: "Shifted symbols",
+    pass: 30,
     adds: [],
     taps: "()[]=_",
     blurb:
@@ -552,6 +466,7 @@ const FN_DEFS: Def[] = [
     id: "fn-pad",
     group: "Fn layer",
     title: "Number pad",
+    pass: 35,
     adds: [FN.left, FN.right, ...padKeys(PAD_DIGITS)],
     fn: PAD_DIGITS,
     blurb:
@@ -566,6 +481,7 @@ const FN_DEFS: Def[] = [
     id: "fn-sums",
     group: "Fn layer",
     title: "Arithmetic",
+    pass: 30,
     adds: padKeys(PAD_OPS),
     fn: PAD_DIGITS + PAD_OPS,
     blurb:
@@ -580,11 +496,11 @@ const FN_DEFS: Def[] = [
 
 const DEFS = [...LETTER_DEFS, ...NUMBER_DEFS, ...MIDDLE_DEFS, ...MODIFIER_DEFS, ...FN_DEFS]
 
-export const LEVELS: Level[] = DEFS.map(({ source, teaches, most, ...d }, i) => {
+export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, ...d }, i) => {
   const known = DEFS.slice(0, i)
     .map((p) => p.teaches)
     .join("")
-  return { ...d, n: i + 1, ...rounds(source, known, most ?? 2) }
+  return { ...d, n: i + 1, pass: pass ?? PASS_WPM, make: round(source, known) }
 })
 
 export const GROUPS = LEVELS.reduce<string[]>(

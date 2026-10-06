@@ -6,7 +6,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Trainer from "@modules/train/components/trainer"
 
 const DESCRIPTION =
-  "Learn KeBe's Matrix-Dvorak layout a couple of keys at a time: whole words from the thousand most common, 60 words a minute to open the next level, and a 10-word speed test for your top score."
+  "Learn KeBe's Matrix-Dvorak layout one key at a time: whole words from the thousand most common, a target speed to open the next level, and a 10-word speed test for your top score."
 
 export const metadata: Metadata = {
   title: "Learn the layout",
@@ -31,7 +31,7 @@ export default async function TrainPage(props: {
 
   return (
     <div className="bg-kebe-page text-kebe-text">
-      <div className="mx-auto max-w-[1100px] px-[6vw] pb-20 pt-8 small:px-[4vw] small:pt-10">
+      <div className="mx-auto max-w-[1100px] px-[6vw] pb-20 pt-4 small:px-[4vw] small:pt-6">
         <h1 className="sr-only">Learn KeBe&apos;s layout: a typing trainer</h1>
         <Trainer
           account={account}

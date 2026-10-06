@@ -43,10 +43,9 @@ import {
   STORAGE_KEY,
 } from "@lib/train/progress"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Board from "@modules/train/components/board"
-import Hands from "@modules/train/components/hands"
+import Board, { FingerKey } from "@modules/train/components/board"
 
-// The typing trainer: nine levels that open one at a time at PASS_WPM, and
+// The typing trainer: levels that open one at a time at each one's target, and
 // a 10-word speed test over the 1,000 most common English words. Words are
 // judged one at a time: Space moves on, Backspace can step back into a word
 // that went wrong, and only correctly typed words count toward the speed.
@@ -181,8 +180,6 @@ type Result = {
   prevBest: number
   newTop: boolean
   opened: number | null
-  // The practice round's title; null for a test.
-  practice: string | null
 }
 
 type KeyLike = {
@@ -236,9 +233,6 @@ export default function Trainer({
 }) {
   const [mode, setMode] = useState<Mode>(initialMode)
   const [levelN, setLevelN] = useState(1)
-  // Which round of the level: its practice rounds, then the test.
-  const [step, setStep] = useState(0)
-  const [doneSteps, setDoneSteps] = useState<number[]>([])
   const [progress, setProgress] = useState<Progress>(
     account?.progress ?? EMPTY_PROGRESS
   )
@@ -259,15 +253,7 @@ export default function Trainer({
   const level = LEVELS[levelN - 1]
   const opts = mode === "levels" ? { fn: level.fn, taps: level.taps } : {}
   const open = openCount(progress)
-  const round =
-    mode === "levels" && step < level.practice.length ? level.practice[step] : null
-
-  // Every level starts at its first practice round.
-  const goLevel = useCallback((n: number) => {
-    setLevelN(n)
-    setStep(0)
-    setDoneSteps([])
-  }, [])
+  const goLevel = useCallback((n: number) => setLevelN(n), [])
 
   // ---- progress: the browser's copy merged with the account's ------------
 
@@ -327,12 +313,12 @@ export default function Trainer({
   const newWords = useCallback(() => {
     const avoid = lastWords.current
     const words =
-      mode === "test" ? speedTest(avoid) : round ? round.make(avoid) : level.make(avoid)
+      mode === "test" ? speedTest(avoid) : level.make(avoid)
     lastWords.current = new Set(words.map(bare))
     setResult(null)
     dispatch({ type: "reset", words })
     area.current?.focus({ preventScroll: true })
-  }, [mode, level, round])
+  }, [mode, level])
 
   useEffect(() => {
     newWords()
@@ -351,19 +337,6 @@ export default function Trainer({
     recorded.current = run.id
     const s = stats(run, run.end)
     if (!s) return
-    // Practice shows its speed and counts for nothing.
-    if (round) {
-      setDoneSteps((d) => (d.includes(step) ? d : [...d, step]))
-      setResult({
-        key: level.id,
-        ...s,
-        prevBest: 0,
-        newTop: false,
-        opened: null,
-        practice: `${round.title} of ${level.practice.length}`,
-      })
-      return
-    }
     const key = mode === "test" ? "test" : level.id
     const after = recordResult(progress, key, s.wpm)
     const was = openCount(progress)
@@ -374,23 +347,21 @@ export default function Trainer({
       prevBest: progress.best[key] ?? 0,
       newTop: (after.best[key] ?? 0) > (progress.best[key] ?? 0),
       opened: mode === "levels" && is > was ? is : null,
-      practice: null,
     })
-    if (mode === "levels") setDoneSteps((d) => (d.includes(step) ? d : [...d, step]))
     if (!sameProgress(after, progress)) {
       setProgress(after)
       persist(after)
     }
-  }, [run, mode, level, round, step, progress, persist])
+  }, [run, mode, level, progress, persist])
 
   // ---- keys ----------------------------------------------------------------
 
-  const state = useRef({ run, result, levelN, step, progress, mode, opts })
-  state.current = { run, result, levelN, step, progress, mode, opts }
+  const state = useRef({ run, result, levelN, progress, mode, opts })
+  state.current = { run, result, levelN, progress, mode, opts }
 
   const handleKey = useCallback(
     (e: KeyLike) => {
-      const { run, result, levelN, step, progress, mode, opts } = state.current
+      const { run, result, levelN, progress, mode, opts } = state.current
       if (e.isComposing) return
       const el = e.target as HTMLElement | null
       if (
@@ -407,8 +378,7 @@ export default function Trainer({
       if (result || run.end !== null) {
         if (e.key === "Enter") {
           e.preventDefault()
-          if (result?.practice) setStep(step + 1)
-          else if (mode === "levels" && openCount(progress) > levelN) goLevel(levelN + 1)
+          if (mode === "levels" && openCount(progress) > levelN) goLevel(levelN + 1)
           else newWords()
         } else if (e.key.length === 1) {
           e.preventDefault()
@@ -504,9 +474,8 @@ export default function Trainer({
     setMode("levels")
     goLevel(n)
   }
-  const steps = [...level.practice.map((r) => r.title), "Test"]
-  const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= PASS_WPM).length
-  const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id]), 0)
+  const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= l.pass).length
+  const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id], l.pass), 0)
   const streak = streakOf(run)
   const toggleBoard = () => {
     setShowBoard((v) => {
@@ -519,8 +488,10 @@ export default function Trainer({
 
   return (
     <div data-trainer>
-      {/* The top bar: what to play, and how far along the levels you are. */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      {/* One screen, top to bottom: the bar (mode, progress), the level
+          strip, the level, the words, the speed line, the board coloured by
+          finger. Sized so it all fits without scrolling (owner, 5 Oct 2026). */}
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <div
           role="group"
           aria-label="What to practise"
@@ -537,7 +508,7 @@ export default function Trainer({
               aria-pressed={mode === m}
               onClick={() => setMode(m)}
               className={clx(
-                "rounded-lg px-4 py-2 transition-colors",
+                "rounded-lg px-3 py-1.5 transition-colors",
                 mode === m
                   ? "bg-kebe-text text-kebe-page"
                   : "text-kebe-muted hover:text-kebe-text"
@@ -565,154 +536,88 @@ export default function Trainer({
         </div>
       </div>
 
-      {/* The level map: every level in its group, filled for the one being
-          played, outlined green once passed with its stars beneath, locked
-          until the one before it is passed. */}
+      {/* The level strip: every level in one row, grouped, filled for the
+          one being played, outlined green once passed, locked until the one
+          before it is passed. Scrolls sideways where the screen is narrow. */}
       {mode === "levels" && (
-        <div className="mt-6 flex flex-wrap gap-x-5 gap-y-4">
-          {GROUPS.map((g) => (
-            <div key={g}>
-              <p className="mb-2 font-mono text-[10px] uppercase tracking-[0.14em] text-kebe-faint">
-                {g}
-              </p>
-              <ol className="flex gap-1.5">
-                {LEVELS.filter((l) => l.group === g).map((l) => {
-                  const locked = l.n > open
-                  const b = progress.best[l.id]
-                  const passed = (b ?? 0) >= PASS_WPM
-                  const current = l.n === levelN
-                  return (
-                    <li key={l.id}>
-                      <button
-                        disabled={locked}
-                        onClick={() => pickLevel(l.n)}
-                        aria-current={current ? "step" : undefined}
-                        aria-label={`Level ${l.n}, ${l.title}${
-                          locked
-                            ? ", locked"
-                            : b
-                            ? `, best ${b} wpm, ${starsFor(b)} of 3 stars`
-                            : ""
-                        }`}
-                        title={
-                          locked
-                            ? `${l.title}: pass level ${l.n - 1} at ${PASS_WPM} wpm to open`
-                            : `${l.title}${b ? ` · best ${b} wpm` : ""}`
-                        }
-                        className={clx(
-                          "flex h-12 w-10 flex-col items-center justify-center gap-0.5 rounded-lg border font-mono text-xs transition-colors",
-                          current
-                            ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
-                            : passed
-                            ? "border-[#3f9e77]/70 text-kebe-text hover:border-[#3f9e77]"
-                            : "border-kebe-line text-kebe-text hover:border-kebe-muted",
-                          locked &&
-                            "cursor-not-allowed text-kebe-faint opacity-50 hover:border-kebe-line"
-                        )}
-                      >
-                        {locked ? (
-                          <Lock />
-                        ) : (
-                          <>
-                            <span>{l.n}</span>
-                            <Stars n={starsFor(b)} dim={current} />
-                          </>
-                        )}
-                      </button>
-                    </li>
-                  )
-                })}
-              </ol>
-            </div>
-          ))}
-        </div>
+        <ol
+          aria-label="Levels"
+          className="mt-4 flex items-center gap-[2px] overflow-x-auto pb-1 [scrollbar-width:thin]"
+        >
+          {LEVELS.map((l, i) => {
+            const locked = l.n > open
+            const b = progress.best[l.id]
+            const passed = (b ?? 0) >= l.pass
+            const current = l.n === levelN
+            const newGroup = i > 0 && LEVELS[i - 1].group !== l.group
+            return (
+              <li key={l.id} className={clx("shrink-0", newGroup && "ml-1.5")}>
+                <button
+                  disabled={locked}
+                  onClick={() => pickLevel(l.n)}
+                  aria-current={current ? "step" : undefined}
+                  aria-label={`Level ${l.n}, ${l.group}, ${l.title}${
+                    locked
+                      ? ", locked"
+                      : b
+                      ? `, best ${b} wpm, ${starsFor(b, l.pass)} of 3 stars`
+                      : ""
+                  }`}
+                  title={
+                    locked
+                      ? `${l.group} · ${l.title}: pass level ${l.n - 1} to open`
+                      : `${l.group} · ${l.title}${b ? ` · best ${b} wpm` : ""}`
+                  }
+                  className={clx(
+                    "flex h-6 w-6 items-center justify-center rounded-md border font-mono text-[9px] transition-colors",
+                    current
+                      ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
+                      : passed
+                      ? "border-[#3f9e77]/70 bg-[#3f9e77]/10 text-kebe-text hover:border-[#3f9e77]"
+                      : "border-kebe-line text-kebe-text hover:border-kebe-muted",
+                    locked &&
+                      "cursor-not-allowed text-kebe-faint opacity-50 hover:border-kebe-line"
+                  )}
+                >
+                  {locked ? <Lock /> : l.n}
+                </button>
+              </li>
+            )
+          })}
+        </ol>
       )}
 
-      {/* The level being played */}
-      <div className="mt-8 flex flex-wrap items-end justify-between gap-x-6 gap-y-3">
-        <div className="min-w-0">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            {mode === "test"
-              ? "Ten of the 1,000 most common words"
-              : `Level ${level.n} of ${LEVELS.length} · ${level.group}`}
-          </p>
-          <h2 className="mt-1 font-display text-[clamp(1.6rem,3.5vw,2.25rem)] leading-tight">
+      {/* The level being played, on one line: where it is, what it adds,
+          a one-line tip, its target and the best so far. */}
+      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+          <h2 className="font-display text-2xl leading-tight">
             {mode === "test" ? "The 10-word test" : level.title}
           </h2>
+          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-kebe-muted">
+            {mode === "test"
+              ? "Ten of the 1,000 most common words"
+              : `Level ${level.n}/${LEVELS.length} · ${level.group}`}
+          </p>
         </div>
-        <dl className="flex shrink-0 gap-6 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+        <dl className="flex shrink-0 items-baseline gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted">
           {mode === "levels" && (
-            <div>
-              <dt>To pass</dt>
-              <dd className="mt-1 text-base text-kebe-text">{PASS_WPM} wpm</dd>
+            <div className="flex items-baseline gap-2">
+              <dt>Pass</dt>
+              <dd className="text-sm text-kebe-text">{level.pass}</dd>
             </div>
           )}
-          <div>
-            <dt>{mode === "test" ? "Top score" : "Best"}</dt>
-            <dd className="mt-1 flex items-center gap-2 text-base text-kebe-text">
-              {best ? `${best} wpm` : "—"}
-              {mode === "levels" && best ? <Stars n={starsFor(best)} /> : null}
+          <div className="flex items-baseline gap-2">
+            <dt>{mode === "test" ? "Top" : "Best"}</dt>
+            <dd className="flex items-center gap-2 text-sm text-kebe-text">
+              {best ?? "—"}
+              {mode === "levels" && best ? <Stars n={starsFor(best, level.pass)} /> : null}
             </dd>
           </div>
         </dl>
       </div>
       {mode === "levels" && (
-        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-kebe-muted">
-          {level.blurb}
-        </p>
-      )}
-
-      {/* The level's rounds: practice that builds up from its simplest
-          words, then the test. Any round can be picked; a level starts on
-          its first. */}
-      {mode === "levels" && (
-        <ol
-          aria-label="Rounds"
-          className="mt-5 flex flex-wrap items-center gap-1.5 font-mono text-xs uppercase tracking-[0.14em]"
-        >
-          <li className="mr-1 text-kebe-faint">Practice</li>
-          {level.practice.map((r, i) => (
-            <li key={r.title}>
-              <button
-                onClick={() => setStep(i)}
-                aria-current={i === step ? "step" : undefined}
-                aria-label={r.title}
-                className={clx(
-                  "flex h-8 w-8 items-center justify-center rounded-lg border transition-colors",
-                  i === step
-                    ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
-                    : doneSteps.includes(i)
-                    ? "border-[#3f9e77]/70 text-kebe-text hover:border-[#3f9e77]"
-                    : "border-kebe-line text-kebe-muted hover:text-kebe-text"
-                )}
-              >
-                {i + 1}
-              </button>
-            </li>
-          ))}
-          <li aria-hidden className="mx-1 text-kebe-faint">
-            →
-          </li>
-          <li>
-            <button
-              onClick={() => setStep(level.practice.length)}
-              aria-current={!round ? "step" : undefined}
-              className={clx(
-                "flex h-8 items-center rounded-lg border px-3 transition-colors",
-                !round
-                  ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
-                  : doneSteps.includes(level.practice.length)
-                  ? "border-[#3f9e77]/70 text-kebe-text hover:border-[#3f9e77]"
-                  : "border-kebe-line text-kebe-muted hover:text-kebe-text"
-              )}
-            >
-              Test
-            </button>
-          </li>
-          <li className="ml-2 normal-case tracking-normal text-kebe-faint">
-            {round ? "Practice doesn't count" : `${PASS_WPM} wpm opens the next level`}
-          </li>
-        </ol>
+        <p className="mt-1 text-sm leading-snug text-kebe-muted">{level.blurb}</p>
       )}
 
       {/* Announced when a round ends: a region that is always present, since
@@ -720,9 +625,7 @@ export default function Trainer({
       <p role="status" className="sr-only">
         {result
           ? `${Math.round(result.wpm)} words a minute, ${Math.round(result.acc * 100)}% accuracy.${
-              result.practice
-                ? " Practice."
-                : result.opened
+              result.opened
                 ? ` Level ${result.opened}, ${LEVELS[result.opened - 1].title}, is open.`
                 : ""
             } Enter for next, Escape for new words.`
@@ -740,7 +643,7 @@ export default function Trainer({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onMouseDown={() => area.current?.focus({ preventScroll: true })}
-        className="relative mt-6 min-h-[180px] cursor-text rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-8 outline-none focus-visible:border-kebe-muted small:px-10 small:py-10"
+        className="relative mt-3 min-h-[112px] cursor-text rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
       >
         {result ? (
           <Results
@@ -751,10 +654,8 @@ export default function Trainer({
             best={progress.best[result.key] ?? 0}
             signedIn={!!account}
             save={save}
-            nextRound={
-              result.practice ? steps[Math.min(step + 1, steps.length - 1)] : null
-            }
-            onNext={() => (result.practice ? setStep(step + 1) : goLevel(levelN + 1))}
+            pass={level.pass}
+            onNext={() => goLevel(levelN + 1)}
             onAgain={newWords}
           />
         ) : (
@@ -769,8 +670,8 @@ export default function Trainer({
         )}
       </div>
 
-      {/* Speed, the next key, and the controls */}
-      <div className="mt-4 flex flex-col gap-2 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted small:flex-row small:items-center small:justify-between">
+      {/* Speed, and the next key with its finger */}
+      <div className="mt-2 flex flex-col gap-1 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted small:flex-row small:items-center small:justify-between">
         <p aria-live="off">
           {live && !result ? (
             <>
@@ -789,7 +690,7 @@ export default function Trainer({
               )}
             </>
           ) : result ? (
-            result.practice ? "Enter: next round · Esc: again" : "Enter: next · Esc: new words"
+            "Enter: next · Esc: new words"
           ) : (
             "Esc: new words · Backspace: fix a word"
           )}
@@ -801,31 +702,28 @@ export default function Trainer({
         )}
       </div>
 
-      {/* Which finger strikes the next key, each hand on its own side, then
-          the board itself. */}
-      <div className="mt-6">
+      {/* The board, every key in its finger's colour, as large as the
+          screen's height leaves room for. */}
+      <div className="mt-3">
         {showBoard && (
-          <>
-            <Hands
-              press={result ? null : press}
-              hold={result ? [] : hold}
-              className="mb-4"
-            />
-            <Board
-              learned={learned}
-              adds={adds}
-              next={result ? null : next}
-              flash={flash}
-              className="w-full"
-            />
-          </>
+          <Board
+            learned={learned}
+            adds={adds}
+            next={result ? null : next}
+            flash={flash}
+            className="mx-auto block"
+            style={{ width: "min(100%, max(520px, calc((100svh - 480px) * 2.83)))" }}
+          />
         )}
-        <button
-          onClick={toggleBoard}
-          className="mt-3 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
-        >
-          {showBoard ? "Hide the hands and board" : "Show the hands and board"}
-        </button>
+        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
+          {showBoard ? <FingerKey press={result ? null : press} /> : <span />}
+          <button
+            onClick={toggleBoard}
+            className="font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
+          >
+            {showBoard ? "Hide the board" : "Show the board"}
+          </button>
+        </div>
       </div>
 
       {coarse && (
@@ -867,7 +765,7 @@ export default function Trainer({
 function Words({ run }: { run: Run }) {
   if (run.words.length === 0) return <div className="h-24" />
   return (
-    <div className="flex flex-wrap gap-x-[0.65em] gap-y-3 font-mono text-[clamp(1.25rem,2.6vw,1.75rem)] leading-relaxed">
+    <div className="flex flex-wrap gap-x-[0.65em] gap-y-2 font-mono text-[clamp(1.1rem,2.2vw,1.5rem)] leading-relaxed">
       {run.words.map((word, i) => {
         const t = run.typed[i]
         const current = i === run.idx && run.end === null
@@ -928,7 +826,7 @@ function Results({
   best,
   signedIn,
   save,
-  nextRound,
+  pass,
   onNext,
   onAgain,
 }: {
@@ -939,25 +837,19 @@ function Results({
   best: number
   signedIn: boolean
   save: "idle" | "saving" | "saved" | "failed"
-  nextRound: string | null
+  pass: number
   onNext: () => void
   onAgain: () => void
 }) {
   const wpm = Math.round(result.wpm)
-  const passed = wpm >= PASS_WPM && wpm <= MAX_WPM
+  const passed = wpm >= pass && wpm <= MAX_WPM
   const last = levelN === LEVELS.length
-  const practice = result.practice
-  const canNext = practice ? true : mode === "levels" && !last && open > levelN
+  const canNext = mode === "levels" && !last && open > levelN
   const newTop = result.newTop
-  const passedBefore = result.prevBest >= PASS_WPM
+  const passedBefore = result.prevBest >= pass
 
   let line: string
-  if (practice) {
-    line =
-      nextRound === "Test"
-        ? `Practice doesn't count. Next is the test: ${PASS_WPM} wpm opens the next level.`
-        : `Practice doesn't count. Next: ${nextRound?.toLowerCase()}.`
-  } else if (wpm > MAX_WPM) {
+  if (wpm > MAX_WPM) {
     line = `Over ${MAX_WPM} words a minute is faster than anyone types, so it isn't kept as a score.`
   } else if (mode === "test") {
     line = newTop
@@ -975,33 +867,31 @@ function Results({
         : " Saving to your account…"
     }
   } else if (passed && last) {
-    line = `That's every level: the letters, numbers, symbols, modifiers and the Fn number pad, at ${PASS_WPM} words a minute.`
+    line = "That's every level: the letters, numbers, symbols, modifiers and the Fn number pad."
   } else if (passed) {
     line = result.opened
       ? `Level ${result.opened}, ${LEVELS[result.opened - 1].title}, is open.`
       : "Passed again."
   } else if (passedBefore) {
-    line = `Below ${PASS_WPM} this time; your best here is ${best}, so ${
+    line = `Below ${pass} this time; your best here is ${best}, so ${
       last ? "this level is passed" : `level ${levelN + 1} is open`
     } already.`
   } else {
-    line = `${PASS_WPM} wpm ${last ? "passes the last level" : `opens level ${levelN + 1}`}: ${PASS_WPM - wpm} to go. Ten new words with Esc.`
+    line = `${pass} wpm ${last ? "passes the last level" : `opens level ${levelN + 1}`}: ${pass - wpm} to go. Ten new words with Esc.`
   }
 
   return (
     <div className="flex flex-col gap-6 small:flex-row small:items-end small:justify-between">
       <div>
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-          {practice
-            ? practice
-            : mode === "test"
+          {mode === "test"
             ? newTop
               ? "Top score"
               : "Done"
             : passed
             ? "Passed"
             : passedBefore
-            ? `Below ${PASS_WPM}`
+            ? `Below ${pass}`
             : "Not yet"}
         </p>
         <p className="mt-2 font-display text-[clamp(3rem,8vw,4.5rem)] leading-none">
@@ -1010,9 +900,9 @@ function Results({
             wpm
           </span>
         </p>
-        {!practice && mode === "levels" && wpm <= MAX_WPM && (
-          <p className="mt-3" aria-label={`${starsFor(wpm)} of 3 stars`}>
-            <Stars n={starsFor(wpm)} big />
+        {mode === "levels" && wpm <= MAX_WPM && (
+          <p className="mt-3" aria-label={`${starsFor(wpm, pass)} of 3 stars`}>
+            <Stars n={starsFor(wpm, pass)} big />
           </p>
         )}
         <p className="mt-3 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
@@ -1029,7 +919,7 @@ function Results({
             onClick={onNext}
             className="rounded-xl bg-kebe-text px-6 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
           >
-            {practice ? (nextRound === "Test" ? "Take the test" : `Next: ${nextRound}`) : "Next level"}{" "}
+            Next level{" "}
             <span className="ml-1 font-mono text-xs opacity-60">Enter</span>
           </button>
         )}
@@ -1042,7 +932,7 @@ function Results({
               : "bg-kebe-text font-medium text-kebe-page hover:bg-white"
           )}
         >
-          {practice ? "Again" : "Ten new words"}{" "}
+          Ten new words{" "}
           <span className="ml-1 font-mono text-xs opacity-60">Esc</span>
         </button>
       </div>
@@ -1050,7 +940,7 @@ function Results({
   )
 }
 
-// One to three stars: PASS_WPM, then faster (starsFor).
+// One to three stars: the level's target, then faster (starsFor).
 function Stars({ n, dim, big }: { n: number; dim?: boolean; big?: boolean }) {
   return (
     <span

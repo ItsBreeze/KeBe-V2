@@ -5,7 +5,7 @@
 // in the customer's metadata (under PROGRESS_KEY) when they are signed in, so
 // a top score follows the account. Both copies are merged by taking the
 // better of each, so practising signed out is never lost by signing in.
-import { LEVELS, PASS_WPM } from "./levels"
+import { LEVELS } from "./levels"
 
 export const PROGRESS_KEY = "kebe_trainer"
 export const STORAGE_KEY = "kebe-trainer"
@@ -32,12 +32,12 @@ export function cleanProgress(raw: unknown): Progress {
   return { best }
 }
 
-// Levels 1..openCount are open: every level up to the furthest one passed,
-// and the one after it.
+// Levels 1..openCount are open: every level up to the furthest one passed
+// (at its own target), and the one after it.
 export function openCount(p: Progress): number {
   let furthest = 0
   LEVELS.forEach((l) => {
-    if ((p.best[l.id] ?? 0) >= PASS_WPM) furthest = l.n
+    if ((p.best[l.id] ?? 0) >= l.pass) furthest = l.n
   })
   return Math.min(LEVELS.length, furthest + 1)
 }
