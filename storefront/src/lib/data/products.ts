@@ -1,6 +1,11 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import {
+  PRESALE_HANDLE,
+  presaleShipDate,
+  presaleShipLine,
+} from "@lib/util/presale"
 import { sortProducts } from "@lib/util/sort-products"
 import { HttpTypes } from "@medusajs/types"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -136,5 +141,64 @@ export const listProductsWithSort = async ({
     },
     nextPage,
     queryParams,
+  }
+}
+
+// When a pre-order placed now ships, in this region: the line the product
+// page shows and its YYYY-MM-DD. fresh reads the backend directly, for the
+// moment an order is taken; otherwise it is listProducts' cached answer, which
+// the backend's revalidate-storefront subscriber refreshes when stock moves.
+// Null on any failure, so a caller never fails over a ship date.
+export async function getPresaleShipInfo({
+  regionId,
+  fresh,
+}: {
+  regionId: string
+  fresh?: boolean
+}): Promise<{
+  productId: string
+  shipLine: string | null
+  shipDate: string | null
+} | null> {
+  try {
+    let product: HttpTypes.StoreProduct | undefined
+
+    if (fresh) {
+      const headers = {
+        ...(await getAuthHeaders()),
+      }
+
+      product = await sdk.client
+        .fetch<{ products: HttpTypes.StoreProduct[] }>(`/store/products`, {
+          method: "GET",
+          query: {
+            handle: PRESALE_HANDLE,
+            region_id: regionId,
+            limit: 1,
+            fields:
+              "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+          },
+          headers,
+          cache: "no-store",
+        })
+        .then(({ products }) => products[0])
+    } else {
+      product = await listProducts({
+        regionId,
+        queryParams: { handle: PRESALE_HANDLE, limit: 1 },
+      }).then(({ response }) => response.products[0])
+    }
+
+    if (!product) {
+      return null
+    }
+
+    return {
+      productId: product.id,
+      shipLine: presaleShipLine(product),
+      shipDate: presaleShipDate(product),
+    }
+  } catch {
+    return null
   }
 }

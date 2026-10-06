@@ -1,6 +1,7 @@
 "use client"
 
-import { addToCart } from "@lib/data/cart"
+import { CONTACT_EMAIL } from "@lib/constants"
+import { addToCart, preorderNow } from "@lib/data/cart"
 import { useIntersection } from "@lib/hooks/use-in-view"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
@@ -8,13 +9,28 @@ import Divider from "@modules/common/components/divider"
 import OptionSelect from "@modules/products/components/product-actions/option-select"
 import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
 import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { getPricesForVariant } from "@lib/util/get-product-price"
-import { trackPixel } from "@lib/util/meta-pixel"
+import { trackPixel, trackPixelCustom } from "@lib/util/meta-pixel"
 import MobileActions from "./mobile-actions"
 import { useRouter } from "next/navigation"
+
+// The Pre-order form's id: the sticky bar's button sits outside the form and
+// submits it through its form attribute.
+const PREORDER_FORM_ID = "preorder-form"
+
+// What a failed add says, with the address to write to instead.
+const addErrorText = (lead: string) => (
+  <>
+    {lead} Try again, or email{" "}
+    <a href={`mailto:${CONTACT_EMAIL}`} className="underline underline-offset-4">
+      {CONTACT_EMAIL}
+    </a>
+    .
+  </>
+)
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -49,6 +65,11 @@ export default function ProductActions({
         : {}
   )
   const [isAdding, setIsAdding] = useState(false)
+  const [addFailed, setAddFailed] = useState(false)
+  const [state, formAction, pending] = useActionState<
+    { error?: boolean } | null,
+    FormData
+  >(preorderNow, null)
   const countryCode = useParams().countryCode as string
 
   // If there is only 1 variant, preselect the options
@@ -135,17 +156,35 @@ export default function ProductActions({
 
   const inView = useIntersection(actionsRef, "0px")
 
-  // add the selected variant to the cart
+  // A failed pre-order is a PreorderError to the pixel. It carries the
+  // product only: never the error, the cart or anything the visitor typed.
+  useEffect(() => {
+    if (state?.error) {
+      trackPixelCustom("PreorderError", { content_ids: [product.id] })
+    }
+  }, [state, product.id])
+
+  // Add the selected variant to the cart. This is for products without a
+  // presale: Pre-order is a form (preorderNow), which posts even before this
+  // script has loaded, goes to the cart and counts AddToCart there.
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return null
 
     setIsAdding(true)
+    setAddFailed(false)
 
-    await addToCart({
-      variantId: selectedVariant.id,
-      quantity: 1,
-      countryCode,
-    })
+    // A failed add left the button spinning with nothing said.
+    try {
+      await addToCart({
+        variantId: selectedVariant.id,
+        quantity: 1,
+        countryCode,
+      })
+    } catch {
+      setIsAdding(false)
+      setAddFailed(true)
+      return null
+    }
 
     const price = getPricesForVariant(selectedVariant)
     trackPixel("AddToCart", {
@@ -156,16 +195,39 @@ export default function ProductActions({
       currency: price?.currency_code?.toUpperCase(),
     })
 
-    // A pre-order is one board bought on its own, so go to the cart: left on
-    // the page, nothing visibly changed, and a second click added a second
-    // board.
-    if (shipsBy) {
-      router.push(`/${countryCode}/cart`)
-      return
-    }
-
     setIsAdding(false)
   }
+
+  // The presale's button waits on the form, the others on handleAddToCart.
+  const busy = shipsBy ? pending : isAdding
+  // Hidden while a retry is under way, so a second failure shows afresh.
+  const addError = shipsBy
+    ? state?.error && !pending
+      ? addErrorText("We couldn't start your pre-order.")
+      : null
+    : addFailed
+    ? addErrorText("We couldn't add it to your cart.")
+    : null
+
+  const buyButton = (
+    <Button
+      type={shipsBy ? "submit" : undefined}
+      onClick={shipsBy ? undefined : handleAddToCart}
+      disabled={
+        !inStock || !selectedVariant || !!disabled || busy || !isValidVariant
+      }
+      variant="primary"
+      className="w-full h-12 text-base"
+      isLoading={busy}
+      data-testid="add-product-button"
+    >
+      {!selectedVariant && !options
+        ? "Select variant"
+        : !inStock || !isValidVariant
+        ? "Out of stock"
+        : buyLabel}
+    </Button>
+  )
 
   return (
     <>
@@ -182,7 +244,7 @@ export default function ProductActions({
                       updateOption={setOptionValue}
                       title={option.title ?? ""}
                       data-testid="product-options"
-                      disabled={!!disabled || isAdding}
+                      disabled={!!disabled || busy}
                     />
                   </div>
                 )
@@ -194,26 +256,41 @@ export default function ProductActions({
 
         <ProductPrice product={product} variant={selectedVariant} />
 
-        <Button
-          onClick={handleAddToCart}
-          disabled={
-            !inStock ||
-            !selectedVariant ||
-            !!disabled ||
-            isAdding ||
-            !isValidVariant
-          }
-          variant="primary"
-          className="w-full h-12 text-base"
-          isLoading={isAdding}
-          data-testid="add-product-button"
-        >
-          {!selectedVariant && !options
-            ? "Select variant"
-            : !inStock || !isValidVariant
-            ? "Out of stock"
-            : buyLabel}
-        </Button>
+        {/* Pre-order is a form posted to preorderNow: the server's HTML
+            posts it before the page's script has loaded, which on a phone
+            from an ad can take a while. The Suspense fallback renders it
+            too, with the button disabled. */}
+        {shipsBy ? (
+          <form
+            id={PREORDER_FORM_ID}
+            action={formAction}
+            onSubmit={() =>
+              trackPixelCustom("PreorderTap", {
+                content_ids: [product.id],
+                content_type: "product",
+              })
+            }
+          >
+            <input
+              type="hidden"
+              name="variant_id"
+              value={selectedVariant?.id ?? ""}
+            />
+            <input type="hidden" name="country_code" value={countryCode} />
+            {buyButton}
+          </form>
+        ) : (
+          buyButton
+        )}
+        {addError && (
+          <p
+            role="alert"
+            className="text-base text-rose-400"
+            data-testid="add-error"
+          >
+            {addError}
+          </p>
+        )}
         {shipsBy && inStock && (
           <p
             className="text-base leading-relaxed text-ui-fg-muted"
@@ -231,10 +308,13 @@ export default function ProductActions({
           updateOptions={setOptionValue}
           inStock={inStock}
           handleAddToCart={handleAddToCart}
+          formId={shipsBy ? PREORDER_FORM_ID : undefined}
           buyLabel={buyLabel}
           isAdding={isAdding}
+          pending={pending}
+          addError={addError}
           show={!inView}
-          optionsDisabled={!!disabled || isAdding}
+          optionsDisabled={!!disabled || busy}
         />
       </div>
     </>

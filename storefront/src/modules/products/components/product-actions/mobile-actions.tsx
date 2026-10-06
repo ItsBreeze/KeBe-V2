@@ -19,8 +19,14 @@ type MobileActionsProps = {
   updateOptions: (title: string, value: string) => void
   inStock?: boolean
   handleAddToCart: () => void
+  // The presale's Pre-order form: with it, the button submits that form
+  // rather than calling handleAddToCart. The bar sits outside the form.
+  formId?: string
   buyLabel?: string
   isAdding?: boolean
+  pending?: boolean
+  // What a failed add says; the inline copy under the buy box is the alert.
+  addError?: React.ReactNode
   show: boolean
   optionsDisabled: boolean
 }
@@ -32,8 +38,11 @@ const MobileActions: React.FC<MobileActionsProps> = ({
   updateOptions,
   inStock,
   handleAddToCart,
+  formId,
   buyLabel = "Add to cart",
   isAdding,
+  pending,
+  addError,
   show,
   optionsDisabled,
 }) => {
@@ -108,6 +117,14 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 <div></div>
               )}
             </div>
+            {addError && (
+              <p
+                className="w-full text-center text-base text-rose-400"
+                data-testid="mobile-add-error"
+              >
+                {addError}
+              </p>
+            )}
             <div className={clx("grid grid-cols-2 w-full gap-x-4", {
               "!grid-cols-1": isSimple
             })}>
@@ -127,10 +144,12 @@ const MobileActions: React.FC<MobileActionsProps> = ({
                 </div>
               </Button>}
               <Button
-                onClick={handleAddToCart}
+                type={formId ? "submit" : undefined}
+                form={formId}
+                onClick={formId ? undefined : handleAddToCart}
                 disabled={!inStock || !variant}
                 className="w-full"
-                isLoading={isAdding}
+                isLoading={isAdding || pending}
                 data-testid="mobile-cart-button"
               >
                 {!variant

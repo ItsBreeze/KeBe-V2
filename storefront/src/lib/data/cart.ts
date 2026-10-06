@@ -14,6 +14,7 @@ import {
   removeCartId,
   setCartId,
 } from "./cookies"
+import { getPresaleShipInfo } from "./products"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
 
@@ -82,10 +83,34 @@ export async function getOrSetCart(countryCode: string) {
     throw new Error(`Region not found for country code: ${countryCode}`)
   }
 
-  let cart = await retrieveCart(undefined, "id,region_id")
-
   const headers = {
     ...(await getAuthHeaders()),
+  }
+
+  // The cookie's cart, read past the cache. Medusa still returns a cart once
+  // its order is placed, and the Stripe webhook that completes it never
+  // revalidates the cache here, so a cached read kept adding to a placed
+  // order and every add failed.
+  const cartId = await getCartId()
+  let cart: HttpTypes.StoreCart | null = cartId
+    ? await sdk.client
+        .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
+          method: "GET",
+          query: {
+            fields: "id,region_id,completed_at",
+          },
+          headers,
+          cache: "no-store",
+        })
+        .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+        .catch(() => null)
+    : null
+
+  // A placed order's cart is finished: start a new one, as for a visitor
+  // without a cart.
+  if (cart?.completed_at) {
+    await removeCartId()
+    cart = null
   }
 
   if (!cart) {
@@ -182,6 +207,99 @@ export async function addToCart({
       revalidateTag(fulfillmentCacheTag)
     })
     .catch(medusaError)
+}
+
+// The presale's Pre-order button. It is a form, so a tap made before the
+// page's script has loaded still posts here, and every tap shows in the
+// server log as a POST to the product page. A pre-order is one board: a
+// second tap sets the cart's line back to one rather than adding another.
+// The line carries the ship line in force when the tap is made, worked out
+// here from the product and never taken from the form. A failure returns an
+// error for the page to show, so the button can be tapped again.
+export async function preorderNow(
+  _prev: { error?: boolean } | null,
+  formData: FormData
+): Promise<{ error?: boolean }> {
+  const variantId = formData.get("variant_id")
+  const countryCode = formData.get("country_code")
+
+  if (
+    typeof variantId !== "string" ||
+    !variantId ||
+    typeof countryCode !== "string" ||
+    !countryCode
+  ) {
+    return { error: true }
+  }
+
+  try {
+    const cart = await getOrSetCart(countryCode)
+
+    if (!cart) {
+      throw new Error("Error retrieving or creating cart")
+    }
+
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    // Read past the cache, so a line added a moment ago is found.
+    const full = await sdk.client
+      .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cart.id}`, {
+        method: "GET",
+        query: {
+          fields:
+            "id,region_id,email,*items,shipping_address.address_1,shipping_methods.id",
+        },
+        headers,
+        cache: "no-store",
+      })
+      .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+
+    const info = full.region_id
+      ? await getPresaleShipInfo({ regionId: full.region_id, fresh: true })
+      : null
+
+    // Only the values there are: Medusa's mergeMetadata deletes a key set
+    // to "".
+    const metadata = Object.fromEntries(
+      Object.entries({
+        ship_line: info?.shipLine,
+        ships_by_date: info?.shipDate,
+      }).filter(([, value]) => !!value)
+    ) as Record<string, string>
+
+    const line = full.items?.find((i) => i.variant_id === variantId)
+
+    if (line) {
+      await sdk.store.cart.updateLineItem(
+        cart.id,
+        line.id,
+        { quantity: 1, metadata },
+        {},
+        headers
+      )
+    } else {
+      await sdk.store.cart.createLineItem(
+        cart.id,
+        { variant_id: variantId, quantity: 1, metadata },
+        {},
+        headers
+      )
+    }
+
+    const cartCacheTag = await getCacheTag("carts")
+    revalidateTag(cartCacheTag)
+
+    const fulfillmentCacheTag = await getCacheTag("fulfillment")
+    revalidateTag(fulfillmentCacheTag)
+  } catch (error) {
+    console.error("Pre-order failed:", error)
+    return { error: true }
+  }
+
+  // Outside the try: redirect() works by throwing.
+  redirect(`/${countryCode}/cart?added=1`)
 }
 
 export async function updateLineItem({

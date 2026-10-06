@@ -28,7 +28,7 @@ export async function generateMetadata(props: {
 
 
 // Last substantive change to this notice. Update it whenever the content changes.
-const LAST_UPDATED = "5 October 2026"
+const LAST_UPDATED = "6 October 2026"
 
 export default function PrivacyPage() {
   return (
@@ -85,8 +85,9 @@ export default function PrivacyPage() {
               </strong>{" "}
               We advertise on Instagram and Facebook, and this site runs Meta&apos;s
               pixel, a script from Meta. It tells Meta which pages you view and
-              when you add a keyboard to your cart, start a checkout, place an
-              order or join the waitlist, with the product and the amount, but
+              when you tap Pre-order, add a keyboard to your cart, start a
+              checkout, place an order or join the waitlist, with the product and
+              the amount, but
               not your name, shipping address or card. Meta links that to your
               Facebook or Instagram account if it can, so it can tell us how
               many orders our ads led to and show our ads to people like the

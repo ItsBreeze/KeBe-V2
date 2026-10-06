@@ -19,3 +19,16 @@ export function trackPixel(
   if (eventID) fbq("track", event, params ?? {}, { eventID })
   else fbq("track", event, params ?? {})
 }
+
+// The same for an event of the store's own, which Meta has no standard name
+// for (PreorderTap, PreorderError). Like every event, it is described on the
+// privacy page.
+export function trackPixelCustom(
+  event: string,
+  params?: Record<string, unknown>
+) {
+  if (typeof window === "undefined") return
+  const fbq = (window as unknown as { fbq?: Fbq }).fbq
+  if (!fbq) return
+  fbq("trackCustom", event, params ?? {})
+}
