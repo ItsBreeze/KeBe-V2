@@ -1,6 +1,7 @@
 "use server"
 
 import { sdk } from "@lib/config"
+import { getCheckoutStep } from "@lib/util/checkout-step"
 import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
@@ -37,6 +38,61 @@ async function utmMetadata(): Promise<Record<string, string> | undefined> {
     return Object.keys(metadata).length ? metadata : undefined
   } catch {
     return undefined
+  }
+}
+
+// A ship line as metadata: only the values there are, since Medusa's
+// mergeMetadata deletes a key set to "".
+function shipMetadata(
+  info: { shipLine: string | null; shipDate: string | null } | null
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries({
+      ship_line: info?.shipLine,
+      ships_by_date: info?.shipDate,
+    }).filter(([, value]) => !!value)
+  ) as Record<string, string>
+}
+
+// The ship line in force as the buyer pays, when the cart holds the presale
+// board. The cart and the product are both read past the cache: stock may
+// have run out since the board was added, and then the line is the backorder
+// date. Empty for any other cart and on any failure.
+async function shipMetadataAtPayment(
+  cartId: string
+): Promise<Record<string, string>> {
+  try {
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    const cart = await sdk.client
+      .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
+        method: "GET",
+        query: {
+          fields: "id,region_id,items.id,items.product_id",
+        },
+        headers,
+        cache: "no-store",
+      })
+      .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
+
+    if (!cart.region_id) {
+      return {}
+    }
+
+    const info = await getPresaleShipInfo({
+      regionId: cart.region_id,
+      fresh: true,
+    })
+
+    if (!info || !cart.items?.some((i) => i.product_id === info.productId)) {
+      return {}
+    }
+
+    return shipMetadata(info)
+  } catch {
+    return {}
   }
 }
 
@@ -213,9 +269,13 @@ export async function addToCart({
 // page's script has loaded still posts here, and every tap shows in the
 // server log as a POST to the product page. A pre-order is one board: a
 // second tap sets the cart's line back to one rather than adding another.
+// Then the visitor goes straight to checkout, at the step the cart is at.
 // The line carries the ship line in force when the tap is made, worked out
-// here from the product and never taken from the form. A failure returns an
-// error for the page to show, so the button can be tapped again.
+// here from the product and never taken from the form. That value is a
+// record for Admin only: the cart and checkout show the line worked out from
+// the product (getPresaleShipInfo), and placeOrder puts the line in force at
+// payment on the order. A failure returns an error for the page to show, so
+// the button can be tapped again.
 export async function preorderNow(
   _prev: { error?: boolean } | null,
   formData: FormData
@@ -231,6 +291,8 @@ export async function preorderNow(
   ) {
     return { error: true }
   }
+
+  let step: ReturnType<typeof getCheckoutStep> = "address"
 
   try {
     const cart = await getOrSetCart(countryCode)
@@ -256,18 +318,15 @@ export async function preorderNow(
       })
       .then(({ cart }: { cart: HttpTypes.StoreCart }) => cart)
 
+    // A visitor who has already given an address or chosen a delivery goes
+    // on from there.
+    step = getCheckoutStep(full)
+
     const info = full.region_id
       ? await getPresaleShipInfo({ regionId: full.region_id, fresh: true })
       : null
 
-    // Only the values there are: Medusa's mergeMetadata deletes a key set
-    // to "".
-    const metadata = Object.fromEntries(
-      Object.entries({
-        ship_line: info?.shipLine,
-        ships_by_date: info?.shipDate,
-      }).filter(([, value]) => !!value)
-    ) as Record<string, string>
+    const metadata = shipMetadata(info)
 
     const line = full.items?.find((i) => i.variant_id === variantId)
 
@@ -298,8 +357,11 @@ export async function preorderNow(
     return { error: true }
   }
 
-  // Outside the try: redirect() works by throwing.
-  redirect(`/${countryCode}/cart?added=1`)
+  // Outside the try: redirect() works by throwing. ?added=1 has the checkout
+  // page count the AddToCart. This action must not be awaited by client code.
+  // If it ever is, the caller's catch must call unstable_rethrow(e) first,
+  // because Next rejects a redirecting action's promise with NEXT_REDIRECT.
+  redirect(`/${countryCode}/checkout?step=${step}&added=1`)
 }
 
 export async function updateLineItem({
@@ -547,11 +609,20 @@ export async function placeOrder(cartId?: string) {
     ...(await getAuthHeaders()),
   }
 
-  // never let attribution stand in the way of an order
-  const utm = await utmMetadata()
-  if (utm) {
+  // One update for the ad that brought the buyer and, for the presale board,
+  // the ship line in force now. Medusa copies cart metadata to the order, so
+  // order.metadata.ship_line is the date this order was promised. It goes on
+  // the cart, not the line: a line update this close to completion could
+  // re-price the cart after the card has gone through. For the same reason,
+  // nothing here may stand in the way of the order.
+  const [utm, ship] = await Promise.all([
+    utmMetadata(),
+    shipMetadataAtPayment(id),
+  ])
+  const metadata = { ...utm, ...ship }
+  if (Object.keys(metadata).length) {
     await sdk.store.cart
-      .update(id, { metadata: utm }, {}, headers)
+      .update(id, { metadata }, {}, headers)
       .catch(() => undefined)
   }
 

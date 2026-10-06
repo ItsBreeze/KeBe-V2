@@ -5,11 +5,11 @@ import { useSearchParams } from "next/navigation"
 import { useEffect } from "react"
 
 // The AddToCart for a pre-order. Pre-order is a form the server answers by
-// sending the visitor here with ?added=1, so the event is counted on the page
-// the tap lands on. It is sent once per cart line, under the line's id: a
-// reload, or a second tap that only set the same line back to one board, is
-// not a second add. Then ?added leaves the address, so a shared or reloaded
-// link does not carry it.
+// sending the visitor to checkout with ?added=1, so the event is counted on
+// the page the tap lands on. It is sent once per cart line, under the line's
+// id: a reload, or a second tap that only set the same line back to one
+// board, is not a second add. Then ?added leaves the address, so a shared or
+// reloaded link does not carry it.
 export default function AddedToCart({
   lineId,
   productId,

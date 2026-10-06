@@ -166,7 +166,8 @@ export default function ProductActions({
 
   // Add the selected variant to the cart. This is for products without a
   // presale: Pre-order is a form (preorderNow), which posts even before this
-  // script has loaded, goes to the cart and counts AddToCart there.
+  // script has loaded. A pre-order is one board: the cart holds exactly one,
+  // and the visitor goes straight to checkout. Checkout counts its AddToCart.
   const handleAddToCart = async () => {
     if (!selectedVariant?.id) return null
 
