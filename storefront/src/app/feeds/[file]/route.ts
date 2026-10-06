@@ -4,18 +4,20 @@ import {
   storefrontCountries,
   storefrontCountryNames,
 } from "@lib/data/seo"
-import { presaleShipDate } from "@lib/util/presale"
+import { presaleAvailability, presaleShipDate } from "@lib/util/presale"
 import {
   BRAND,
   absoluteUrl,
   countryInSentence,
+  listingImageUrls,
   plainText,
-  productImageUrls,
+  productFeedTitle,
   productUrl,
   variantAvailability,
   variantColour,
   variantPrice,
 } from "@lib/util/seo"
+import { productSpecs } from "@lib/util/specs"
 
 // Product feeds for Google Merchant Center, and the Microsoft Merchant
 // Center, Meta catalogue and Pinterest, which all read the same RSS 2.0 with
@@ -23,13 +25,30 @@ import {
 // /feeds/google-<country>.xml (the ".xml" lets the middleware pass it).
 // Built from the live store on each request, from data at most an hour old
 // (lib/data/seo.ts): the region's calculated price, a pre-order's ship
-// date, never a stock count (owner, 1 Oct 2026).
+// date, never a stock count (owner, 1 Oct 2026). The attributes follow the
+// fact-checked research of 5-6 Oct 2026; no g:shipping, since the store API
+// gives shipping rates only for a cart, so Merchant Center's own shipping
+// settings carry them.
 
-// Google's product taxonomy, by name, which every one of those readers
-// accepts. Every KeBe product so far is a keyboard.
-const GOOGLE_CATEGORY =
-  "Electronics > Electronics Accessories > Computer Components > Input Devices > Keyboards"
-const PRODUCT_TYPE = "Keyboards > Ortholinear keyboards"
+// Google's product taxonomy by its ID (Google takes the ID or the path, not
+// both, and the ID does not hang on the taxonomy's wording): 303 is
+// Electronics > Electronics Accessories > Computer Components > Input
+// Devices > Keyboards. Every KeBe product so far is a keyboard.
+const GOOGLE_CATEGORY = "303"
+
+// Every board leaves from the workshop in Canada: the product page says
+// US orders go by Canada Post.
+const SHIPS_FROM = "CA"
+
+// The shop's own category path, most general first.
+const productType = (product: HttpTypes.StoreProduct) => {
+  const lowProfile = productSpecs(product).some(
+    (s) => s.label === "Switches" && /low-profile/i.test(s.value)
+  )
+  return ["Keyboards", "Ortholinear", lowProfile ? "Low-profile" : null]
+    .filter(Boolean)
+    .join(" > ")
+}
 
 // Text for an XML element: the five entities escaped, and the characters
 // XML 1.0 does not allow at all dropped.
@@ -46,8 +65,11 @@ const tag = (name: string, value: string | null | undefined) =>
   value ? `      <${name}>${xml(value)}</${name}>` : null
 
 // Google's feed wants the date with a time and offset; the ship date is a
-// day, so it starts at midnight UTC.
-const availabilityDate = (iso: string) => `${iso}T00:00+0000`
+// day. Midnight UTC, as it was, is the evening before across North America,
+// a day earlier than the page's "October 31" (fact check, 6 Oct 2026). At
+// noon UTC it is that same date on every clock from Newfoundland to Hawaii,
+// wherever the store ships.
+const availabilityDate = (iso: string) => `${iso}T12:00:00Z`
 
 const item = (
   product: HttpTypes.StoreProduct,
@@ -59,41 +81,50 @@ const item = (
   if (!price || !product.handle) return null
 
   const variants = product.variants ?? []
+  const single = variants.length <= 1
   const availability = variantAvailability(product, variant)
   const shipDate =
-    availability === "preorder" ? presaleShipDate(product) : null
-  const [image, ...more] = [
-    ...(variant.images ?? []).map((i) => i.url).filter((u): u is string => !!u).map(absoluteUrl),
-    ...productImageUrls(product),
-  ].filter((url, i, all) => all.indexOf(url) === i)
+    availability === "preorder" || availability === "backorder"
+      ? presaleShipDate(product)
+      : null
+  // The CAD renders and photographs, never an AI scene. Google turns down
+  // an item without an image, which is right for a product with no other.
+  const [image, ...more] = listingImageUrls(product, variant)
+  if (!image) return null
 
   return [
     "    <item>",
-    // Stable per variant and country: the SKU, else Medusa's variant id.
-    tag("g:id", `${variant.sku || variant.id}-${countryCode.toUpperCase()}`),
+    // A one-variant product is its Medusa product id, the id the Meta pixel
+    // already sends as content_ids, so a catalogue matches its events, and
+    // the same in every country's feed (feed labels in Google, a country
+    // feed in Meta). A variant of a product with several is its variant id,
+    // grouped under the product's.
+    tag("g:id", single ? product.id : variant.id),
+    single ? null : tag("g:item_group_id", product.id),
     tag(
       "g:title",
-      variants.length > 1 && variant.title
-        ? `${product.title} (${variant.title})`
-        : product.title
+      single || !variant.title
+        ? productFeedTitle(product)
+        : `${productFeedTitle(product)} (${variant.title})`
     ),
     tag("g:description", plainText(product.description) || product.title),
     tag("g:link", productUrl(countryCode, product.handle)),
     tag("g:image_link", image),
     // Google takes up to ten more.
     ...more.slice(0, 10).map((url) => tag("g:additional_image_link", url)),
+    // The region's price, without tax or shipping, as Google wants it.
     tag("g:price", `${price.amount} ${price.currency}`),
     tag("g:availability", availability),
     shipDate ? tag("g:availability_date", availabilityDate(shipDate)) : null,
     tag("g:condition", "new"),
     tag("g:brand", BRAND),
-    tag("g:mpn", variant.sku),
-    // Hand-built: no GTIN exists for it.
+    // Hand-assembled: no GTIN exists, and Google asks for no MPN rather than
+    // a made-up one; the SKU is the shop's own.
     tag("g:identifier_exists", "no"),
     tag("g:google_product_category", GOOGLE_CATEGORY),
-    tag("g:product_type", PRODUCT_TYPE),
+    tag("g:product_type", productType(product)),
     tag("g:color", variantColour(product, variant)),
-    variants.length > 1 ? tag("g:item_group_id", product.handle) : null,
+    tag("g:ships_from_country", SHIPS_FROM),
     "    </item>",
   ]
     .filter(Boolean)
@@ -135,7 +166,11 @@ export async function GET(
 
   const names = await storefrontCountryNames()
   const where = names[countryCode] ?? countryCode.toUpperCase()
+  // Only products that can be bought. A sold-out one (v1) can serve no
+  // listing, and its variants' different prices on the one page would only
+  // draw Merchant Center price-mismatch warnings.
   const items = products
+    .filter((p) => presaleAvailability(p).open)
     .flatMap((p) => (p.variants ?? []).map((v) => item(p, v, countryCode)))
     .filter(Boolean)
 

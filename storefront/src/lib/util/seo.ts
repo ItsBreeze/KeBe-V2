@@ -1,6 +1,10 @@
+import type { Metadata } from "next"
 import { HttpTypes } from "@medusajs/types"
 import { getBaseURL } from "@lib/util/env"
+import { isAiGeneratedImage } from "@lib/util/image-alt"
 import {
+  PRESALE_HANDLE,
+  presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
   variantOpen,
@@ -71,22 +75,179 @@ export const clipSentences = (text: string, max: number) => {
   return `${cut.slice(0, Math.max(cut.lastIndexOf(" "), 0)) || cut}…`
 }
 
-// A search result's snippet for a product: its subtitle, else whole opening
-// sentences of its description, then, when there is room, when an order
-// placed now ships, in the ship line's own words. Never a price, never a
-// count; at most 155 characters, where Google cuts.
-export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
-  const text =
-    plainText(product.subtitle) ||
-    plainText(product.description) ||
-    product.title ||
-    BRAND
-  const base = clipSentences(text, 155)
-  const shipLine = presaleShipLine(product)
-  if (!shipLine) return base
-  const withShip = `${base} Pre-order: ${shipLine.charAt(0).toLowerCase()}${shipLine.slice(1)}.`
-  return withShip.length <= 155 ? withShip : base
+// What a search result, a link preview and a shopping feed call a product,
+// beyond its Medusa title, keyed by handle like specs.ts. Each is the live
+// product page's own facts (6 Oct 2026), the most-searched first:
+// ortholinear, Dvorak, USB hub, low-profile Choc, hot-swap, assembled in
+// Canada. Never "wired" (the product page does not say it), nothing
+// wireless, and no price or date: those are read from Medusa per request.
+type ListingCopy = {
+  // The <title>, at most 60 characters, the brand in it.
+  title: string
+  // The snippet's opening, at most 123 characters so the price sentence fits.
+  lead: string
+  // The feeds' g:title, at most 150.
+  feedTitle: string
 }
+
+const LISTING_COPY: Record<string, ListingCopy> = {
+  [PRESALE_HANDLE]: {
+    title: "KeBe v2: Low-Profile Ortholinear Keyboard with USB Hub",
+    lead: "Matrix-Dvorak layout, Kailh Choc hot-swap switches, per-key RGB, QMK and a 3-port USB 2.0 hub, assembled by hand in Canada.",
+    feedTitle:
+      "KeBe v2 68-Key Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
+  },
+}
+
+// Google cuts a description at about 155 characters.
+export const DESCRIPTION_MAX = 155
+
+// Sentences in order of worth, each kept only while the whole still fits:
+// the lead, then the price, then the ship date.
+export const fitSentences = (
+  sentences: (string | null | undefined)[],
+  max = DESCRIPTION_MAX
+) =>
+  sentences.reduce<string>((out, s) => {
+    if (!s) return out
+    const next = out ? `${out} ${s}` : s
+    return next.length <= max ? next : out
+  }, "")
+
+// A price as copy writes it: "CA$349", "US$249", with cents only when there
+// are some. A bare "$" gets its country, since both stores price in dollars
+// and a search result can be read on either side of the border.
+export const priceForCopy = (price: { amount: string; currency: string }) => {
+  const value = Number(price.amount)
+  const whole = Number.isInteger(value)
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: price.currency,
+    ...(whole ? { minimumFractionDigits: 0, maximumFractionDigits: 0 } : {}),
+  })
+    .formatToParts(value)
+    .map((part) =>
+      part.type === "currency" && part.value === "$"
+        ? `${price.currency.slice(0, 2)}$`
+        : part.value
+    )
+    .join("")
+}
+
+// "Pre-order CA$349 plus shipping." while a presale runs, "CA$349 plus
+// shipping." after it, "from" when variants differ. A price in copy always
+// says "plus shipping" (owner, 1 Oct 2026), and it is the region's
+// calculated price, never the later one. Null when nothing can be bought.
+export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
+  const prices = (product.variants ?? [])
+    .filter(variantOpen)
+    .map(variantPrice)
+    .filter((p): p is NonNullable<typeof p> => !!p)
+  if (!prices.length) return null
+  const lowest = prices.reduce((a, b) =>
+    Number(b.amount) < Number(a.amount) ? b : a
+  )
+  const varies = new Set(prices.map((p) => p.amount)).size > 1
+  const price = `${varies ? "from " : ""}${priceForCopy(lowest)}`
+  return presaleShipsBy(product)
+    ? `Pre-order ${price} plus shipping.`
+    : `${price.charAt(0).toUpperCase()}${price.slice(1)} plus shipping.`
+}
+
+// When an order placed now ships, in the ship line's own words.
+const shipSentence = (product: HttpTypes.StoreProduct) => {
+  const line = presaleShipLine(product)
+  return line ? `${line}.` : null
+}
+
+// A product page's <title>: its listing copy, else its Medusa title, which
+// starts with the brand ("KeBe v1: 68-Key Ortholinear Keyboard"), else that
+// title and the brand.
+export const productSeoTitle = (product: HttpTypes.StoreProduct) => {
+  const own = product.handle ? LISTING_COPY[product.handle]?.title : undefined
+  if (own) return own
+  const title = (product.title ?? BRAND).replace(" — ", ": ")
+  return title.startsWith(BRAND) ? title : `${title} | ${BRAND}`
+}
+
+// The feeds' g:title.
+export const productFeedTitle = (product: HttpTypes.StoreProduct) =>
+  (product.handle && LISTING_COPY[product.handle]?.feedTitle) ||
+  product.title ||
+  BRAND
+
+// A search result's snippet for a product: its listing copy's lead, else its
+// subtitle or the opening sentences of its description; then, while they
+// fit in 155 characters, the price this country pays and when an order
+// placed now ships. Never a count.
+export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
+  const lead =
+    (product.handle && LISTING_COPY[product.handle]?.lead) ||
+    clipSentences(
+      plainText(product.subtitle) ||
+        plainText(product.description) ||
+        product.title ||
+        BRAND,
+      DESCRIPTION_MAX
+    )
+  return fitSentences([
+    lead,
+    productOfferSentence(product),
+    shipSentence(product),
+  ])
+}
+
+// The link preview a page shows unless it has its own: v2's CAD render cut
+// to 1200 x 630. Until 6 Oct 2026 the Medusa starter's "Next.js Starter
+// Template" card stood in for it on every page without one, and the home
+// page's was an AI scene.
+export const SOCIAL_IMAGE = {
+  url: "/products/kebe-v2-social.jpg",
+  width: 1200,
+  height: 630,
+  alt: "KeBe v2, rendered from its CAD: a 68-key ortholinear keyboard, black keycaps with white legends on a low black case.",
+}
+
+type SocialImage = {
+  url: string
+  width?: number
+  height?: number
+  alt?: string
+}
+
+// A page's Open Graph and X card tags: the same title and description as its
+// <title> and meta description, so a shared link reads like the search
+// result. Spelled out on every page, because a page's openGraph replaces
+// the layout's whole.
+export const socialMetadata = ({
+  title,
+  description,
+  path,
+  countryCode,
+  images = [SOCIAL_IMAGE],
+}: {
+  title: string
+  description: string
+  path: string
+  countryCode: string
+  images?: SocialImage[]
+}): Pick<Metadata, "openGraph" | "twitter"> => ({
+  openGraph: {
+    type: "website",
+    siteName: BRAND,
+    title,
+    description,
+    url: absoluteUrl(`/${countryCode}${path}`),
+    locale: localeFor(countryCode).replace("-", "_"),
+    images,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title,
+    description,
+    images,
+  },
+})
 
 // Cart, checkout, account and order pages: a visitor's own, never a search
 // result. robots.txt keeps crawlers out of them as well.
@@ -121,6 +282,21 @@ export const productImageUrls = (product: HttpTypes.StoreProduct) => {
   return Array.from(new Set(urls.map(absoluteUrl)))
 }
 
+// The pictures a shopping feed, the structured data and a link preview may
+// show: a variant's own first, then the product's and its thumbnail, never
+// an AI-generated scene (image-alt.ts). Empty when every one is a scene.
+export const listingImageUrls = (
+  product: HttpTypes.StoreProduct,
+  variant?: HttpTypes.StoreProductVariant
+) => {
+  const images = [
+    ...(variant?.images ?? []),
+    ...(product.images ?? []),
+    ...(product.thumbnail ? [{ url: product.thumbnail }] : []),
+  ].filter((i) => !!i.url && !isAiGeneratedImage(i))
+  return Array.from(new Set(images.map((i) => absoluteUrl(i.url!))))
+}
+
 // A variant's value for an option whose title is Colour or Color.
 export const variantColour = (
   product: HttpTypes.StoreProduct,
@@ -132,17 +308,28 @@ export const variantColour = (
   )
 }
 
-export type Availability = "preorder" | "in_stock" | "out_of_stock"
+export type Availability =
+  | "preorder"
+  | "backorder"
+  | "in_stock"
+  | "out_of_stock"
 
-// Whether a variant can be bought now, and how: a product on presale (a
-// valid ships_by) takes pre-orders, anything else is in stock. Sold out is
-// the Pre-order button's own rule (presale.ts variantOpen), never a number.
+// Whether a variant can be bought now, and how. On presale (a valid
+// ships_by) Google keeps "preorder" for a product not yet released and
+// "backorder" for one taken now to ship later: so an order for one of the
+// first, counted boards is a pre-order, and once they are gone the board,
+// which stays on sale with backorders on, is a backorder that ships by
+// ships_by_next. It is the switch the page's ship line makes, from
+// "Currently shipping" to "Ships". Without a presale it is in stock. Sold
+// out is the Pre-order button's own rule (presale.ts variantOpen), never a
+// number.
 export const variantAvailability = (
   product: HttpTypes.StoreProduct,
   variant: HttpTypes.StoreProductVariant
 ): Availability => {
   if (!variantOpen(variant)) return "out_of_stock"
-  return presaleShipsBy(product) ? "preorder" : "in_stock"
+  if (!presaleShipsBy(product)) return "in_stock"
+  return presaleAvailability(product).fromStock ? "preorder" : "backorder"
 }
 
 // The region's price for a variant: Medusa's calculated price (the pre-order

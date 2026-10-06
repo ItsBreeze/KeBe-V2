@@ -1,11 +1,13 @@
 import { HttpTypes } from "@medusajs/types"
 import { CONTACT_EMAIL } from "@lib/constants"
+import { isAiGeneratedImage } from "@lib/util/image-alt"
 import { presaleShipDate } from "@lib/util/presale"
 import {
   Availability,
   BRAND,
   INSTAGRAM_URL,
   absoluteUrl,
+  listingImageUrls,
   plainText,
   productImageUrls,
   productUrl,
@@ -18,26 +20,33 @@ import { productSpecs } from "@lib/util/specs"
 // schema.org entities for the pages' JSON-LD. Only what the pages themselves
 // state (owner, 5 Oct 2026): no rating or review, no stock level, no return
 // policy or shipping rates (the site publishes neither), and the price is
-// the region's calculated price, never the one after pre-orders close.
+// the region's calculated price, never the one after pre-orders close. No
+// gtin or mpn either: a hand-assembled board has neither, and Google asks
+// not to make one up (the feeds say identifier_exists no); the SKU is the
+// shop's own.
 
 const SCHEMA_AVAILABILITY: Record<Availability, string> = {
   preorder: "https://schema.org/PreOrder",
+  backorder: "https://schema.org/BackOrder",
   in_stock: "https://schema.org/InStock",
   out_of_stock: "https://schema.org/OutOfStock",
 }
 
 const organizationId = () => absoluteUrl("/#organization")
 
-// The seller, as each offer names it.
+// The seller, as each offer names it: the store the home page describes,
+// by its @id, with its name for readers that do not follow the reference.
 const seller = () => ({
-  "@type": "Organization",
+  "@type": "OnlineStore",
+  "@id": organizationId(),
   name: BRAND,
-  url: absoluteUrl("/"),
 })
 
+// OnlineStore: the Organization subtype Google's organization docs ask an
+// online shop to use.
 export const organizationJsonLd = () => ({
   "@context": "https://schema.org",
-  "@type": "Organization",
+  "@type": "OnlineStore",
   "@id": organizationId(),
   name: BRAND,
   url: absoluteUrl("/"),
@@ -64,9 +73,9 @@ export const websiteJsonLd = () => ({
   publisher: { "@id": organizationId() },
 })
 
-// One variant's offer in this country. A pre-order says when an order placed
-// now ships (availabilityStarts), the date the page's ship line gives; no
-// variant without a price in the region gets an offer.
+// One variant's offer in this country. A pre-order or backorder says when an
+// order placed now ships (availabilityStarts), the date the page's ship line
+// gives; no variant without a price in the region gets an offer.
 const offerFor = (
   product: HttpTypes.StoreProduct,
   variant: HttpTypes.StoreProductVariant,
@@ -76,7 +85,9 @@ const offerFor = (
   if (!price) return null
   const availability = variantAvailability(product, variant)
   const startsAt =
-    availability === "preorder" ? presaleShipDate(product) : null
+    availability === "preorder" || availability === "backorder"
+      ? presaleShipDate(product)
+      : null
   return {
     "@type": "Offer",
     url,
@@ -92,13 +103,15 @@ const offerFor = (
 
 // A product page's entity: a Product for a product with one variant (KeBe
 // v2), a ProductGroup of variant Products for one with several (v1's colours
-// and keycaps). The specification is the list the page shows.
+// and keycaps). The specification is the list the page shows. Its pictures
+// leave out the AI scenes, as the feeds do, unless there is nothing else.
 export const productJsonLd = (
   product: HttpTypes.StoreProduct,
   countryCode: string
 ) => {
   const url = productUrl(countryCode, product.handle ?? "")
-  const images = productImageUrls(product)
+  const listed = listingImageUrls(product)
+  const images = listed.length ? listed : productImageUrls(product)
   const variants = product.variants ?? []
   const common = {
     name: product.title,
@@ -117,7 +130,7 @@ export const productJsonLd = (
   const identity = (variant: HttpTypes.StoreProductVariant) => {
     const colour = variantColour(product, variant)
     return {
-      ...(variant.sku ? { sku: variant.sku, mpn: variant.sku } : {}),
+      ...(variant.sku ? { sku: variant.sku } : {}),
       ...(colour ? { color: colour } : {}),
     }
   }
@@ -148,9 +161,8 @@ export const productJsonLd = (
     hasVariant: variants.map((variant) => {
       const offer = offerFor(product, variant, url)
       const own = (variant.images ?? [])
-        .map((i) => i.url)
-        .filter((u): u is string => !!u)
-        .map(absoluteUrl)
+        .filter((i) => !!i.url && !isAiGeneratedImage(i))
+        .map((i) => absoluteUrl(i.url))
       return {
         "@type": "Product",
         name: variant.title

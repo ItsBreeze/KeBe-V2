@@ -46,3 +46,27 @@ export const productImageAlt = (
   const name = productTitle.split(" — ")[0] || "KeBe"
   return known ?? `${name}, picture ${index + 1}`
 }
+
+// v2's scene pictures: the CAD model set in AI-generated surroundings, as
+// its page says. Google Merchant Center wants AI-made pictures tagged as such
+// (IPTC DigitalSourceType) and none of these is, and the research of 5 Oct
+// 2026 keeps them out of every feed, structured data and link preview until
+// a real photograph exists: those show the plain CAD renders. An image whose
+// Admin metadata says ai_generated: true counts too, so a new scene needs no
+// deploy to stay out.
+const AI_SCENES = new Set([
+  "/products/kebe-v2-night.jpg",
+  "/products/kebe-v2-studio.jpg",
+  "/products/kebe-v2-desk.jpg",
+  "/products/kebe-v2-og.jpg",
+  "/products/kebe-v2-desk-clip.jpg",
+  "/products/kebe-v2-night-clip.jpg",
+])
+
+export const isAiGeneratedImage = (image: {
+  url?: string | null
+  metadata?: Record<string, unknown> | null
+}) =>
+  image.metadata?.ai_generated === true ||
+  image.metadata?.ai_generated === "true" ||
+  (!!image.url && AI_SCENES.has(pathOf(image.url)))
