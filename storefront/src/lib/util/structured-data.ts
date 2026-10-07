@@ -57,8 +57,9 @@ const seller = () => ({
 // return address is sent by email, not published), returnLabelSource and any
 // restocking fee. One policy per storefront country, each linking that
 // country's terms page; the @id lets an offer name the same policy the store
-// does.
-export const returnPolicyJsonLd = (countryCode: string) => {
+// does. An offer's copy leaves out merchantReturnLink, which Google reads
+// only at the store level (review, 6 Oct 2026).
+export const returnPolicyJsonLd = (countryCode: string, withLink = true) => {
   const terms = absoluteUrl(`/${countryCode}/terms`)
   return {
     "@type": "MerchantReturnPolicy",
@@ -68,7 +69,7 @@ export const returnPolicyJsonLd = (countryCode: string) => {
     merchantReturnDays: 30,
     returnMethod: "https://schema.org/ReturnByMail",
     returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
-    merchantReturnLink: terms,
+    ...(withLink ? { merchantReturnLink: terms } : {}),
   }
 }
 
@@ -136,7 +137,10 @@ const offerFor = (
     ...(startsAt ? { availabilityStarts: startsAt } : {}),
     itemCondition: "https://schema.org/NewCondition",
     seller: seller(),
-    hasMerchantReturnPolicy: returnPolicyJsonLd(countryCode),
+    // Only an offer that can be bought: the pre-order terms are not v1's.
+    ...(availability === "out_of_stock"
+      ? {}
+      : { hasMerchantReturnPolicy: returnPolicyJsonLd(countryCode, false) }),
   }
 }
 

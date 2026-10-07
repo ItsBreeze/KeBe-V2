@@ -49,7 +49,7 @@ const BY_HANDLE: Record<string, Faq[]> = {
       // page's "plug it in by USB-C and it types, with nothing to install".
       question: "Do I set my computer to Dvorak?",
       answer: [
-        "No. Leave it on the standard US English (QWERTY) layout: KeBe makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
+        "No. Set it to, or leave it on, US English (QWERTY): KeBe makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
       ],
     },
     {
@@ -76,12 +76,14 @@ const BY_HANDLE: Record<string, Faq[]> = {
     },
     {
       // The kebe repo's keyboards/kebe/rules.mk and keymaps/default/rules.mk:
-      // no VIA_ENABLE, no Vial; its readme.md, "Bootloader: hold Esc while
-      // plugging in (Bootmagic)"; specs.ts, "STM32F072, running QMK"; the
-      // homepage's "Still yours to change".
+      // no VIA_ENABLE, no Vial; specs.ts, "STM32F072, running QMK"; the
+      // homepage's "Still yours to change". How to build and flash a keymap
+      // (hold Esc while plugging in, which also clears the saved settings)
+      // waits until KeBe's QMK folder is public, with a link to it: until
+      // then a buyer has nothing to build from (review, 6 Oct 2026).
       question: "Can I change the keymap?",
       answer: [
-        "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial, so a change means building QMK with your keymap and flashing it: hold Esc while you plug the board in to start its bootloader.",
+        "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial.",
       ],
     },
     {
