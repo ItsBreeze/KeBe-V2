@@ -17,7 +17,7 @@ import {
   presaleShipsBy,
 } from "@lib/util/presale"
 import { HABITS, WHY } from "@lib/util/kebe-copy"
-import { fccNoticeApplies } from "@lib/util/fcc"
+import { fccNoticeBoards } from "@lib/util/fcc"
 import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
 import FccNotice from "@modules/common/components/fcc-notice"
 import JsonLd from "@modules/common/components/json-ld"
@@ -232,11 +232,18 @@ export default async function Home(props: {
             ? "Leave an address and you'll hear when pre-orders open."
             : "Shipping is calculated at checkout and the board is charged in full there."}
         </p>
-        {/* The hero offers the board at its US price, so /us gives the
-            product page's FCC notice here too while the SDoC is pending
-            (lib/util/fcc.ts, 6 Oct 2026). */}
-        {presale.state === "open" && fccNoticeApplies(countryCode) && (
-          <FccNotice className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80" />
+        {/* The hero offers KeBe v2, and KeBe Lite under it, at their US
+            prices, so /us gives the product pages' FCC notice here too for
+            each one it offers whose SDoC is pending (lib/util/fcc.ts,
+            7 Oct 2026). */}
+        {presale.state === "open" && (
+          <FccNotice
+            boards={fccNoticeBoards(countryCode, [
+              PRESALE_HANDLE,
+              lite?.price ? LITE_HANDLE : null,
+            ])}
+            className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80"
+          />
         )}
       </section>
 

@@ -12,12 +12,8 @@ import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
-import {
-  PRESALE_HANDLE,
-  presaleShipLine,
-  presaleShipsBy,
-} from "@lib/util/presale"
-import { fccNoticeApplies } from "@lib/util/fcc"
+import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { fccNoticeBoards } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
 import { getPricesForVariant } from "@lib/util/get-product-price"
 import { trackPixel, trackPixelCustom } from "@lib/util/meta-pixel"
@@ -380,12 +376,14 @@ export default function ProductActions({
           </p>
         )}
         {/* The FCC notice for US orders, under the button and its note, on
-            /us only and only while the SDoC is pending (lib/util/fcc.ts).
-            Always shown, not only once the board can be bought: the page
-            advertises it either way (6 Oct 2026). */}
-        {fccNoticeApplies(countryCode) && product.handle === PRESALE_HANDLE && (
-          <FccNotice className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle" />
-        )}
+            /us only and only while this board's SDoC is pending
+            (lib/util/fcc.ts): KeBe v2's and KeBe Lite's pages each name
+            their own board (7 Oct 2026). Always shown, not only once the
+            board can be bought: the page advertises it either way. */}
+        <FccNotice
+          boards={fccNoticeBoards(countryCode, [product.handle])}
+          className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+        />
         <MobileActions
           product={product}
           variant={selectedVariant}

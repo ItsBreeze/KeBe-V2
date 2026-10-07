@@ -10,7 +10,7 @@ import {
 import { getRegion } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
 import { BRAND, socialMetadata } from "@lib/util/seo"
-import { fccNoticeApplies } from "@lib/util/fcc"
+import { FCC_SDOC_PENDING, fccNoticeBoards } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
 
 // "KeBe keyboard": the brand alone is easily read as "keeb" or Keebio.
@@ -61,6 +61,10 @@ export default async function TermsPage(props: {
     ? CURRENCY_NAMES[region.currency_code.toLowerCase()] ??
       region.currency_code.toUpperCase()
     : null
+
+  // /us only, while any board's SDoC is pending: every such board, since the
+  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026).
+  const fccBoards = fccNoticeBoards(countryCode, FCC_SDOC_PENDING)
 
   const email = (
     <a className="underline underline-offset-4" href={`mailto:${CONTACT_EMAIL}`}>
@@ -133,14 +137,21 @@ export default async function TermsPage(props: {
             </p>
           </section>
 
-          {/* /us only, while the SDoC is pending (lib/util/fcc.ts, 6 Oct
-              2026): the product page's FCC notice, word for word. */}
-          {fccNoticeApplies(countryCode) && (
-            <section>
+          {/* The product pages' FCC notice, word for word, naming every
+              board still pending. The section holds the id, so a link from
+              /ca lands on its heading (7 Oct 2026). */}
+          {fccBoards.length > 0 && (
+            <section id="fcc-notice" className="scroll-mt-20">
               <h2 className="font-display text-2xl text-ui-fg-base">
                 FCC notice for US orders
               </h2>
-              <FccNotice lead={false} termsLink={false} className="mt-3" />
+              <FccNotice
+                boards={fccBoards}
+                lead={false}
+                termsLink={false}
+                id={null}
+                className="mt-3"
+              />
             </section>
           )}
 

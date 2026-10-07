@@ -3,8 +3,7 @@ import { cookies as nextCookies } from "next/headers"
 
 import { CONTACT_EMAIL, STATEMENT_DESCRIPTOR } from "@lib/constants"
 import { convertToLocale } from "@lib/util/money"
-import { fccNoticeApplies } from "@lib/util/fcc"
-import { holdsPresaleBoard } from "@lib/util/presale"
+import { fccNoticeBoardsIn } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
 import CartTotals from "@modules/common/components/cart-totals"
 import Help from "@modules/order/components/help"
@@ -67,13 +66,16 @@ export default async function OrderCompletedTemplate({
             </Text>
           )}
           {/* The FCC notice for US orders, kept with the order it applies
-              to: the board, shipping to a US address, while the SDoC is
-              pending (lib/util/fcc.ts, 6 Oct 2026). The shop sends no
+              to: each board in it whose SDoC is pending, shipping to a US
+              address (lib/util/fcc.ts, 7 Oct 2026). The shop sends no
               confirmation email of its own, so this page is the record. */}
-          {holdsPresaleBoard(order.items) &&
-            fccNoticeApplies(order.shipping_address?.country_code) && (
-              <FccNotice className="rounded-xl border border-ui-border-base p-4 txt-medium text-ui-fg-subtle" />
+          <FccNotice
+            boards={fccNoticeBoardsIn(
+              order.shipping_address?.country_code,
+              order.items
             )}
+            className="rounded-xl border border-ui-border-base p-4 txt-medium text-ui-fg-subtle"
+          />
           <Heading level="h2" className="flex flex-row text-3xl-regular">
             Summary
           </Heading>
