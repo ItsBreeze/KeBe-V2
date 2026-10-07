@@ -7,7 +7,9 @@ export type Spec = { label: string; value: string }
 // (PCBs/v3/README.md, Case_Files/v3/README.md, Keycaps/README.md) and the paid
 // parts orders. Medusa's own fields (weight, dimensions, material) are empty
 // for it, and the starter's tab showed a column of dashes. Nothing here may
-// promise a battery or a radio: this board is wired.
+// promise a battery or a radio: this board is wired, and since 6 Oct 2026 the
+// list says so, as the homepage does ("v2 is wired"), so the product page,
+// its structured data, the feeds and llms.txt can too.
 const BY_HANDLE: Record<string, Spec[]> = {
   [PRESALE_HANDLE]: [
     { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
@@ -15,6 +17,7 @@ const BY_HANDLE: Record<string, Spec[]> = {
     { label: "Sockets", value: "Hot-swap: change switches without solder" },
     { label: "Keycaps", value: "Black, with shine-through legends" },
     { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
+    { label: "Connection", value: "Wired, USB-C" },
     { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
     { label: "Controller", value: "STM32F072, running QMK" },
     { label: "Case", value: "Black-dyed nylon, screwless snap-fit" },

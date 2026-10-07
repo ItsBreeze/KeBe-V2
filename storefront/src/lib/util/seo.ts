@@ -91,8 +91,11 @@ export const clipSentences = (text: string, max: number) => {
 // beyond its Medusa title, keyed by handle like specs.ts. Each is the live
 // product page's own facts (6 Oct 2026), the most-searched first:
 // ortholinear, Dvorak, USB hub, low-profile Choc, hot-swap, assembled in
-// Canada. Never "wired" (the product page does not say it), nothing
-// wireless, and no price or date: those are read from Medusa per request.
+// Canada. "Wired" only since the page's specification says it (its
+// Connection row, 6 Oct 2026), and only in the feeds' title: the lead is at
+// its 123 characters, and the <title> keeps to the words people search.
+// Nothing wireless, and no price or date: those are read from Medusa per
+// request.
 type ListingCopy = {
   // The <title>, at most 60 characters, the brand in it.
   title: string
@@ -107,7 +110,7 @@ const LISTING_COPY: Record<string, ListingCopy> = {
     title: "KeBe v2: Low-Profile Ortholinear Keyboard with USB Hub",
     lead: "Matrix-Dvorak layout, Kailh Choc hot-swap switches, per-key RGB, QMK and a 3-port USB 2.0 hub, assembled by hand in Canada.",
     feedTitle:
-      "KeBe v2 68-Key Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
+      "KeBe v2 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
   },
 }
 
