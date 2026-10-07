@@ -17,7 +17,11 @@ import { LITE_HANDLE, PRESALE_HANDLE } from "@lib/util/presale"
 // nothing on the site does. Not answered because nothing states it: high
 // speed (480 Mbit/s) on the hub's ports (PCBs/v3/README.md lists it as a
 // first-article check), and how much power a port gives.
+// href: a page on this site without the country ("/terms"), or a full
+// https:// address for one elsewhere (the firmware source).
 export type FaqLink = { href: string; label: string }
+
+export const isExternalLink = (link: FaqLink) => /^https?:\/\//.test(link.href)
 
 export type Faq = {
   question: string
@@ -76,14 +80,18 @@ const V2: Faq[] = [
   {
     // The kebe repo's keyboards/kebe/rules.mk and keymaps/default/rules.mk:
     // no VIA_ENABLE, no Vial; specs.ts, "STM32F072, running QMK"; the
-    // homepage's "Still yours to change". How to build and flash a keymap
-    // (hold Esc while plugging in, which also clears the saved settings)
-    // waits until KeBe's QMK folder is public, with a link to it: until
-    // then a buyer has nothing to build from (review, 6 Oct 2026).
+    // homepage's "Still yours to change". The firmware source is public at
+    // github.com/ItsBreeze/kebe-qmk since 7 Oct 2026; its README is the
+    // build guide, and Bootmagic (hold Esc while plugging in) also clears
+    // the saved settings (keyboards/kebe/config.h).
     question: "Can I change the keymap?",
     answer: [
-      "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial.",
+      "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial: you change the keymap in the firmware source, build it with QMK and flash it. Hold Esc while you plug the board in to start its bootloader; that also clears its saved settings.",
     ],
+    link: {
+      href: "https://github.com/ItsBreeze/kebe-qmk",
+      label: "KeBe's firmware source and build guide",
+    },
   },
   {
     // The product page's "About the board": "one goes to your computer,

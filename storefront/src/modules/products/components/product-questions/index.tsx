@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { productFaq } from "@lib/util/faq"
+import { isExternalLink, productFaq } from "@lib/util/faq"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 // The questions a buyer asks of the hardware, answered from the site, the
@@ -38,12 +38,21 @@ const ProductQuestions = ({ product }: { product: HttpTypes.StoreProduct }) => {
               ))}
               {f.link && (
                 <dd className="mt-3">
-                  <LocalizedClientLink
-                    href={f.link.href}
-                    className="text-ui-fg-base underline underline-offset-4 hover:text-white"
-                  >
-                    {f.link.label}
-                  </LocalizedClientLink>
+                  {isExternalLink(f.link) ? (
+                    <a
+                      href={f.link.href}
+                      className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                    >
+                      {f.link.label}
+                    </a>
+                  ) : (
+                    <LocalizedClientLink
+                      href={f.link.href}
+                      className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                    >
+                      {f.link.label}
+                    </LocalizedClientLink>
+                  )}
                 </dd>
               )}
             </div>

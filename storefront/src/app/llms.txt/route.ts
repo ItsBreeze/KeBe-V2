@@ -26,7 +26,7 @@ import {
   variantPrice,
 } from "@lib/util/seo"
 import { fccBoardName, fccShortNotice } from "@lib/util/fcc"
-import { productFaq } from "@lib/util/faq"
+import { isExternalLink, productFaq } from "@lib/util/faq"
 import { productSpecs } from "@lib/util/specs"
 
 // /llms.txt (llmstxt.org): what KeBe is, for AI answer engines, in plain
@@ -128,7 +128,7 @@ const productSection = (
       if (f.link) {
         lines.push(
           "",
-          `[${f.link.label}](${absoluteUrl(`/${home}${f.link.href}`)})`
+          `[${f.link.label}](${isExternalLink(f.link) ? f.link.href : absoluteUrl(`/${home}${f.link.href}`)})`
         )
       }
     }
