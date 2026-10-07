@@ -212,9 +212,12 @@ export async function middleware(request: NextRequest) {
 // region and no cookie, and the region fetch above throws while the backend
 // is down, which made each of them a 500 before its own fallback could
 // answer (review, 6 Oct 2026). A 5xx robots.txt tells Google to crawl
-// nothing.
+// nothing. So does IndexNow's key file, public/<key>.txt, which the engines
+// fetch to check a submission (scripts/indexnow.mjs): it is named here by
+// its key, since a matcher has to be a literal, and a new key means a new
+// name here too (6 Oct 2026).
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|feeds/|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|ec7df96eba8c58b47c1befa4913baa92.txt|feeds/|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
   ],
 }
