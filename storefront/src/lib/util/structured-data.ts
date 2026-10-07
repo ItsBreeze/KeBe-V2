@@ -18,12 +18,13 @@ import {
 import { productSpecs } from "@lib/util/specs"
 
 // schema.org entities for the pages' JSON-LD. Only what the pages themselves
-// state (owner, 5 Oct 2026): no rating or review, no stock level, no return
-// policy or shipping rates (the site publishes neither), and the price is
-// the region's calculated price, never the one after pre-orders close. No
-// gtin or mpn either: a hand-assembled board has neither, and Google asks
-// not to make one up (the feeds say identifier_exists no); the SKU is the
-// shop's own.
+// state (owner, 5 Oct 2026): no rating or review, no stock level, and the
+// price is the region's calculated price, never the one after pre-orders
+// close. No gtin or mpn either: a hand-assembled board has neither, and
+// Google asks not to make one up (the feeds say identifier_exists no); the
+// SKU is the shop's own. The return policy is the pre-order terms' since
+// they were published (6 Oct 2026). Still no shippingDetails: the store API
+// gives shipping rates only for a cart, and the pages name no amount.
 
 const SCHEMA_AVAILABILITY: Record<Availability, string> = {
   preorder: "https://schema.org/PreOrder",
@@ -42,9 +43,39 @@ const seller = () => ({
   name: BRAND,
 })
 
+// The return policy, from the Returns section of the pre-order terms
+// (app/[countryCode]/(main)/terms, 6 Oct 2026) and nothing else: "Return the
+// board within 30 days of delivery, in its original condition, for a refund;
+// buyer pays return shipping." So a 30-day window counted from delivery
+// (merchantReturnDays is "from the delivery date" in Google's docs), sent
+// back by mail, the buyer paying its shipping: Google's
+// ReturnFeesCustomerResponsibility, which takes no amount. Left out because
+// the terms do not settle them: itemCondition ("its original condition"
+// reads as schema.org's New, or as Used for a board typed on), refundType
+// ("a refund", where cancelling says "a full refund"), how soon a return is
+// refunded (the "5 business days" is cancelling's), returnPolicyCountry (the
+// return address is sent by email, not published), returnLabelSource and any
+// restocking fee. One policy per storefront country, each linking that
+// country's terms page; the @id lets an offer name the same policy the store
+// does.
+export const returnPolicyJsonLd = (countryCode: string) => {
+  const terms = absoluteUrl(`/${countryCode}/terms`)
+  return {
+    "@type": "MerchantReturnPolicy",
+    "@id": `${terms}#returns`,
+    applicableCountry: countryCode.toUpperCase(),
+    returnPolicyCategory: "https://schema.org/MerchantReturnFiniteReturnWindow",
+    merchantReturnDays: 30,
+    returnMethod: "https://schema.org/ReturnByMail",
+    returnFees: "https://schema.org/ReturnFeesCustomerResponsibility",
+    merchantReturnLink: terms,
+  }
+}
+
 // OnlineStore: the Organization subtype Google's organization docs ask an
-// online shop to use.
-export const organizationJsonLd = () => ({
+// online shop to use. Its return policy covers every storefront country;
+// without the regions it is left out rather than guessed.
+export const organizationJsonLd = (countries: string[]) => ({
   "@context": "https://schema.org",
   "@type": "OnlineStore",
   "@id": organizationId(),
@@ -61,6 +92,9 @@ export const organizationJsonLd = () => ({
     email: CONTACT_EMAIL,
   },
   sameAs: [INSTAGRAM_URL],
+  ...(countries.length
+    ? { hasMerchantReturnPolicy: countries.map((cc) => returnPolicyJsonLd(cc)) }
+    : {}),
 })
 
 export const websiteJsonLd = () => ({
@@ -75,11 +109,15 @@ export const websiteJsonLd = () => ({
 
 // One variant's offer in this country. A pre-order or backorder says when an
 // order placed now ships (availabilityStarts), the date the page's ship line
-// gives; no variant without a price in the region gets an offer.
+// gives; no variant without a price in the region gets an offer. The return
+// policy repeats the store's for this country, in full: the home page that
+// carries the store's markup may not be read with the product page, and
+// Google takes an offer's own policy first.
 const offerFor = (
   product: HttpTypes.StoreProduct,
   variant: HttpTypes.StoreProductVariant,
-  url: string
+  url: string,
+  countryCode: string
 ) => {
   const price = variantPrice(variant)
   if (!price) return null
@@ -98,6 +136,7 @@ const offerFor = (
     ...(startsAt ? { availabilityStarts: startsAt } : {}),
     itemCondition: "https://schema.org/NewCondition",
     seller: seller(),
+    hasMerchantReturnPolicy: returnPolicyJsonLd(countryCode),
   }
 }
 
@@ -137,7 +176,7 @@ export const productJsonLd = (
 
   if (variants.length <= 1) {
     const variant = variants[0]
-    const offer = variant ? offerFor(product, variant, url) : null
+    const offer = variant ? offerFor(product, variant, url, countryCode) : null
     return {
       "@context": "https://schema.org",
       "@type": "Product",
@@ -159,7 +198,7 @@ export const productJsonLd = (
     productGroupID: product.handle,
     ...(hasColour ? { variesBy: ["https://schema.org/color"] } : {}),
     hasVariant: variants.map((variant) => {
-      const offer = offerFor(product, variant, url)
+      const offer = offerFor(product, variant, url, countryCode)
       const own = (variant.images ?? [])
         .filter((i) => !!i.url && !isAiGeneratedImage(i))
         .map((i) => absoluteUrl(i.url))

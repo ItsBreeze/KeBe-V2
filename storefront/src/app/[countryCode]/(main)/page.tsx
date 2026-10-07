@@ -2,7 +2,7 @@ import { Metadata } from "next"
 import Image from "next/image"
 import { HttpTypes } from "@medusajs/types"
 import { listProducts } from "@lib/data/products"
-import { pageAlternates } from "@lib/data/seo"
+import { pageAlternates, storefrontCountries } from "@lib/data/seo"
 import { getProductPrice } from "@lib/util/get-product-price"
 import {
   fitSentences,
@@ -126,6 +126,8 @@ export default async function Home(props: {
 }) {
   const { countryCode } = await props.params
   const presale = await getPresale(countryCode)
+  // The store's return policy is given for each of these (structured-data.ts).
+  const countries = await storefrontCountries()
   // The reel's end card names the price and where it ships: US$249 · US on
   // the US route, CA$349 · Canada everywhere else (the shop's two regions).
   const market = countryCode.toLowerCase() === "us" ? "us" : "ca"
@@ -134,7 +136,7 @@ export default async function Home(props: {
     <div className="bg-kebe-page text-kebe-text">
       {/* Who sells the board and what the site is called, for search
           engines and AI answers. */}
-      <JsonLd data={organizationJsonLd()} />
+      <JsonLd data={organizationJsonLd(countries)} />
       <JsonLd data={websiteJsonLd()} />
       {/* Hero: the lit 3D model from v2's CAD (scripts/render-v2) fills it,
           still, with the name and Pre-order laid over its top. A click on
