@@ -12,7 +12,13 @@ import { isEqual } from "lodash"
 import { useParams, usePathname, useSearchParams } from "next/navigation"
 import { useActionState, useEffect, useMemo, useRef, useState } from "react"
 import ProductPrice from "../product-price"
-import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import {
+  PRESALE_HANDLE,
+  presaleShipLine,
+  presaleShipsBy,
+} from "@lib/util/presale"
+import { fccNoticeApplies } from "@lib/util/fcc"
+import FccNotice from "@modules/common/components/fcc-notice"
 import { getPricesForVariant } from "@lib/util/get-product-price"
 import { trackPixel, trackPixelCustom } from "@lib/util/meta-pixel"
 import MobileActions from "./mobile-actions"
@@ -372,6 +378,13 @@ export default function ProductActions({
               Pre-order terms
             </LocalizedClientLink>
           </p>
+        )}
+        {/* The FCC notice for US orders, under the button and its note, on
+            /us only and only while the SDoC is pending (lib/util/fcc.ts).
+            Always shown, not only once the board can be bought: the page
+            advertises it either way (6 Oct 2026). */}
+        {fccNoticeApplies(countryCode) && product.handle === PRESALE_HANDLE && (
+          <FccNotice className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle" />
         )}
         <MobileActions
           product={product}

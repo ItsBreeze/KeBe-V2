@@ -6,6 +6,8 @@ import { Heading, Text, clx } from "@medusajs/ui"
 
 import { convertToLocale } from "@lib/util/money"
 import { cartItemsLabel, holdsPresaleBoard } from "@lib/util/presale"
+import { fccNoticeApplies } from "@lib/util/fcc"
+import FccNotice from "@modules/common/components/fcc-notice"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
@@ -123,6 +125,14 @@ const Review = ({
                 </LocalizedClientLink>
                 .
               </Text>
+              {/* The FCC notice for US orders, once more before the card is
+                  charged, for a cart holding the board that ships to a US
+                  address, while the SDoC is pending (lib/util/fcc.ts, 6 Oct
+                  2026). */}
+              {preorder &&
+                fccNoticeApplies(cart.shipping_address?.country_code) && (
+                  <FccNotice className="mt-4 rounded-xl border border-ui-border-base p-4 txt-medium text-ui-fg-subtle" />
+                )}
             </div>
           </div>
           <PaymentButton cart={cart} data-testid="submit-order-button" />

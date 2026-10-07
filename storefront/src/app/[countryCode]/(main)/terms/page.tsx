@@ -10,6 +10,8 @@ import {
 import { getRegion } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
 import { BRAND, socialMetadata } from "@lib/util/seo"
+import { fccNoticeApplies } from "@lib/util/fcc"
+import FccNotice from "@modules/common/components/fcc-notice"
 
 // "KeBe keyboard": the brand alone is easily read as "keeb" or Keebio.
 const DESCRIPTION =
@@ -130,6 +132,17 @@ export default async function TermsPage(props: {
               delivery.
             </p>
           </section>
+
+          {/* /us only, while the SDoC is pending (lib/util/fcc.ts, 6 Oct
+              2026): the product page's FCC notice, word for word. */}
+          {fccNoticeApplies(countryCode) && (
+            <section>
+              <h2 className="font-display text-2xl text-ui-fg-base">
+                FCC notice for US orders
+              </h2>
+              <FccNotice lead={false} termsLink={false} className="mt-3" />
+            </section>
+          )}
 
           <section>
             <h2 className="font-display text-2xl text-ui-fg-base">
