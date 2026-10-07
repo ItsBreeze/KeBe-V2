@@ -2,7 +2,7 @@
 
 import { Table, Text, clx } from "@medusajs/ui"
 import { updateLineItem } from "@lib/data/cart"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { isPresaleHandle } from "@lib/util/presale"
 import { QUANTITY_ERROR } from "@modules/common/components/delete-button"
 import { HttpTypes } from "@medusajs/types"
 import CartItemSelect from "@modules/cart/components/cart-item-select"
@@ -91,7 +91,7 @@ const Item = ({ item, type = "full", currencyCode, shipLine }: ItemProps) => {
             (6 Oct 2026). Without a line in force it says nothing rather
             than guess a date. */}
         {shipLine &&
-          (item.product_handle ?? item.product?.handle) === PRESALE_HANDLE && (
+          isPresaleHandle(item.product_handle ?? item.product?.handle) && (
             <Text
               className="txt-medium text-ui-fg-subtle"
               data-testid="product-ship-line"

@@ -3,7 +3,11 @@
 import { sdk } from "@lib/config"
 import { isStripeLike } from "@lib/constants"
 import { getCheckoutStep } from "@lib/util/checkout-step"
-import { holdsPresaleBoard } from "@lib/util/presale"
+import {
+  isPresaleHandle,
+  PRESALE_HANDLE,
+  presalePaymentLabel,
+} from "@lib/util/presale"
 import medusaError from "@lib/util/medusa-error"
 import { POSTAL_CODES, postalCode } from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
@@ -18,7 +22,7 @@ import {
   removeCartId,
   setCartId,
 } from "./cookies"
-import { getPresaleShipInfo } from "./products"
+import { getCartPresaleShipInfo, getPresaleShipInfo } from "./products"
 import { getRegion } from "./regions"
 import { getLocale } from "@lib/data/locale-actions"
 
@@ -73,7 +77,7 @@ async function shipMetadataAtPayment(
       .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
         method: "GET",
         query: {
-          fields: "id,region_id,items.id,items.product_id",
+          fields: "id,region_id,items.id,items.product_id,items.product_handle",
         },
         headers,
         cache: "no-store",
@@ -84,12 +88,13 @@ async function shipMetadataAtPayment(
       return {}
     }
 
-    const info = await getPresaleShipInfo({
+    const info = await getCartPresaleShipInfo({
       regionId: cart.region_id,
+      items: cart.items,
       fresh: true,
     })
 
-    if (!info || !cart.items?.some((i) => i.product_id === info.productId)) {
+    if (!info) {
       return {}
     }
 
@@ -290,6 +295,11 @@ export async function preorderNow(
 ): Promise<{ error?: boolean }> {
   const variantId = formData.get("variant_id")
   const countryCode = formData.get("country_code")
+  // Which pre-order board the form is for (KeBe v2 or KeBe Lite): its ship line goes on the line. Anything else
+  // reads as KeBe v2, the form's only board before the Lite.
+  const posted = formData.get("handle")
+  const handle =
+    typeof posted === "string" && isPresaleHandle(posted) ? posted : PRESALE_HANDLE
 
   if (
     typeof variantId !== "string" ||
@@ -331,7 +341,7 @@ export async function preorderNow(
     step = getCheckoutStep(full)
 
     const info = full.region_id
-      ? await getPresaleShipInfo({ regionId: full.region_id, fresh: true })
+      ? await getPresaleShipInfo({ regionId: full.region_id, fresh: true, handle })
       : null
 
     const metadata = shipMetadata(info)
@@ -517,9 +527,7 @@ export async function initiatePaymentSession(
           ...data,
           data: {
             ...data.data,
-            payment_description: holdsPresaleBoard(cart.items)
-              ? "KeBe v2 pre-order"
-              : "KeBe order",
+            payment_description: presalePaymentLabel(cart.items) ?? "KeBe order",
           },
         }
       : data

@@ -4,6 +4,7 @@ import { getBaseURL } from "@lib/util/env"
 import { isAiGeneratedImage } from "@lib/util/image-alt"
 import {
   PRESALE_HANDLE,
+  LITE_HANDLE,
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
@@ -111,6 +112,12 @@ const LISTING_COPY: Record<string, ListingCopy> = {
     lead: "Matrix-Dvorak layout, Kailh Choc hot-swap switches, per-key RGB, QMK and a 3-port USB 2.0 hub, assembled by hand in Canada.",
     feedTitle:
       "KeBe v2 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
+  },
+  [LITE_HANDLE]: {
+    title: "KeBe Lite: Backlit Ortholinear Keyboard with USB Hub",
+    lead: "Matrix-Dvorak layout, backlit silicone keys with laser-etched legends, per-key RGB, QMK and a 3-port USB 2.0 hub.",
+    feedTitle:
+      "KeBe Lite 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Backlit Rubber-Dome Keys, Per-Key RGB",
   },
 }
 

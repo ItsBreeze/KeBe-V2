@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { LITE_HANDLE, PRESALE_HANDLE } from "@lib/util/presale"
 
 export type Spec = { label: string; value: string }
 
@@ -23,6 +23,22 @@ const BY_HANDLE: Record<string, Spec[]> = {
     { label: "Case", value: "Black-dyed nylon, screwless snap-fit" },
     { label: "Plate", value: "FR4, black soldermask" },
     { label: "Case size", value: "256.7 × 89.2 × 8.65 mm" },
+    { label: "Assembly", value: "By hand in Canada" },
+  ],
+  // KeBe Lite, from the kebe repo's PCBs/lite/README.md (the stack, the keypad and the case) and keypad/RFQ.md (the
+  // backlit finish); the case is KeBe v2's r9, printed in natural-grey MJF PA12 for the Lite (the README's cost
+  // section). Wired, like v2. No switches or keycaps: the keys are one silicone keypad.
+  [LITE_HANDLE]: [
+    { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
+    { label: "Keys", value: "One silicone keypad: rubber domes with carbon contacts on gold pads" },
+    { label: "Legends", value: "Backlit, laser-etched through black-sprayed translucent silicone" },
+    { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
+    { label: "Connection", value: "Wired, USB-C" },
+    { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
+    { label: "Controller", value: "STM32F072, running QMK" },
+    { label: "Case", value: "Grey nylon, screwless snap-fit: KeBe v2's case" },
+    { label: "Bezel", value: "FR4, black soldermask" },
+    { label: "Size", value: "256.7 × 89.2 mm, 10.95 mm to the key tops" },
     { label: "Assembly", value: "By hand in Canada" },
   ],
 }

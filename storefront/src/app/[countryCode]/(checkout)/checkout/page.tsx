@@ -1,7 +1,7 @@
 import { retrieveCart } from "@lib/data/cart"
 import { retrieveCustomer } from "@lib/data/customer"
-import { getPresaleShipInfo } from "@lib/data/products"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { getCartPresaleShipInfo } from "@lib/data/products"
+import { presaleLineOf } from "@lib/util/presale"
 import MobileOrderBar from "@modules/checkout/components/mobile-order-bar"
 import PaymentWrapper from "@modules/checkout/components/payment-wrapper"
 import AddedToCart from "@modules/common/components/meta-pixel/added-to-cart"
@@ -35,9 +35,7 @@ export default async function Checkout(props: {
 
   // The pre-order's line: the Pre-order form lands here with ?added=1, and
   // this page counts its AddToCart.
-  const presaleLine = items.find(
-    (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
-  )
+  const presaleLine = presaleLineOf(items)
 
   // The ship line the product page shows now, for the phone's order bar,
   // Delivery and Review. It is the cached product read: the line on the cart
@@ -45,7 +43,8 @@ export default async function Checkout(props: {
   // in force at payment.
   const shipLine =
     presaleLine && cart.region_id
-      ? (await getPresaleShipInfo({ regionId: cart.region_id }))?.shipLine ??
+      ? (await getCartPresaleShipInfo({ regionId: cart.region_id, items }))
+          ?.shipLine ??
         null
       : null
 

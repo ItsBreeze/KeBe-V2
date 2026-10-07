@@ -3,6 +3,7 @@
 import { sdk } from "@lib/config"
 import {
   PRESALE_HANDLE,
+  isPresaleHandle,
   presaleShipDate,
   presaleShipLine,
 } from "@lib/util/presale"
@@ -152,9 +153,12 @@ export const listProductsWithSort = async ({
 export async function getPresaleShipInfo({
   regionId,
   fresh,
+  handle = PRESALE_HANDLE,
 }: {
   regionId: string
   fresh?: boolean
+  // which pre-order board: KeBe v2 unless a cart line says otherwise
+  handle?: string
 }): Promise<{
   productId: string
   shipLine: string | null
@@ -172,7 +176,7 @@ export async function getPresaleShipInfo({
         .fetch<{ products: HttpTypes.StoreProduct[] }>(`/store/products`, {
           method: "GET",
           query: {
-            handle: PRESALE_HANDLE,
+            handle,
             region_id: regionId,
             limit: 1,
             fields:
@@ -185,7 +189,7 @@ export async function getPresaleShipInfo({
     } else {
       product = await listProducts({
         regionId,
-        queryParams: { handle: PRESALE_HANDLE, limit: 1 },
+        queryParams: { handle, limit: 1 },
       }).then(({ response }) => response.products[0])
     }
 
@@ -201,4 +205,35 @@ export async function getPresaleShipInfo({
   } catch {
     return null
   }
+}
+
+// The ship line for a cart's or an order's pre-order boards: the latest of their dates, since an order holding
+// KeBe v2 and KeBe Lite ships when both can (6 Oct 2026). Null when it holds none, and on any failure.
+export async function getCartPresaleShipInfo({
+  regionId,
+  items,
+  fresh,
+}: {
+  regionId: string
+  items:
+    | { product_handle?: string | null; product?: { handle?: string | null } | null }[]
+    | null
+    | undefined
+  fresh?: boolean
+}) {
+  const handles = Array.from(
+    new Set(
+      (items ?? [])
+        .map((i) => i.product_handle ?? i.product?.handle)
+        .filter((h): h is string => isPresaleHandle(h))
+    )
+  )
+  const infos = await Promise.all(
+    handles.map((handle) => getPresaleShipInfo({ regionId, fresh, handle }))
+  )
+  return (
+    infos
+      .filter((i): i is NonNullable<typeof i> => !!i)
+      .sort((a, b) => (b.shipDate ?? "").localeCompare(a.shipDate ?? ""))[0] ?? null
+  )
 }

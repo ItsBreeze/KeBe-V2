@@ -337,6 +337,7 @@ export default function ProductActions({
               value={selectedVariant?.id ?? ""}
             />
             <input type="hidden" name="country_code" value={countryCode} />
+            <input type="hidden" name="handle" value={product.handle ?? ""} />
             {buyButton}
           </form>
         ) : (

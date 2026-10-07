@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { LITE_HANDLE, PRESALE_HANDLE } from "@lib/util/presale"
 
 // A product's questions and answers, keyed by handle like specs.ts: shown
 // under its specification on the product page (product-tabs) and in
@@ -27,87 +27,126 @@ export type Faq = {
   link?: FaqLink
 }
 
+const V2: Faq[] = [
+  {
+    // The product page's subtitle, "68 keys in straight columns, with
+    // August Dvorak's letter order", and its reasons "The home row does
+    // the work" and "Symbols in the middle" (lib/util/kebe-copy.ts); the
+    // kebe repo's keymap.c, whose base layer has A O E U I and D H T N S
+    // on the home row and - = [ ] / \ in the two middle columns.
+    question: "What is Matrix-Dvorak?",
+    answer: [
+      "KeBe's layout: 68 keys in straight columns, with August Dvorak's letter order. The row your fingers rest on reads A O E U I under the left hand and D H T N S under the right, and the - = [ ] / \\ keys sit in the two middle columns, where your pointer fingers take them. The free typing trainer on this site teaches it one letter at a time.",
+    ],
+    link: { href: "/train", label: "Open the typing trainer" },
+  },
+  {
+    // The kebe repo's keymap.c: the base layer sends the US keycodes for
+    // Dvorak's characters (KC_QUOT, KC_COMM, KC_DOT, KC_P, KC_Y ...), so
+    // the computer has to read them as US English; Keycaps/README.md,
+    // "the host's US layout already types these on Shift". The product
+    // page's "plug it in by USB-C and it types, with nothing to install".
+    question: "Do I set my computer to Dvorak?",
+    answer: [
+      "No. Set it to, or leave it on, US English (QWERTY): KeBe makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
+    ],
+  },
+  {
+    // The kebe repo's PCBs/v3/README.md: "Kailh Choc v1 hot-swap", the
+    // sockets Kailh CPG135001S30 (sections 4 and 6); Case_Files/v3/README.md,
+    // the plate's "Choc v1 apertures 13.95 R0.5"; specs.ts, the Switches
+    // and Sockets rows.
+    question: "Which switches fit?",
+    answer: [
+      "Kailh Choc v1 low-profile switches, the kind it comes with (Choc v1 Brown). The sockets are Kailh's Choc v1 hot-swap sockets and the plate is cut for Choc v1, so you change a switch without solder.",
+    ],
+  },
+  {
+    // The kebe repo's Keycaps/README.md: the key pitch is 18.000 x 17.000
+    // mm, "a cap deeper than ~16.8 mm will not fit the row pitch", Kailh
+    // caps sold 18.0 and 17.95 mm deep do not fit, and the two 2U thumb
+    // keys each sit on a switch and a stabiliser; Case_Files/v3/README.md,
+    // the 2U stabilisers hang from the plate; the homepage's "18 by 17 mm
+    // grid".
+    question: "Which keycaps fit?",
+    answer: [
+      "Keycaps made for Kailh Choc v1 switches, no deeper than about 16.8 mm front to back. The keys sit 18 mm apart across and 17 mm apart from row to row, and some Choc caps are about 18 mm deep, too deep for these rows. The two space bars are 2U, on stabilisers.",
+    ],
+  },
+  {
+    // The kebe repo's keyboards/kebe/rules.mk and keymaps/default/rules.mk:
+    // no VIA_ENABLE, no Vial; specs.ts, "STM32F072, running QMK"; the
+    // homepage's "Still yours to change". How to build and flash a keymap
+    // (hold Esc while plugging in, which also clears the saved settings)
+    // waits until KeBe's QMK folder is public, with a link to it: until
+    // then a buyer has nothing to build from (review, 6 Oct 2026).
+    question: "Can I change the keymap?",
+    answer: [
+      "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial.",
+    ],
+  },
+  {
+    // The product page's "About the board": "one goes to your computer,
+    // and the other three are a USB 2.0 hub for a mouse receiver, a flash
+    // drive or anything else that draws little power". The kebe repo's
+    // PCBs/v3/README.md, section 1: the host port feeds the hub's upstream
+    // port, and the three ports take their power from the host's.
+    question: "What do the three extra USB-C ports do?",
+    answer: [
+      "They are a USB 2.0 hub inside the board, for a mouse receiver, a flash drive or anything else that draws little power. The keyboard and everything plugged into it reach your computer through the one cable, and take their power from it.",
+    ],
+  },
+  {
+    // The pre-order terms (app/[countryCode]/(main)/terms), word for word
+    // but for "are": "Changing your mind", "Returns" and "Warranty". When
+    // it ships is the Shipping section's, just below.
+    question: "Can I cancel, or return it?",
+    answer: [
+      "Cancel any time before your board ships for a full refund within 5 business days. Return the board within 30 days of delivery, in its original condition, for a refund; buyer pays return shipping. Defects are repaired or replaced for a year.",
+    ],
+    link: { href: "/terms", label: "Pre-order terms" },
+  },
+]
+
+// The same board and firmware as KeBe v2, so these of v2's answers are the Lite's too: the layout, the computer's
+// setting, the keymap, the hub ports and the pre-order terms. Not the switch and keycap answers: the Lite has
+// neither.
+const shared = (q: string): Faq => {
+  const f = V2.find((x) => x.question === q)
+  if (!f) throw new Error(`faq.ts: no v2 answer "${q}" to share`)
+  return f
+}
+
+const LITE: Faq[] = [
+  {
+    // The kebe repo's PCBs/lite/README.md: "the same v3 board, matrix, MCU, hub, RGB and unchanged firmware"; "the
+    // 68 Choc switches, hot-swap sockets, keycaps ... are replaced by one moulded silicone keypad: its carbon
+    // pills press on gold contacts printed on the board"; the backend's start-lite.ts description.
+    question: "How is KeBe Lite different from KeBe v2?",
+    answer: [
+      "The board, the controller, the four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are one moulded silicone keypad: each is a rubber dome whose carbon contact presses on gold pads on the board, where KeBe v2 has Kailh Choc switches in hot-swap sockets and separate keycaps. So the Lite has no switches or keycaps to change, and it costs less.",
+    ],
+    link: { href: "/products/kebe-v2-keyboard", label: "See KeBe v2" },
+  },
+  {
+    // PCBs/lite/README.md and keypad/RFQ.md: translucent silicone, key tops and sides sprayed black, legends
+    // laser-etched through the paint; "each key has its own RGB LED under its north half, directly under the main
+    // legend"; specs.ts, the Lighting row.
+    question: "Are the keys backlit?",
+    answer: [
+      "Yes. The keys are translucent silicone sprayed black, with the legends laser-etched through the paint, and each key has its own RGB LED under its main legend, so the legends light up and the rest of the key stays dark.",
+    ],
+  },
+  shared("What is Matrix-Dvorak?"),
+  shared("Do I set my computer to Dvorak?"),
+  shared("Can I change the keymap?"),
+  shared("What do the three extra USB-C ports do?"),
+  shared("Can I cancel, or return it?"),
+]
+
 const BY_HANDLE: Record<string, Faq[]> = {
-  [PRESALE_HANDLE]: [
-    {
-      // The product page's subtitle, "68 keys in straight columns, with
-      // August Dvorak's letter order", and its reasons "The home row does
-      // the work" and "Symbols in the middle" (lib/util/kebe-copy.ts); the
-      // kebe repo's keymap.c, whose base layer has A O E U I and D H T N S
-      // on the home row and - = [ ] / \ in the two middle columns.
-      question: "What is Matrix-Dvorak?",
-      answer: [
-        "KeBe's layout: 68 keys in straight columns, with August Dvorak's letter order. The row your fingers rest on reads A O E U I under the left hand and D H T N S under the right, and the - = [ ] / \\ keys sit in the two middle columns, where your pointer fingers take them. The free typing trainer on this site teaches it one letter at a time.",
-      ],
-      link: { href: "/train", label: "Open the typing trainer" },
-    },
-    {
-      // The kebe repo's keymap.c: the base layer sends the US keycodes for
-      // Dvorak's characters (KC_QUOT, KC_COMM, KC_DOT, KC_P, KC_Y ...), so
-      // the computer has to read them as US English; Keycaps/README.md,
-      // "the host's US layout already types these on Shift". The product
-      // page's "plug it in by USB-C and it types, with nothing to install".
-      question: "Do I set my computer to Dvorak?",
-      answer: [
-        "No. Set it to, or leave it on, US English (QWERTY): KeBe makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
-      ],
-    },
-    {
-      // The kebe repo's PCBs/v3/README.md: "Kailh Choc v1 hot-swap", the
-      // sockets Kailh CPG135001S30 (sections 4 and 6); Case_Files/v3/README.md,
-      // the plate's "Choc v1 apertures 13.95 R0.5"; specs.ts, the Switches
-      // and Sockets rows.
-      question: "Which switches fit?",
-      answer: [
-        "Kailh Choc v1 low-profile switches, the kind it comes with (Choc v1 Brown). The sockets are Kailh's Choc v1 hot-swap sockets and the plate is cut for Choc v1, so you change a switch without solder.",
-      ],
-    },
-    {
-      // The kebe repo's Keycaps/README.md: the key pitch is 18.000 x 17.000
-      // mm, "a cap deeper than ~16.8 mm will not fit the row pitch", Kailh
-      // caps sold 18.0 and 17.95 mm deep do not fit, and the two 2U thumb
-      // keys each sit on a switch and a stabiliser; Case_Files/v3/README.md,
-      // the 2U stabilisers hang from the plate; the homepage's "18 by 17 mm
-      // grid".
-      question: "Which keycaps fit?",
-      answer: [
-        "Keycaps made for Kailh Choc v1 switches, no deeper than about 16.8 mm front to back. The keys sit 18 mm apart across and 17 mm apart from row to row, and some Choc caps are about 18 mm deep, too deep for these rows. The two space bars are 2U, on stabilisers.",
-      ],
-    },
-    {
-      // The kebe repo's keyboards/kebe/rules.mk and keymaps/default/rules.mk:
-      // no VIA_ENABLE, no Vial; specs.ts, "STM32F072, running QMK"; the
-      // homepage's "Still yours to change". How to build and flash a keymap
-      // (hold Esc while plugging in, which also clears the saved settings)
-      // waits until KeBe's QMK folder is public, with a link to it: until
-      // then a buyer has nothing to build from (review, 6 Oct 2026).
-      question: "Can I change the keymap?",
-      answer: [
-        "It runs QMK, the open-source keyboard firmware, and every key and the Fn layer are set in it. There is no VIA or Vial.",
-      ],
-    },
-    {
-      // The product page's "About the board": "one goes to your computer,
-      // and the other three are a USB 2.0 hub for a mouse receiver, a flash
-      // drive or anything else that draws little power". The kebe repo's
-      // PCBs/v3/README.md, section 1: the host port feeds the hub's upstream
-      // port, and the three ports take their power from the host's.
-      question: "What do the three extra USB-C ports do?",
-      answer: [
-        "They are a USB 2.0 hub inside the board, for a mouse receiver, a flash drive or anything else that draws little power. The keyboard and everything plugged into it reach your computer through the one cable, and take their power from it.",
-      ],
-    },
-    {
-      // The pre-order terms (app/[countryCode]/(main)/terms), word for word
-      // but for "are": "Changing your mind", "Returns" and "Warranty". When
-      // it ships is the Shipping section's, just below.
-      question: "Can I cancel, or return it?",
-      answer: [
-        "Cancel any time before your board ships for a full refund within 5 business days. Return the board within 30 days of delivery, in its original condition, for a refund; buyer pays return shipping. Defects are repaired or replaced for a year.",
-      ],
-      link: { href: "/terms", label: "Pre-order terms" },
-    },
-  ],
+  [PRESALE_HANDLE]: V2,
+  [LITE_HANDLE]: LITE,
 }
 
 export const productFaq = (product: HttpTypes.StoreProduct): Faq[] =>

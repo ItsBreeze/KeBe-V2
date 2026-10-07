@@ -1,6 +1,31 @@
 import { HttpTypes } from "@medusajs/types"
 
 export const PRESALE_HANDLE = "kebe-v2-keyboard"
+// KeBe Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite), on pre-order since 6 Oct 2026.
+export const LITE_HANDLE = "kebe-lite"
+// Every board sold on pre-order. The pre-order terms' cancel promise, the cart's ship line, the Stripe
+// description and the order page's help cover each one; PRESALE_HANDLE stays the flagship the homepage and the
+// other pages' links lead to.
+export const PRESALE_HANDLES: readonly string[] = [PRESALE_HANDLE, LITE_HANDLE]
+
+export const isPresaleHandle = (handle: string | null | undefined) =>
+  !!handle && PRESALE_HANDLES.includes(handle)
+
+type LineLike = {
+  product_handle?: string | null
+  product?: { handle?: string | null } | null
+}
+const lineHandle = (i: LineLike) => i.product_handle ?? i.product?.handle
+
+// The first line of a cart or an order that holds a pre-order board, and its product's handle.
+export const presaleLineOf = <T extends LineLike>(
+  items: T[] | null | undefined
+): T | undefined => items?.find((i) => isPresaleHandle(lineHandle(i)))
+
+export const presaleHandleOf = (items: LineLike[] | null | undefined) => {
+  const line = presaleLineOf(items)
+  return line ? lineHandle(line) ?? undefined : undefined
+}
 
 // A YYYY-MM-DD date from the product's metadata, or null. A date that does
 // not exist (2026-13-01, or 2026-02-30 rolling into March) reads as null
@@ -129,9 +154,20 @@ export const holdsPresaleBoard = (
     | null
     | undefined
 ) =>
-  !!items?.some(
-    (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
-  )
+  !!items?.some((i) => isPresaleHandle(lineHandle(i)))
+
+// What a payment is for, on Stripe's record of it: "KeBe v2 pre-order", "KeBe Lite pre-order", from the first
+// pre-order line's title (the name before " — "); null for a cart without one.
+export const presalePaymentLabel = (
+  items:
+    | (LineLike & { product_title?: string | null; title?: string | null })[]
+    | null
+    | undefined
+): string | null => {
+  const line = presaleLineOf(items)
+  if (!line) return null
+  return `${(line.product_title ?? line.title ?? "KeBe").split(" — ")[0] || "KeBe"} pre-order`
+}
 
 // What a cart holds, in a few words, for checkout's order lines: the name
 // before the " — " in the title ("KeBe v2"), as the product page's sticky
@@ -146,7 +182,7 @@ export const cartItemsLabel = (
     ? `${only.quantity > 1 ? `${only.quantity} × ` : ""}${
         (only.product_title ?? only.title ?? "").split(" — ")[0]
       }${
-        (only.product_handle ?? only.product?.handle) === PRESALE_HANDLE
+        isPresaleHandle(lineHandle(only))
           ? " pre-order"
           : ""
       }`

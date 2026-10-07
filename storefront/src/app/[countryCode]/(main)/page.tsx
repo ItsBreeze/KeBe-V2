@@ -11,6 +11,7 @@ import {
 } from "@lib/util/seo"
 import {
   PRESALE_HANDLE,
+  LITE_HANDLE,
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
@@ -94,12 +95,13 @@ type Presale =
 // The presale board in this country, or undefined when the backend cannot
 // be read: the homepage must render with it down.
 async function presaleProduct(
-  countryCode: string
+  countryCode: string,
+  handle: string = PRESALE_HANDLE
 ): Promise<HttpTypes.StoreProduct | undefined> {
   try {
     const { response } = await listProducts({
       countryCode,
-      queryParams: { handle: PRESALE_HANDLE, limit: 1 },
+      queryParams: { handle, limit: 1 },
     })
     return response.products[0]
   } catch {
@@ -121,11 +123,27 @@ async function getPresale(countryCode: string): Promise<Presale> {
   }
 }
 
+// KeBe Lite's price and ship line, said under v2's Pre-order only while the Lite can be pre-ordered: the lower
+// price the ads lead with (owner, 6 Oct 2026). Any failure leaves the line out.
+async function getLite(countryCode: string) {
+  const product = await presaleProduct(countryCode, LITE_HANDLE)
+  if (!product || !presaleShipsBy(product) || !presaleAvailability(product).open) {
+    return null
+  }
+  return {
+    price: getProductPrice({ product }).cheapestPrice?.calculated_price,
+    shipLine: presaleShipLine(product),
+  }
+}
+
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
 }) {
   const { countryCode } = await props.params
-  const presale = await getPresale(countryCode)
+  const [presale, lite] = await Promise.all([
+    getPresale(countryCode),
+    getLite(countryCode),
+  ])
   // The store's return policy is given for each of these (structured-data.ts).
   const countries = await storefrontCountries()
   // The reel's end card names the price and where it ships: US$249 · US on
@@ -181,6 +199,18 @@ export default async function Home(props: {
                       ? `${presale.shipLine} · Canada and the US`
                       : "Ships to Canada and the US"}
                   </p>
+                  {lite?.price && (
+                    <p className="mt-5 max-w-md text-base text-kebe-text/80">
+                      Or KeBe Lite, with backlit rubber-dome keys: {lite.price}{" "}
+                      + shipping{lite.shipLine ? `, ${lite.shipLine.toLowerCase()}` : ""}.{" "}
+                      <LocalizedClientLink
+                        href={`/products/${LITE_HANDLE}`}
+                        className="whitespace-nowrap text-kebe-text underline underline-offset-4 hover:text-white"
+                      >
+                        See KeBe Lite
+                      </LocalizedClientLink>
+                    </p>
+                  )}
                 </>
               ) : (
                 <WaitlistForm source="v2" />

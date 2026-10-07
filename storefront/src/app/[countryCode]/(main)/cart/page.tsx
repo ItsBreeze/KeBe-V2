@@ -1,8 +1,8 @@
 import { retrieveCart } from "@lib/data/cart"
 import { listCartShippingMethods } from "@lib/data/fulfillment"
-import { getPresaleShipInfo } from "@lib/data/products"
+import { getCartPresaleShipInfo } from "@lib/data/products"
 import { convertToLocale } from "@lib/util/money"
-import { PRESALE_HANDLE } from "@lib/util/presale"
+import { presaleLineOf } from "@lib/util/presale"
 import { PRIVATE_PAGE_ROBOTS } from "@lib/util/seo"
 import { HttpTypes } from "@medusajs/types"
 import CartTemplate from "@modules/cart/templates"
@@ -65,16 +65,14 @@ export default async function Cart() {
 
   const items = cart?.items ?? []
 
-  const presaleLine = items.find(
-    (i) => (i.product_handle ?? i.product?.handle) === PRESALE_HANDLE
-  )
+  const presaleLine = presaleLineOf(items)
 
   // The ship line the product page shows now, under the board's row. It is
   // the cached product read, as on checkout: the line on the cart item is from
   // when the board was added.
   const [shipLine, shippingNote] = await Promise.all([
     presaleLine && cart?.region_id
-      ? getPresaleShipInfo({ regionId: cart.region_id }).then(
+      ? getCartPresaleShipInfo({ regionId: cart.region_id, items }).then(
           (info) => info?.shipLine ?? null
         )
       : null,
