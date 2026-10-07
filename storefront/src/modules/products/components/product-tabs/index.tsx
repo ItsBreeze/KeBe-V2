@@ -1,10 +1,16 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import {
+  presaleShipLine,
+  presaleShipsBy,
+  usShipsLater,
+} from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
 import { CONTACT_EMAIL } from "@lib/constants"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
+  // a US buyer sees the FCC date (presale.ts)
+  countryCode?: string
 }
 
 // The specification and shipping, set out in full rather than folded into
@@ -13,10 +19,12 @@ type ProductTabsProps = {
 // true of the order is said here. Shipping is a set price for each Canada
 // Post service, chosen at checkout, so it no longer says the cost is
 // calculated from the address (6 Oct 2026).
-const ProductTabs = ({ product }: ProductTabsProps) => {
+const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
-  const shipLine = presaleShipLine(product)
+  const shipLine = presaleShipLine(product, countryCode)
+  // /ca says US orders wait on the FCC while they do (owner, 7 Oct 2026).
+  const usLater = countryCode !== "us" && usShipsLater(product)
 
   return (
     <div className="flex flex-col gap-12">
@@ -47,7 +55,8 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
             <>
               <p>
                 A pre-order, charged in full at checkout and shipped to
-                Canada and the United States.{shipLine && ` ${shipLine}.`}
+                Canada and the United States.{shipLine && ` ${shipLine}`}
+                {shipLine && (usLater ? " to Canada; US orders ship later, once the FCC authorization is complete." : ".")}
               </p>
               <p>
                 Shipping goes by Canada Post. You choose the service at

@@ -125,7 +125,7 @@ const offerFor = (
   const availability = variantAvailability(product, variant)
   const startsAt =
     availability === "preorder" || availability === "backorder"
-      ? presaleShipDate(product)
+      ? presaleShipDate(product, countryCode)
       : null
   return {
     "@type": "Offer",

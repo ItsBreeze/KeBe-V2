@@ -15,6 +15,7 @@ import {
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
+  usShipsLater,
 } from "@lib/util/presale"
 import { HABITS, WHY } from "@lib/util/kebe-copy"
 import { fccNoticeBoards } from "@lib/util/fcc"
@@ -92,6 +93,7 @@ type Presale =
       state: "open" | "sold-out"
       price?: string
       shipLine: string | null
+      usLater: boolean
     }
 
 // The presale board in this country, or undefined when the backend cannot
@@ -121,7 +123,10 @@ async function getPresale(countryCode: string): Promise<Presale> {
   return {
     state: presaleAvailability(product).open ? "open" : "sold-out",
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
-    shipLine: presaleShipLine(product),
+    shipLine: presaleShipLine(product, countryCode),
+    // US orders wait on the FCC: each country's hero says its own date
+    // (lib/util/fcc.ts, owner 7 Oct 2026).
+    usLater: usShipsLater(product),
   }
 }
 
@@ -134,7 +139,7 @@ async function getLite(countryCode: string) {
   }
   return {
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
-    shipLine: presaleShipLine(product),
+    shipLine: presaleShipLine(product, countryCode),
   }
 }
 
@@ -197,9 +202,13 @@ export default async function Home(props: {
                     Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
                   </LocalizedClientLink>
                   <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-                    {presale.shipLine
-                      ? `${presale.shipLine} · Canada and the US`
-                      : "Ships to Canada and the US"}
+                    {!presale.shipLine
+                      ? "Ships to Canada and the US"
+                      : !presale.usLater
+                        ? `${presale.shipLine} · Canada and the US`
+                        : countryCode === "us"
+                          ? `${presale.shipLine} · US`
+                          : `${presale.shipLine} · Canada · US orders later`}
                   </p>
                   {lite?.price && (
                     <p className="mt-5 max-w-md text-base text-kebe-text/80">

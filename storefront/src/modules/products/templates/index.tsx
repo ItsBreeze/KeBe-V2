@@ -177,7 +177,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             ) : null}
           </div>
           <div className="flex flex-col gap-8 small:col-span-5">
-            <ProductInfo product={product} />
+            <ProductInfo product={product} countryCode={countryCode} />
             <BuyBoxBoundary productId={product.id} preorder={!!shipsBy}>
               <Suspense
                 fallback={
@@ -320,7 +320,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             </div>
           )}
           <div className={paragraphs.length > 0 ? "small:col-span-5" : "small:col-span-12"}>
-            <ProductTabs product={product} />
+            <ProductTabs product={product} countryCode={countryCode} />
           </div>
         </div>
       </section>

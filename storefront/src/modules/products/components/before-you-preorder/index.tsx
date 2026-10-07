@@ -1,6 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { presaleShipsBy } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { lateTerm } from "@lib/util/terms"
 
 type BeforeYouPreorderProps = {
   product: HttpTypes.StoreProduct
@@ -28,7 +29,7 @@ type BeforeYouPreorderProps = {
 // The ship date is not a row: the eyebrow and the presale note above already
 // say it. If it ever becomes one, it reads presaleShipLine(product) live,
 // never a cart line's metadata.
-const BeforeYouPreorder = ({ product }: BeforeYouPreorderProps) => {
+const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => {
   if (!presaleShipsBy(product)) {
     return null
   }
@@ -67,8 +68,9 @@ const BeforeYouPreorder = ({ product }: BeforeYouPreorderProps) => {
         {/* What shipping costs goes here once its price is settled: the
             Canada Post services, their transit times and, for US orders,
             the duties line. */}
-        {/* The cancel and late-delivery sentences are the owner's terms of
-            6 Oct 2026, word for word, as the terms page has them. */}
+        {/* The cancel and late-delivery sentences are the owner's terms
+            (6 Oct 2026; the US late term 7 Oct), word for word, as the terms
+            page has them for this country. */}
         <Row question="How do I pay, and can I cancel?">
           <p>
             By card, in full at checkout, through Stripe. The card number goes
@@ -77,9 +79,7 @@ const BeforeYouPreorder = ({ product }: BeforeYouPreorderProps) => {
           </p>
           <p className="mt-3">
             Cancel any time before your board ships for a full refund within
-            5 business days. If it hasn&apos;t shipped 30 days after the date
-            shown when you ordered, we email you and you choose a full refund
-            or keep waiting.
+            5 business days. {lateTerm(countryCode)}
           </p>
           <p className="mt-3">
             <LocalizedClientLink

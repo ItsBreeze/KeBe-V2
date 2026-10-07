@@ -29,6 +29,22 @@ export const FCC_SDOC_PENDING: readonly FccBoard[] = [
   "kebe-lite",
 ]
 
+// The ship date US orders get while a board's SDoC is pending (YYYY-MM-DD):
+// no board may reach a US address before its authorization, and the FTC's
+// Mail Order Rule (16 CFR 435.2(a)(1)) wants a shown date to have a
+// reasonable basis, which means the EMC test booked. The owner chose 30
+// November for KeBe v2 (7 Oct 2026); KeBe Lite's own date, 31 January 2027,
+// is already later. presale.ts shows the later of this and the product's own
+// date to US buyers only, and drops it with the board's handle above.
+const US_SHIPS_BY: Partial<Record<FccBoard, string>> = {
+  "kebe-v2-keyboard": "2026-11-30",
+}
+
+export const usShipFloor = (handle: string | null | undefined) =>
+  handle && (FCC_SDOC_PENDING as readonly string[]).includes(handle)
+    ? US_SHIPS_BY[handle as FccBoard] ?? null
+    : null
+
 // The names of the boards a page or an order for this country must give the
 // notice for, out of the handles it offers or holds: each pending one once,
 // in FCC_SDOC_PENDING's order, and none outside the US. Canada's rules

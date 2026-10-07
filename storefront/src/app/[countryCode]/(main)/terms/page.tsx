@@ -12,6 +12,7 @@ import { pageAlternates } from "@lib/data/seo"
 import { BRAND, socialMetadata } from "@lib/util/seo"
 import { FCC_SDOC_PENDING, fccNoticeBoards } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
+import { lateTerm } from "@lib/util/terms"
 
 // "KeBe keyboard": the brand alone is easily read as "keeb" or Keebio.
 const DESCRIPTION =
@@ -169,11 +170,9 @@ export default async function TermsPage(props: {
             <h2 className="font-display text-2xl text-ui-fg-base">
               If it is late
             </h2>
-            <p className="mt-3">
-              If it hasn&apos;t shipped 30 days after the date shown when you
-              ordered, we email you and you choose a full refund or keep
-              waiting.
-            </p>
+            {/* Each country's own term (lib/util/terms.ts, owner 7 Oct
+                2026). */}
+            <p className="mt-3">{lateTerm(countryCode)}</p>
           </section>
 
           <section>

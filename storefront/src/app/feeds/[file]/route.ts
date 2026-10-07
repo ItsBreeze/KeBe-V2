@@ -75,7 +75,7 @@ const item = (
   const single = variants.length <= 1
   const availability = variantAvailability(product, variant)
   const presale = availability === "preorder" || availability === "backorder"
-  const shipDate = presale ? presaleShipDate(product) : null
+  const shipDate = presale ? presaleShipDate(product, countryCode) : null
   // Merchant Center turns down a pre-order or backorder without its
   // availability_date. Once the counted boards are gone that date is
   // ships_by_next, and with it unset or mistyped in Admin the page names no

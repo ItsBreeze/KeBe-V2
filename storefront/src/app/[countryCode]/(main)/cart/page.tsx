@@ -57,7 +57,10 @@ const getShippingNote = async (
     : `${cheapest.name} included`
 }
 
-export default async function Cart() {
+export default async function Cart(props: {
+  params: Promise<{ countryCode: string }>
+}) {
+  const { countryCode } = await props.params
   const cart = await retrieveCart().catch((error) => {
     console.error(error)
     return notFound()
@@ -72,7 +75,11 @@ export default async function Cart() {
   // when the board was added.
   const [shipLine, shippingNote] = await Promise.all([
     presaleLine && cart?.region_id
-      ? getCartPresaleShipInfo({ regionId: cart.region_id, items }).then(
+      ? getCartPresaleShipInfo({
+          regionId: cart.region_id,
+          items,
+          countryCode: cart.shipping_address?.country_code ?? countryCode,
+        }).then(
           (info) => info?.shipLine ?? null
         )
       : null,

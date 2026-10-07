@@ -5,16 +5,18 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 type ProductInfoProps = {
   product: HttpTypes.StoreProduct
+  // a US buyer sees the FCC date (presale.ts)
+  countryCode?: string
 }
 
 // The buy box's heading. Titles read "KeBe v2 — 68-Key Ortholinear Keyboard
 // with USB Hub": the name goes large, the rest under it. The description is
 // set in full further down the page (templates/index.tsx).
-const ProductInfo = ({ product }: ProductInfoProps) => {
+const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   const [name, ...rest] = (product.title ?? "").split(" — ")
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
-  const shipLine = presaleShipLine(product)
+  const shipLine = presaleShipLine(product, countryCode)
   // On the presale board the line under the name continues the reel's
   // argument instead (kebe-copy.ts). Only this line changes: the title, and
   // with it the cart, link previews, feeds and Admin, stays as it is

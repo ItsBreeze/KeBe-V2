@@ -43,7 +43,13 @@ export default async function Checkout(props: {
   // in force at payment.
   const shipLine =
     presaleLine && cart.region_id
-      ? (await getCartPresaleShipInfo({ regionId: cart.region_id, items }))
+      ? (
+          await getCartPresaleShipInfo({
+            regionId: cart.region_id,
+            items,
+            countryCode: cart.shipping_address?.country_code ?? countryCode,
+          })
+        )
           ?.shipLine ??
         null
       : null

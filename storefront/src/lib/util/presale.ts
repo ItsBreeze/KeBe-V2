@@ -1,4 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
+import { usShipFloor } from "@lib/util/fcc"
 
 export const PRESALE_HANDLE = "kebe-v2-keyboard"
 // KeBe Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite), on pre-order since 6 Oct 2026.
@@ -45,21 +46,41 @@ const metadataIsoDate = (
   return raw
 }
 
-// The same date, written the one way the site writes a ship date ("October
-// 31": the owner's wording, no year).
+// A YYYY-MM-DD date written the one way the site writes a ship date
+// ("October 31": the owner's wording, no year).
+const shipDateWords = (iso: string) =>
+  new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-CA", {
+    day: "numeric",
+    month: "long",
+    timeZone: "UTC",
+  })
+
+// The same date from the product's metadata.
 const metadataDate = (
   product: HttpTypes.StoreProduct,
   key: "ships_by" | "ships_by_next"
 ): string | null => {
   const iso = metadataIsoDate(product, key)
-  return iso
-    ? new Date(`${iso}T12:00:00Z`).toLocaleDateString("en-CA", {
-        day: "numeric",
-        month: "long",
-        timeZone: "UTC",
-      })
-    : null
+  return iso ? shipDateWords(iso) : null
 }
+
+// The later US date while the board's FCC authorization is pending (fcc.ts
+// usShipFloor, owner 7 Oct 2026), when it is later than the date the product
+// gives: for country "us" only, so /ca keeps the product's own date.
+const usLaterDate = (
+  product: HttpTypes.StoreProduct,
+  countryCode: string | null | undefined,
+  iso: string | null
+): string | null => {
+  if (countryCode?.toLowerCase() !== "us") return null
+  const floor = usShipFloor(product.handle)
+  return floor && (!iso || floor > iso) ? floor : null
+}
+
+// Whether US buyers get a later date than Canada's for this board now: the
+// product page and the home page then say which country ships when.
+export const usShipsLater = (product: HttpTypes.StoreProduct) =>
+  !!usLaterDate(product, "us", presaleShipDate(product))
 
 // A product is on presale when the backend's start-presale script has put a
 // ships_by date in its metadata. The date lives on the product, not here, so
@@ -112,13 +133,20 @@ export const presaleAvailability = (product: HttpTypes.StoreProduct) => {
 // than invent a date, and nothing either when the board cannot be bought.
 // Stock moving revalidates the cached pages (the backend's
 // revalidate-storefront subscriber), so the line flips on its own.
+// For a US buyer the line gives the FCC date instead when it is later
+// (usLaterDate): "Ships November 30".
 export const presaleShipLine = (
-  product: HttpTypes.StoreProduct
+  product: HttpTypes.StoreProduct,
+  countryCode?: string | null
 ): string | null => {
   const shipsBy = presaleShipsBy(product)
   const { open, fromStock } = presaleAvailability(product)
   if (!shipsBy || !open) {
     return null
+  }
+  const later = usLaterDate(product, countryCode, presaleShipDate(product))
+  if (later) {
+    return `Ships ${shipDateWords(later)}`
   }
   if (fromStock) {
     return `Currently shipping ${shipsBy}`
@@ -131,15 +159,17 @@ export const presaleShipLine = (
 // availability_date, the product page's JSON-LD and llms.txt. Null exactly
 // when the line says nothing, so no feed promises a date the page does not.
 export const presaleShipDate = (
-  product: HttpTypes.StoreProduct
+  product: HttpTypes.StoreProduct,
+  countryCode?: string | null
 ): string | null => {
   const { open, fromStock } = presaleAvailability(product)
   if (!presaleShipsBy(product) || !open) {
     return null
   }
-  return fromStock
+  const own = fromStock
     ? metadataIsoDate(product, "ships_by")
     : metadataIsoDate(product, "ships_by_next")
+  return usLaterDate(product, countryCode, own) ?? own
 }
 
 // Whether a cart's or an order's lines hold the presale board, found by its

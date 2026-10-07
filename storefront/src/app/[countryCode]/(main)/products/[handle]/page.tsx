@@ -101,7 +101,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   // The description was the title again; now it is what the board is, then
   // this country's price and its ship date while they fit (lib/util/seo.ts).
   const title = productSeoTitle(product)
-  const description = productMetaDescription(product)
+  const description = productMetaDescription(product, params.countryCode)
   const alternates = await pageAlternates(
     params.countryCode,
     `/products/${handle}`

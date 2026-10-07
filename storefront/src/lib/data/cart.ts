@@ -77,7 +77,8 @@ async function shipMetadataAtPayment(
       .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
         method: "GET",
         query: {
-          fields: "id,region_id,items.id,items.product_id,items.product_handle",
+          fields:
+            "id,region_id,items.id,items.product_id,items.product_handle,shipping_address.country_code",
         },
         headers,
         cache: "no-store",
@@ -92,6 +93,7 @@ async function shipMetadataAtPayment(
       regionId: cart.region_id,
       items: cart.items,
       fresh: true,
+      countryCode: cart.shipping_address?.country_code,
     })
 
     if (!info) {
@@ -341,7 +343,12 @@ export async function preorderNow(
     step = getCheckoutStep(full)
 
     const info = full.region_id
-      ? await getPresaleShipInfo({ regionId: full.region_id, fresh: true, handle })
+      ? await getPresaleShipInfo({
+          regionId: full.region_id,
+          fresh: true,
+          handle,
+          countryCode,
+        })
       : null
 
     const metadata = shipMetadata(info)

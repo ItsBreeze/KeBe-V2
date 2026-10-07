@@ -11,6 +11,7 @@ import {
   presaleShipDate,
   presaleShipLine,
   presaleShipsBy,
+  usShipsLater,
   variantOpen,
 } from "@lib/util/presale"
 import {
@@ -58,8 +59,20 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
   if (!presaleShipsBy(product)) return "Status: in stock."
   const line = presaleShipLine(product)
   const iso = presaleShipDate(product)
+  // While US orders wait on the FCC authorization, their own date
+  // (lib/util/fcc.ts, owner 7 Oct 2026).
+  const us = usShipsLater(product)
+    ? {
+        line: presaleShipLine(product, "us"),
+        iso: presaleShipDate(product, "us"),
+      }
+    : null
   return `Status: pre-order, charged in full at checkout.${
-    line ? ` ${line}${iso ? ` (${iso})` : ""}.` : ""
+    line ? ` ${line}${iso ? ` (${iso})` : ""}${us ? " to Canada" : ""}.` : ""
+  }${
+    us?.line
+      ? ` US orders ${us.line.replace(/^Ships /, "ship ")}${us.iso ? ` (${us.iso})` : ""}, once the board's FCC authorization is complete.`
+      : ""
   }`
 }
 

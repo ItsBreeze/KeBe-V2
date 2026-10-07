@@ -154,11 +154,14 @@ export async function getPresaleShipInfo({
   regionId,
   fresh,
   handle = PRESALE_HANDLE,
+  countryCode,
 }: {
   regionId: string
   fresh?: boolean
   // which pre-order board: KeBe v2 unless a cart line says otherwise
   handle?: string
+  // where the order ships: a US address gets the FCC date (presale.ts)
+  countryCode?: string | null
 }): Promise<{
   productId: string
   shipLine: string | null
@@ -199,8 +202,8 @@ export async function getPresaleShipInfo({
 
     return {
       productId: product.id,
-      shipLine: presaleShipLine(product),
-      shipDate: presaleShipDate(product),
+      shipLine: presaleShipLine(product, countryCode),
+      shipDate: presaleShipDate(product, countryCode),
     }
   } catch {
     return null
@@ -213,8 +216,10 @@ export async function getCartPresaleShipInfo({
   regionId,
   items,
   fresh,
+  countryCode,
 }: {
   regionId: string
+  countryCode?: string | null
   items:
     | { product_handle?: string | null; product?: { handle?: string | null } | null }[]
     | null
@@ -229,7 +234,9 @@ export async function getCartPresaleShipInfo({
     )
   )
   const infos = await Promise.all(
-    handles.map((handle) => getPresaleShipInfo({ regionId, fresh, handle }))
+    handles.map((handle) =>
+      getPresaleShipInfo({ regionId, fresh, handle, countryCode })
+    )
   )
   return (
     infos
