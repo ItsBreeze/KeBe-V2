@@ -18,6 +18,7 @@ import { productSpecs } from "@lib/util/specs"
 import { productImageAlt } from "@lib/util/image-alt"
 import { getProductPrice } from "@lib/util/get-product-price"
 import {
+  LITE_HANDLE,
   PRESALE_HANDLE,
   presaleAvailability,
   presaleShipsBy,
@@ -267,12 +268,19 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
       {(video || gallery.length > 0) && (
         <section className="content-container pb-16 small:pb-24">
-          {/* On the presale board a line above the clip says what the
-              pictures are: renders and AI-generated scenes, none of them a
-              photograph. It is the disclosure that ends the description, set
-              where the pictures start, in the clip caption's style
-              (6 Oct 2026). */}
-          {shipsBy && (
+          {/* On a pre-order board a line above the pictures says what they
+              are, none of them a photograph. It is the disclosure that ends
+              the description, set where the pictures start, in the clip
+              caption's style (6 Oct 2026). KeBe Lite's are plain renders of
+              its design files (storefront/scripts/render-lite), with no AI
+              scenes (7 Oct 2026). */}
+          {shipsBy && product.handle === LITE_HANDLE && (
+            <p className="mb-3 text-small-regular text-white/80">
+              None of the KeBe Lite pictures here are photographs: they and
+              the 3D model are renders of the Lite&apos;s design files.
+            </p>
+          )}
+          {shipsBy && product.handle !== LITE_HANDLE && (
             <p className="mb-3 text-small-regular text-white/80">
               None of the v2 pictures here are photographs: the plain renders
               and the 3D model come straight from v2&apos;s CAD, and the desk,
