@@ -61,11 +61,11 @@ model.position.set(-BW / 2, 0, BH / 2);
 scene.add(model);
 const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
 
-// ---- materials: the case is the r9 STL printed in MJF PA12, natural grey (no dye); no top plate (rev 2, 7 Oct
+// ---- materials: the case is the Lite case printed in SLS 3201PA-F nylon, black (7 Oct 2026); no top plate (rev 2, 7 Oct
 // 2026): a P+R keypad (rev 3, same day): hard black key caps, laser-etched, on the silicone keys and web; the legends
 // take each key's LED colour when lit
 const M = {
-  nylon: new THREE.MeshStandardMaterial({ color: 0x5c5d5a, roughness: 0.86 }),
+  nylon: new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.9 }),
   pcb: new THREE.MeshStandardMaterial({ color: 0xefeee8, roughness: 0.42 }),
   silicone: new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 }),
   cap: new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.42 }),

@@ -7,7 +7,7 @@
 //
 // Reads PCBs/lite/viewer/assets/lite.json and legends.svg (written by the kebe repo's PCBs/lite/tools/lite_viewer.py
 // from the Lite's board, keypad drawing and the v3 case report) and PCBs/lite/case/KEBE-LITE-CASE.stl (the Lite case it
-// snaps into, printed in natural-grey MJF PA12 for the Lite). Renders index.html in headless Chromium and writes to
+// snaps into, printed in black SLS 3201PA-F nylon for the Lite). Renders index.html in headless Chromium and writes to
 // public/products/:
 //   stills  kebe-lite-{hero,top,glow,ports}.jpg, 2400 x 1800 (glow is also the 3D viewer's poster)
 //   glb     kebe-lite.glb, the model at true size in metres, LEDs on (the product page's 3D viewer)
