@@ -32,8 +32,25 @@ const mono = IBM_Plex_Mono({
   display: "swap",
 })
 
+// Google Search Console and Bing Webmaster Tools check a site is the owner's
+// by a meta tag on its pages. Each token is a server-only variable,
+// GOOGLE_SITE_VERIFICATION and BING_SITE_VERIFICATION (.env.template), read
+// when the server builds and starts, so a new one takes a redeploy; while
+// one is unset its tag is left out, and with neither there is no tag at all
+// (6 Oct 2026).
+const siteVerification = (): Metadata["verification"] => {
+  const google = process.env.GOOGLE_SITE_VERIFICATION?.trim()
+  const bing = process.env.BING_SITE_VERIFICATION?.trim()
+  if (!google && !bing) return undefined
+  return {
+    ...(google ? { google } : {}),
+    ...(bing ? { other: { "msvalidate.01": bing } } : {}),
+  }
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  verification: siteVerification(),
   // Every page's title ends with the brand; the home page sets its own whole.
   title: {
     default: "KeBe",
