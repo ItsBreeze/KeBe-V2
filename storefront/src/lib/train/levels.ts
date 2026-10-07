@@ -16,7 +16,10 @@
 // the thousand words allow, and its target speed (`pass`) opens the next.
 // Only whole words, never letters on their own: a word is learned as one
 // movement, like a chord. The targets drop after the letters, where the
-// reaches are longer and the words are not prose (owner, 5 Oct 2026).
+// reaches are longer and the words are not prose (owner, 5 Oct 2026), and
+// dropped again (owner, 6 Oct 2026): 40 for Capitals, 30 for the symbol
+// keys and the digits, 25 for shifted punctuation and the Fn pad, 20 for
+// shifted digits and arithmetic.
 import { FN, KEYS, SHIFT } from "./layout"
 import { TOP_WORDS } from "./words"
 
@@ -391,7 +394,7 @@ const NUMBER_DEFS: Def[] = [
 ].map((d, i) => ({
   ...d,
   group: "Number row",
-  pass: 40,
+  pass: 30,
   adds: keysFor(DIGIT_STEPS[i]),
   source: numberSource(DIGIT_STEPS[i]),
   teaches: DIGIT_STEPS[i],
@@ -400,7 +403,7 @@ NUMBER_DEFS.push({
   id: "num-shifted",
   group: "Number row",
   title: "! @ # $ % ^ & *",
-  pass: 30,
+  pass: 20,
   adds: [],
   taps: TAP_CHARS,
   blurb:
@@ -413,7 +416,7 @@ const CAPITALS: Def = {
   id: "mod-caps",
   group: "Capitals",
   title: "Capitals",
-  pass: 50,
+  pass: 40,
   adds: [SHIFT.left, SHIFT.right],
   blurb:
     "Hold Shift with the other hand: the right Shift for a left-hand letter, the left Shift for a right-hand one.",
@@ -429,7 +432,7 @@ const SYMBOL_DEFS: Def[] = [
   {
     id: "mid-slash",
     title: "/ and \\",
-    pass: 40,
+    pass: 30,
     adds: keysFor("/\\"),
     blurb:
       "The two middle keys of the home row, one for each pointer finger: symbols a standard keyboard leaves to the right pinky.",
@@ -439,7 +442,7 @@ const SYMBOL_DEFS: Def[] = [
   {
     id: "mod-parens",
     title: "( and )",
-    pass: 40,
+    pass: 30,
     adds: [SHIFT.left, SHIFT.right],
     taps: "()",
     blurb:
@@ -450,7 +453,7 @@ const SYMBOL_DEFS: Def[] = [
   {
     id: "mod-ctrl",
     title: "[ and ]",
-    pass: 40,
+    pass: 30,
     adds: ["CH57", "CH68"],
     taps: "()[]",
     blurb:
@@ -461,7 +464,7 @@ const SYMBOL_DEFS: Def[] = [
   {
     id: "mod-alt",
     title: "= and _",
-    pass: 40,
+    pass: 30,
     adds: ["CH60", "CH65"],
     taps: TAP_CHARS,
     blurb:
@@ -472,7 +475,7 @@ const SYMBOL_DEFS: Def[] = [
   {
     id: "mod-shifted",
     title: "Shifted symbols",
-    pass: 30,
+    pass: 25,
     adds: [],
     taps: TAP_CHARS,
     blurb:
@@ -487,7 +490,7 @@ const FN_DEFS: Def[] = [
     id: "fn-pad",
     group: "Fn layer",
     title: "Number pad",
-    pass: 35,
+    pass: 25,
     adds: [FN.left, FN.right, ...padKeys(PAD_DIGITS)],
     fn: PAD_DIGITS,
     blurb:
@@ -502,7 +505,7 @@ const FN_DEFS: Def[] = [
     id: "fn-sums",
     group: "Fn layer",
     title: "Arithmetic",
-    pass: 30,
+    pass: 20,
     adds: padKeys(PAD_OPS),
     fn: PAD_DIGITS + PAD_OPS,
     blurb:
