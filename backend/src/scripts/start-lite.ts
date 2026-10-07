@@ -65,7 +65,8 @@ export const DESCRIPTION =
   "Four USB-C ports sit on the back edge: one goes to your computer, and the other three are a USB 2.0 hub. The " +
   "STM32F072 runs QMK, the same firmware as KeBe v2, so the layout and the Fn layer are the same, and the free " +
   "typing trainer on this site teaches both.\n\n" +
-  "It snaps into the same screwless case as KeBe v2, printed in grey nylon, with an FR4 bezel round the keys. " +
+  "It snaps into the same screwless case as KeBe v2, printed in grey nylon. There is no top plate: the keypad " +
+  "covers the board edge to edge. " +
   "Each board is assembled by hand in Canada. None of the pictures are photographs: they and the 3D model are " +
   "renders of the Lite's design files.";
 

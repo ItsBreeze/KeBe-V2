@@ -61,11 +61,10 @@ model.position.set(-BW / 2, 0, BH / 2);
 scene.add(model);
 const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
 
-// ---- materials: the case is the r9 STL printed in MJF PA12, natural grey (no dye); FR4 bezel with black mask;
-// black backlit silicone keys whose laser-etched legends take each key's LED colour when lit
+// ---- materials: the case is the r9 STL printed in MJF PA12, natural grey (no dye); no top plate (rev 2, 7 Oct
+// 2026): black backlit silicone keys and web, whose laser-etched legends take each key's LED colour when lit
 const M = {
   nylon: new THREE.MeshStandardMaterial({ color: 0x5c5d5a, roughness: 0.86 }),
-  fr4: new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.38 }),
   pcb: new THREE.MeshStandardMaterial({ color: 0xefeee8, roughness: 0.42 }),
   silicone: new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 }),
   metal: new THREE.MeshStandardMaterial({ color: 0xd2d3d6, metalness: 1, roughness: 0.28 }),
@@ -108,7 +107,7 @@ stl.translate(-D.b2c, -D.b2c, 0);
 stl.computeVertexNormals();
 model.add(shadowy(new THREE.Mesh(stl, M.nylon)));
 
-const top = D.pcb_top, webT = D.web_t, bezelZ = top + webT, bezelT = D.bezel.t, keyTop = D.key_top;
+const top = D.pcb_top, webZ = top + D.tape_t, webTop = webZ + D.web_t, keyTop = D.key_top;
 
 // ---- the PCB edge (seen at the ports) and the four USB-C receptacles
 model.add(slab(rr(new THREE.Shape(), 0, 0, BW, BH, BR), top - 1.2, 1.2, M.pcb));
@@ -125,11 +124,12 @@ for (const x of D.ports_x) {
   model.add(tongue);
 }
 
-// ---- the keypad's web (seen in the 0.30 gap round each key), the keys and their legends, the pin heads
+// ---- the keypad's web on its tape, flush with the board's edges and the top surface between the keys; the keys
+// rise straight out of it, with their legends
 const web = new THREE.Shape(D.web_outline.map(([x, y]) => new THREE.Vector2(x, y)));
 for (const k of D.keys) web.holes.push(rrc(new THREE.Path(), k.x, k.y, k.w - 0.4, k.h - 0.4, 2.2));
-model.add(slab(web, top, webT, M.silicone));
-const keyZ0 = top + 1.6;
+model.add(slab(web, webZ, D.web_t, M.silicone));
+const keyZ0 = webTop;
 const keyGeos = new Map();
 for (const k of D.keys) {
   const id = `${k.w}x${k.h}`;
@@ -150,19 +150,6 @@ for (const k of D.keys) {
   lm.position.set(k.x, k.y, keyTop + 0.03);
   model.add(lm);
 }
-for (const [x, y] of D.pins) {
-  const g = new THREE.SphereGeometry(1, 20, 8, 0, Math.PI * 2, 0, Math.PI / 2);
-  g.rotateX(Math.PI / 2);
-  const head = new THREE.Mesh(g, M.silicone);
-  head.scale.set(D.pin.head_d / 2, D.pin.head_d / 2, D.pin.head_h);
-  head.position.set(x, y, bezelZ + bezelT);
-  model.add(head);
-}
-
-// ---- the bezel: PLATE-V3's outline, an opening 0.30 a side round every key
-const bz = rr(new THREE.Shape(), D.bezel.x0, D.bezel.y0, D.bezel.x0 + D.bezel.w, D.bezel.y0 + D.bezel.h, D.bezel.r);
-for (const k of D.keys) bz.holes.push(rrc(new THREE.Path(), k.x, k.y, k.w + 2 * D.key_clr, k.h + 2 * D.key_clr, D.open_r));
-model.add(slab(bz, bezelZ, bezelT, M.fr4));
 
 // ---- floor and light (render-v2's)
 const floor = new THREE.Mesh(new THREE.PlaneGeometry(4000, 4000), new THREE.MeshStandardMaterial({ color: BG, roughness: 1 }));
@@ -193,7 +180,7 @@ if (lit && !exporting) {
   for (const k of D.keys) {
     const glow = new THREE.Mesh(new THREE.PlaneGeometry(k.w + 1.2, k.h + 1.2),
       new THREE.MeshBasicMaterial({ color: hue(k.x), map: glowMap, transparent: true, opacity: 0.35, depthWrite: false }));
-    glow.position.set(k.x, k.y, bezelZ + bezelT + 0.02);
+    glow.position.set(k.x, k.y, webTop + 0.02);
     model.add(glow);
   }
 }

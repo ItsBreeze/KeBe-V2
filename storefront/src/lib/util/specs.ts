@@ -25,7 +25,7 @@ const BY_HANDLE: Record<string, Spec[]> = {
     { label: "Case size", value: "256.7 × 89.2 × 8.65 mm" },
     { label: "Assembly", value: "By hand in Canada" },
   ],
-  // KeBe Lite, from the kebe repo's PCBs/lite/README.md (the stack, the keypad and the case) and keypad/RFQ.md (the
+  // KeBe Lite, from the kebe repo's PCBs/lite/README.md (rev 2, 7 Oct 2026: no top plate; the stack, the keypad and the case) and keypad/RFQ.md (the
   // backlit finish); the case is KeBe v2's r9, printed in natural-grey MJF PA12 for the Lite (the README's cost
   // section). Wired, like v2. No switches or keycaps: the keys are one silicone keypad.
   [LITE_HANDLE]: [
@@ -37,7 +37,7 @@ const BY_HANDLE: Record<string, Spec[]> = {
     { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
     { label: "Controller", value: "STM32F072, running QMK" },
     { label: "Case", value: "Grey nylon, screwless snap-fit: KeBe v2's case" },
-    { label: "Bezel", value: "FR4, black soldermask" },
+    { label: "Top plate", value: "None: the keypad covers the board edge to edge" },
     { label: "Size", value: "256.7 × 89.2 mm, 10.95 mm to the key tops" },
     { label: "Assembly", value: "By hand in Canada" },
   ],
