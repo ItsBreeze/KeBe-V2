@@ -6,6 +6,7 @@ import ProductVideo from "@modules/products/components/product-video"
 import ProductActions from "@modules/products/components/product-actions"
 import BuyBoxBoundary from "@modules/products/components/product-actions/buy-box-boundary"
 import ProductTabs from "@modules/products/components/product-tabs"
+import ProductQuestions from "@modules/products/components/product-questions"
 import BeforeYouPreorder from "@modules/products/components/before-you-preorder"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
@@ -323,6 +324,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </div>
         </div>
       </section>
+
+      <ProductQuestions product={product} />
 
       {/* No "Also from KeBe" on the presale board: its one card was v1,
           sold out and at a lower price, a way off the page at its end.
