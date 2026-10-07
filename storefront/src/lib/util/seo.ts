@@ -177,8 +177,11 @@ export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
 }
 
 // When an order placed now ships, in the ship line's own words.
-const shipSentence = (product: HttpTypes.StoreProduct) => {
-  const line = presaleShipLine(product)
+const shipSentence = (
+  product: HttpTypes.StoreProduct,
+  countryCode?: string
+) => {
+  const line = presaleShipLine(product, countryCode)
   return line ? `${line}.` : null
 }
 
@@ -202,7 +205,10 @@ export const productFeedTitle = (product: HttpTypes.StoreProduct) =>
 // subtitle or the opening sentences of its description; then, while they
 // fit in 155 characters, the price this country pays and when an order
 // placed now ships. Never a count.
-export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
+export const productMetaDescription = (
+  product: HttpTypes.StoreProduct,
+  countryCode?: string
+) => {
   const lead =
     (product.handle && LISTING_COPY[product.handle]?.lead) ||
     clipSentences(
@@ -215,7 +221,7 @@ export const productMetaDescription = (product: HttpTypes.StoreProduct) => {
   return fitSentences([
     lead,
     productOfferSentence(product),
-    shipSentence(product),
+    shipSentence(product, countryCode),
   ])
 }
 
@@ -345,13 +351,20 @@ export type Availability =
 // "Currently shipping" to "Ships". Without a presale it is in stock. Sold
 // out is the Pre-order button's own rule (presale.ts variantOpen), never a
 // number.
+//
+// A presale board built to order (no inventory-managed variant: KeBe Lite)
+// has no counted boards to run out of: it is a pre-order of a product not yet
+// released for as long as its presale runs, never a backorder (7 Oct 2026).
 export const variantAvailability = (
   product: HttpTypes.StoreProduct,
   variant: HttpTypes.StoreProductVariant
 ): Availability => {
   if (!variantOpen(variant)) return "out_of_stock"
   if (!presaleShipsBy(product)) return "in_stock"
-  return presaleAvailability(product).fromStock ? "preorder" : "backorder"
+  const builtToOrder = !(product.variants ?? []).some((v) => v.manage_inventory)
+  return builtToOrder || presaleAvailability(product).fromStock
+    ? "preorder"
+    : "backorder"
 }
 
 // The region's price for a variant: Medusa's calculated price (the pre-order
