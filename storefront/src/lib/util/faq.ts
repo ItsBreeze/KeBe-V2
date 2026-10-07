@@ -119,22 +119,22 @@ const shared = (q: string): Faq => {
 
 const LITE: Faq[] = [
   {
-    // The kebe repo's PCBs/lite/README.md: "the same v3 board, matrix, MCU, hub, RGB and unchanged firmware"; "the
-    // 68 Choc switches, hot-swap sockets, keycaps ... are replaced by one moulded silicone keypad: its carbon
-    // pills press on gold contacts printed on the board"; the backend's start-lite.ts description.
+    // The kebe repo's PCBs/lite/README.md (rev 3): "the same v3 board, matrix, MCU, hub, RGB and unchanged firmware";
+    // "the 68 Choc switches, hot-swap sockets, keycaps ... are replaced by one P+R keypad": silicone rubber domes, a
+    // hard plastic cap bonded on each, each dome's carbon pill closing a gold contact; the backend's start-lite.ts.
     question: "How is KeBe Lite different from KeBe v2?",
     answer: [
-      "The board, the controller, the four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are one moulded silicone keypad: each is a rubber dome whose carbon contact presses on gold pads on the board, where KeBe v2 has Kailh Choc switches in hot-swap sockets and separate keycaps. So the Lite has no switches or keycaps to change, and it costs less.",
+      "The board, the controller, the four USB-C ports, the per-key lights and the firmware are KeBe v2's. Where KeBe v2 has Kailh Choc switches in hot-swap sockets and separate keycaps, each Lite key is a rubber dome with a hard plastic key top: pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, so there are no switches or keycaps to change, and it costs less.",
     ],
     link: { href: "/products/kebe-v2-keyboard", label: "See KeBe v2" },
   },
   {
-    // PCBs/lite/README.md and keypad/RFQ.md: translucent silicone, key tops and sides sprayed black, legends
-    // laser-etched through the paint; "each key has its own RGB LED under its north half, directly under the main
+    // PCBs/lite/README.md and keypad/RFQ.md (rev 3): translucent PC caps sprayed black, legends laser-etched through
+    // the paint, on translucent silicone; "each key has its own RGB LED under its north half, directly under the main
     // legend"; specs.ts, the Lighting row.
     question: "Are the keys backlit?",
     answer: [
-      "Yes. The keys are translucent silicone sprayed black, with the legends laser-etched through the paint, and each key has its own RGB LED under its main legend, so the legends light up and the rest of the key stays dark.",
+      "Yes. The key tops are translucent plastic painted black, with the legends laser-etched through the paint, and each key has its own RGB LED under its main legend, so the legends light up and the rest of the key stays dark.",
     ],
   },
   shared("What is Matrix-Dvorak?"),

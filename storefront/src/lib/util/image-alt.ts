@@ -20,7 +20,7 @@ const BY_PATH: Record<string, string> = {
   "/products/kebe-v2-desk.jpg":
     "KeBe v2 CAD model on a wooden desk beside a laptop and a cup of coffee, in an AI-generated scene.",
   "/products/kebe-lite-hero.jpg":
-    "KeBe Lite, rendered from its design files: black silicone keys with white laser-etched legends in a grey nylon case.",
+    "KeBe Lite, rendered from its design files: black key tops with white laser-etched legends in a grey nylon case.",
   "/products/kebe-lite-top.jpg":
     "KeBe Lite from above, rendered from its design files: 68 keys in straight columns, the Dvorak letters in the middle.",
   "/products/kebe-lite-glow.jpg":

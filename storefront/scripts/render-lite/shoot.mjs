@@ -6,7 +6,7 @@
 // (no arguments = both)
 //
 // Reads PCBs/lite/viewer/assets/lite.json and legends.svg (written by the kebe repo's PCBs/lite/tools/lite_viewer.py
-// from the Lite's board, keypad drawing and the v3 case report) and Case_Files/v3/KEBE-V3-BOTTOM-r9.stl (the case it
+// from the Lite's board, keypad drawing and the v3 case report) and PCBs/lite/case/KEBE-LITE-CASE.stl (the Lite case it
 // snaps into, printed in natural-grey MJF PA12 for the Lite). Renders index.html in headless Chromium and writes to
 // public/products/:
 //   stills  kebe-lite-{hero,top,glow,ports}.jpg, 2400 x 1800 (glow is also the 3D viewer's poster)
@@ -37,7 +37,7 @@ async function stage() {
   for (const f of ["lite.json", "legends.svg"]) {
     await copyFile(path.join(ROOT, "PCBs/lite/viewer/assets", f), path.join(dir, "assets", f));
   }
-  await copyFile(path.join(ROOT, "Case_Files/v3/KEBE-V3-BOTTOM-r9.stl"), path.join(dir, "assets/KEBE-V3-BOTTOM-r9.stl"));
+  await copyFile(path.join(ROOT, "PCBs/lite/case/KEBE-LITE-CASE.stl"), path.join(dir, "assets/case.stl"));
   await copyFile(path.join(HERE, "index.html"), path.join(dir, "index.html"));
   return dir;
 }

@@ -62,11 +62,13 @@ scene.add(model);
 const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; };
 
 // ---- materials: the case is the r9 STL printed in MJF PA12, natural grey (no dye); no top plate (rev 2, 7 Oct
-// 2026): black backlit silicone keys and web, whose laser-etched legends take each key's LED colour when lit
+// 2026): a P+R keypad (rev 3, same day): hard black key caps, laser-etched, on the silicone keys and web; the legends
+// take each key's LED colour when lit
 const M = {
   nylon: new THREE.MeshStandardMaterial({ color: 0x5c5d5a, roughness: 0.86 }),
   pcb: new THREE.MeshStandardMaterial({ color: 0xefeee8, roughness: 0.42 }),
   silicone: new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 }),
+  cap: new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.42 }),
   metal: new THREE.MeshStandardMaterial({ color: 0xd2d3d6, metalness: 1, roughness: 0.28 }),
   black: new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.8 }),
 };
@@ -102,7 +104,7 @@ function slab(shape, z0, t, mat) {
 }
 
 // ---- the case, the real r9 STL
-const stl = await new STLLoader().loadAsync("./assets/KEBE-V3-BOTTOM-r9.stl");
+const stl = await new STLLoader().loadAsync("./assets/case.stl");      // the Lite case: r9, its rim flush with the web
 stl.translate(-D.b2c, -D.b2c, 0);
 stl.computeVertexNormals();
 model.add(shadowy(new THREE.Mesh(stl, M.nylon)));
@@ -129,19 +131,24 @@ for (const x of D.ports_x) {
 const web = new THREE.Shape(D.web_outline.map(([x, y]) => new THREE.Vector2(x, y)));
 for (const k of D.keys) web.holes.push(rrc(new THREE.Path(), k.x, k.y, k.w - 0.4, k.h - 0.4, 2.2));
 model.add(slab(web, webZ, D.web_t, M.silicone));
-const keyZ0 = webTop;
+const keyZ0 = webTop, capZ0 = keyTop - D.cap_t;      // the silicone key on the web, its hard cap bonded on top
 const keyGeos = new Map();
 for (const k of D.keys) {
   const id = `${k.w}x${k.h}`;
-  if (!keyGeos.has(id)) keyGeos.set(id, new RoundedBoxGeometry(k.w, k.h, keyTop - keyZ0, 3, 1.0));
-  const key = shadowy(new THREE.Mesh(keyGeos.get(id), M.silicone));
-  key.position.set(k.x, k.y, (keyZ0 + keyTop) / 2);
+  if (!keyGeos.has(id)) keyGeos.set(id, [new RoundedBoxGeometry(k.w - 0.8, k.h - 0.8, capZ0 - keyZ0 + 0.2, 2, 0.6),
+                                        new RoundedBoxGeometry(k.w, k.h, D.cap_t, 3, 0.6)]);
+  const [baseGeo, capGeo] = keyGeos.get(id);
+  const key = shadowy(new THREE.Mesh(baseGeo, M.silicone));
+  key.position.set(k.x, k.y, (keyZ0 + capZ0 + 0.2) / 2);
   model.add(key);
+  const cap = shadowy(new THREE.Mesh(capGeo, M.cap));
+  cap.position.set(k.x, k.y, capZ0 + D.cap_t / 2);
+  model.add(cap);
   if (!k.legend) continue;
   const pg = new THREE.PlaneGeometry(k.w - 1.8, k.h - 1.8);
   const pos = pg.attributes.position, uv = pg.attributes.uv;
   for (let i = 0; i < pos.count; i++) uv.setXY(i, (k.x + pos.getX(i)) / BW, (k.y + pos.getY(i)) / BH);
-  // Day: the laser-etched legend shows the translucent silicone under the black paint, near-white. Lit: the
+  // Day: the laser-etched legend shows the translucent cap under the black paint, near-white. Lit: the
   // key's own LED colour. The exported model draws it unlit, at its own brightness (no bloom in a glTF).
   const mat = lit
     ? new THREE.MeshBasicMaterial({ color: hue(k.x), map: legendTex, transparent: true, depthWrite: false })

@@ -27,16 +27,17 @@ const BY_HANDLE: Record<string, Spec[]> = {
   ],
   // KeBe Lite, from the kebe repo's PCBs/lite/README.md (rev 2, 7 Oct 2026: no top plate; the stack, the keypad and the case) and keypad/RFQ.md (the
   // backlit finish); the case is KeBe v2's r9, printed in natural-grey MJF PA12 for the Lite (the README's cost
-  // section). Wired, like v2. No switches or keycaps: the keys are one silicone keypad.
+  // section). Wired, like v2. No separate switches or keycaps: the keys are one P+R keypad (rev 3, owner 7 Oct 2026:
+  // hard plastic caps bonded on silicone rubber domes), in the Lite case (PCBs/lite/case: v2's case, rim flush with it).
   [LITE_HANDLE]: [
     { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
-    { label: "Keys", value: "One silicone keypad: rubber domes with carbon contacts on gold pads" },
-    { label: "Legends", value: "Backlit, laser-etched through black-sprayed translucent silicone" },
+    { label: "Keys", value: "Hard plastic key tops on rubber domes, with carbon contacts on gold pads" },
+    { label: "Legends", value: "Backlit, laser-etched through black-painted translucent key tops" },
     { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
     { label: "Connection", value: "Wired, USB-C" },
     { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
     { label: "Controller", value: "STM32F072, running QMK" },
-    { label: "Case", value: "Grey nylon, screwless snap-fit: KeBe v2's case" },
+    { label: "Case", value: "Grey nylon, screwless snap-fit: KeBe v2's case, cut down flush with the keypad" },
     { label: "Top plate", value: "None: the keypad covers the board edge to edge" },
     { label: "Size", value: "256.7 × 89.2 mm, 10.95 mm to the key tops" },
     { label: "Assembly", value: "By hand in Canada" },

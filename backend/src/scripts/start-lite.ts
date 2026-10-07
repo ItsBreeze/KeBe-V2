@@ -53,20 +53,22 @@ const IMAGES = [
   { url: "/products/kebe-lite-ports.jpg" },
 ];
 
-// Every claim here is in the kebe repo's PCBs/lite/README.md or the live KeBe v2 description. No count, no
+// Every claim here is in the kebe repo's PCBs/lite/README.md (rev 3: the P+R keypad, the Lite case) or the live
+// KeBe v2 description. No count, no
 // battery or radio, nothing about a build that has not happened.
 export const DESCRIPTION =
   "KeBe Lite is KeBe's 68-key Matrix-Dvorak keyboard at a lower price. It is the same board as KeBe v2, with " +
-  "its USB hub and a light under every key, but the keys are one moulded silicone keypad instead of switches " +
-  "and keycaps.\n\n" +
-  "Each key is a rubber dome with a carbon contact that presses on gold pads on the board. The keys are " +
-  "backlit: translucent silicone sprayed black, with the legends laser-etched through, so each key's LED lights " +
-  "its own legend. Where a key has an Fn-layer legend, it sits below the main one.\n\n" +
+  "its USB hub and a light under every key, but the keys are one moulded keypad instead of switches and " +
+  "keycaps.\n\n" +
+  "Each key is a rubber dome with a hard plastic key top. Pressing it collapses the dome, and a carbon contact " +
+  "under it closes gold pads on the board. The keys are backlit: the key tops are translucent plastic painted " +
+  "black, with the legends laser-etched through, so each key's LED lights its own legend. Where a key has an " +
+  "Fn-layer legend, it sits below the main one.\n\n" +
   "Four USB-C ports sit on the back edge: one goes to your computer, and the other three are a USB 2.0 hub. The " +
   "STM32F072 runs QMK, the same firmware as KeBe v2, so the layout and the Fn layer are the same, and the free " +
   "typing trainer on this site teaches both.\n\n" +
-  "It snaps into the same screwless case as KeBe v2, printed in grey nylon. There is no top plate: the keypad " +
-  "covers the board edge to edge. " +
+  "It snaps into KeBe v2's screwless case, cut down so its rim is flush with the keypad, printed in grey " +
+  "nylon. There is no top plate: the keypad covers the board edge to edge. " +
   "Each board is assembled by hand in Canada. None of the pictures are photographs: they and the 3D model are " +
   "renders of the Lite's design files.";
 
