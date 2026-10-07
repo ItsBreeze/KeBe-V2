@@ -1,5 +1,7 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
+import { fccNoticeBoards } from "@lib/util/fcc"
+import FccNotice from "@modules/common/components/fcc-notice"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -68,6 +70,16 @@ export default async function PaginatedProducts({
 
   return (
     <>
+      {/* A US grid that lists a board still waiting on its FCC authorization
+          carries the notice above it, as the board's own page does
+          (lib/util/fcc.ts, review 7 Oct 2026). */}
+      <FccNotice
+        boards={fccNoticeBoards(
+          countryCode,
+          products.map((p) => p.handle)
+        )}
+        className="mb-8 rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+      />
       <ul
         className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
         data-testid="products-list"

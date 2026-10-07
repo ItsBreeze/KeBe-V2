@@ -25,6 +25,7 @@ import {
   productUrl,
   variantPrice,
 } from "@lib/util/seo"
+import { fccBoardName, fccShortNotice } from "@lib/util/fcc"
 import { productFaq } from "@lib/util/faq"
 import { productSpecs } from "@lib/util/specs"
 
@@ -67,13 +68,16 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
         iso: presaleShipDate(product, "us"),
       }
     : null
+  // A board still waiting on its FCC authorization carries the notice, as
+  // every US listing does (review, 7 Oct 2026).
+  const name = fccBoardName(product.handle)
   return `Status: pre-order, charged in full at checkout.${
     line ? ` ${line}${iso ? ` (${iso})` : ""}${us ? " to Canada" : ""}.` : ""
   }${
     us?.line
       ? ` US orders ${us.line.replace(/^Ships /, "ship ")}${us.iso ? ` (${us.iso})` : ""}, once the board's FCC authorization is complete.`
       : ""
-  }`
+  }${name ? `\n\n${fccShortNotice(name, absoluteUrl("/us/terms#fcc-notice"))}` : ""}`
 }
 
 const productSection = (

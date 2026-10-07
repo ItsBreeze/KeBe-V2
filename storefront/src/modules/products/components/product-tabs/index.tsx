@@ -5,6 +5,7 @@ import {
   usShipsLater,
 } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
+import { fccPending } from "@lib/util/fcc"
 import { CONTACT_EMAIL } from "@lib/constants"
 
 type ProductTabsProps = {
@@ -23,8 +24,9 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product, countryCode)
-  // /ca says US orders wait on the FCC while they do (owner, 7 Oct 2026).
-  const usLater = countryCode !== "us" && usShipsLater(product)
+  // /ca says US orders wait on the FCC while they do (owner and review,
+  // 7 Oct 2026; lib/util/fcc.ts).
+  const caPending = countryCode !== "us" && fccPending(product.handle)
 
   return (
     <div className="flex flex-col gap-12">
@@ -55,8 +57,22 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
             <>
               <p>
                 A pre-order, charged in full at checkout and shipped to
-                Canada and the United States.{shipLine && ` ${shipLine}`}
-                {shipLine && (usLater ? " to Canada; US orders ship later, once the FCC authorization is complete." : ".")}
+                Canada and the United States.
+                {shipLine && ` ${shipLine}${caPending ? " to Canada" : ""}.`}
+                {caPending && (
+                  <>
+                    {" "}US orders ship{" "}
+                    {usShipsLater(product) ? "later, once" : "once"} its FCC
+                    authorization is complete: see the{" "}
+                    <a
+                      href="/us/terms#fcc-notice"
+                      className="underline underline-offset-4"
+                    >
+                      FCC notice
+                    </a>
+                    .
+                  </>
+                )}
               </p>
               <p>
                 Shipping goes by Canada Post. You choose the service at

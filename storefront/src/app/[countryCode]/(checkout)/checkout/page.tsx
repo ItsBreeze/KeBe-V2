@@ -47,7 +47,10 @@ export default async function Checkout(props: {
           await getCartPresaleShipInfo({
             regionId: cart.region_id,
             items,
-            countryCode: cart.shipping_address?.country_code ?? countryCode,
+            countryCode:
+              cart.shipping_address?.country_code ??
+              cart.region?.countries?.[0]?.iso_2 ??
+              countryCode,
           })
         )
           ?.shipLine ??

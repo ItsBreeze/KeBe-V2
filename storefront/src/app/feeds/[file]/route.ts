@@ -5,6 +5,7 @@ import {
   storefrontCountries,
   storefrontCountryNames,
 } from "@lib/data/seo"
+import { fccBoardName, fccShortNotice } from "@lib/util/fcc"
 import { presaleAvailability, presaleShipDate } from "@lib/util/presale"
 import {
   BRAND,
@@ -102,7 +103,23 @@ const item = (
         ? productFeedTitle(product)
         : `${productFeedTitle(product)} (${variant.title})`
     ),
-    tag("g:description", plainText(product.description) || product.title),
+    // A US listing of a board still waiting on its FCC authorization leads
+    // with the notice, as the compliance pack asks of any US listing
+    // (lib/util/fcc.ts, review 7 Oct 2026).
+    tag(
+      "g:description",
+      [
+        countryCode === "us" && fccBoardName(product.handle)
+          ? fccShortNotice(
+              fccBoardName(product.handle)!,
+              absoluteUrl("/us/terms#fcc-notice")
+            )
+          : null,
+        plainText(product.description) || product.title,
+      ]
+        .filter(Boolean)
+        .join(" ")
+    ),
     tag("g:link", productUrl(countryCode, product.handle)),
     tag("g:image_link", image),
     // Google takes up to ten more.

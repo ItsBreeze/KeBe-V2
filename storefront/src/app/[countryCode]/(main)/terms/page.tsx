@@ -38,7 +38,7 @@ export async function generateMetadata(props: {
 
 // Last substantive change to these terms. Update it whenever the content
 // changes.
-const LAST_UPDATED = "6 October 2026"
+const LAST_UPDATED = "7 October 2026"
 
 // The region's currency as a sentence says it. Read from the region, so
 // /ca and /us each name their own; nothing when it is unknown.

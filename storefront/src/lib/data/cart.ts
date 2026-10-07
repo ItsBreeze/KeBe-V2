@@ -24,6 +24,7 @@ import {
 } from "./cookies"
 import { getCartPresaleShipInfo, getPresaleShipInfo } from "./products"
 import { getRegion } from "./regions"
+import { fccNoticeBoardsIn } from "@lib/util/fcc"
 import { getLocale } from "@lib/data/locale-actions"
 
 // The ad that brought this visitor, if any: the utm_* tags middleware.ts
@@ -100,7 +101,15 @@ async function shipMetadataAtPayment(
       return {}
     }
 
-    return shipMetadata(info)
+    // Which boards the FCC notice named as the buyer paid, kept on the
+    // order: the order page works the notice out from today's pending list,
+    // which empties once the SDoC is done (review, 7 Oct 2026).
+    const fcc = fccNoticeBoardsIn(cart.shipping_address?.country_code, cart.items)
+
+    return {
+      ...shipMetadata(info),
+      ...(fcc.length ? { fcc_notice: fcc.join(", ") } : {}),
+    }
   } catch {
     return {}
   }

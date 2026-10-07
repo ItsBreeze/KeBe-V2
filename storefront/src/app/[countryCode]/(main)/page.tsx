@@ -15,10 +15,9 @@ import {
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
-  usShipsLater,
 } from "@lib/util/presale"
 import { HABITS, WHY } from "@lib/util/kebe-copy"
-import { fccNoticeBoards } from "@lib/util/fcc"
+import { fccNoticeBoards, fccPending } from "@lib/util/fcc"
 import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
 import FccNotice from "@modules/common/components/fcc-notice"
 import JsonLd from "@modules/common/components/json-ld"
@@ -93,7 +92,6 @@ type Presale =
       state: "open" | "sold-out"
       price?: string
       shipLine: string | null
-      usLater: boolean
     }
 
 // The presale board in this country, or undefined when the backend cannot
@@ -124,9 +122,6 @@ async function getPresale(countryCode: string): Promise<Presale> {
     state: presaleAvailability(product).open ? "open" : "sold-out",
     price: getProductPrice({ product }).cheapestPrice?.calculated_price,
     shipLine: presaleShipLine(product, countryCode),
-    // US orders wait on the FCC: each country's hero says its own date
-    // (lib/util/fcc.ts, owner 7 Oct 2026).
-    usLater: usShipsLater(product),
   }
 }
 
@@ -202,18 +197,42 @@ export default async function Home(props: {
                     Pre-order{presale.price ? ` — ${presale.price} + shipping` : ""}
                   </LocalizedClientLink>
                   <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-                    {!presale.shipLine
-                      ? "Ships to Canada and the US"
-                      : !presale.usLater
+                    {/* While KeBe v2's FCC authorization is pending, each
+                        country's hero says its own, and US buyers are sent
+                        to the notice: on /us the one further down this page,
+                        which the full-screen hero hides (review, 7 Oct
+                        2026). */}
+                    {!fccPending(PRESALE_HANDLE)
+                      ? presale.shipLine
                         ? `${presale.shipLine} · Canada and the US`
-                        : countryCode === "us"
-                          ? `${presale.shipLine} · US`
-                          : `${presale.shipLine} · Canada · US orders later`}
+                        : "Ships to Canada and the US"
+                      : countryCode === "us"
+                        ? `${presale.shipLine ?? "Pre-order"} · US`
+                        : `${presale.shipLine ?? "Pre-order"} · Canada`}
+                    {fccPending(PRESALE_HANDLE) && (
+                      <>
+                        {" · "}
+                        <a
+                          href={
+                            countryCode === "us"
+                              ? "#fcc-notice"
+                              : "/us/terms#fcc-notice"
+                          }
+                          className="underline underline-offset-4 hover:text-white"
+                        >
+                          US orders: FCC notice
+                        </a>
+                      </>
+                    )}
                   </p>
                   {lite?.price && (
                     <p className="mt-5 max-w-md text-base text-kebe-text/80">
                       Or KeBe Lite, with backlit rubber-dome keys: {lite.price}{" "}
-                      + shipping{lite.shipLine ? `, ${lite.shipLine.toLowerCase()}` : ""}.{" "}
+                      + shipping
+                      {lite.shipLine
+                        ? `, ${lite.shipLine.charAt(0).toLowerCase()}${lite.shipLine.slice(1)}`
+                        : ""}
+                      .{" "}
                       <LocalizedClientLink
                         href={`/products/${LITE_HANDLE}`}
                         className="whitespace-nowrap text-kebe-text underline underline-offset-4 hover:text-white"

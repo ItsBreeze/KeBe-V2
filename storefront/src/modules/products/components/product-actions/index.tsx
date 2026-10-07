@@ -17,7 +17,7 @@ import {
   presaleShipsBy,
   usShipsLater,
 } from "@lib/util/presale"
-import { fccNoticeBoards } from "@lib/util/fcc"
+import { fccNoticeBoards, fccPending } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
 import { getPricesForVariant } from "@lib/util/get-product-price"
 import { trackPixel, trackPixelCustom } from "@lib/util/meta-pixel"
@@ -369,18 +369,18 @@ export default function ProductActions({
                 button stays where it was (6 Oct 2026). */}
             Pre-order: plus shipping, calculated at checkout, and charged in
             full there; you can cancel for a full refund until it ships.{" "}
-            {/* While US orders wait on the FCC, each country's page gives
-                its own date, and /ca sends US buyers to the notice
-                (lib/util/fcc.ts, owner 7 Oct 2026). */}
-            {!shipLine ? (
-              "Ships to Canada and the US."
-            ) : !usShipsLater(product) ? (
-              `${shipLine}, to Canada and the US.`
-            ) : countryCode === "us" ? (
-              `${shipLine}, to US addresses.`
-            ) : (
+            {/* While a board's FCC authorization is pending, /ca offers it
+                to Canada and sends US buyers to the notice, and /us gives
+                its own date when that is later (lib/util/fcc.ts, owner and
+                review 7 Oct 2026). */}
+            {countryCode !== "us" && fccPending(product.handle) ? (
               <>
-                {shipLine}, to Canada. US orders ship later: see the{" "}
+                {shipLine ? `${shipLine}, to Canada.` : "Ships to Canada."} US
+                orders{" "}
+                {usShipsLater(product)
+                  ? "ship later"
+                  : "wait on its FCC authorization"}
+                : see the{" "}
                 <a
                   href="/us/terms#fcc-notice"
                   className="underline underline-offset-4 hover:text-ui-fg-base"
@@ -389,6 +389,12 @@ export default function ProductActions({
                 </a>
                 .
               </>
+            ) : !shipLine ? (
+              "Ships to Canada and the US."
+            ) : countryCode === "us" && usShipsLater(product) ? (
+              `${shipLine}, to US addresses.`
+            ) : (
+              `${shipLine}, to Canada and the US.`
             )}{" "}
             <LocalizedClientLink
               href="/terms"

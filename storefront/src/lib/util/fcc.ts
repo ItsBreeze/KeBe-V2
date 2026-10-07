@@ -29,6 +29,23 @@ export const FCC_SDOC_PENDING: readonly FccBoard[] = [
   "kebe-lite",
 ]
 
+// Whether this board's SDoC is still pending: what decides, on /ca as on
+// /us, that US delivery may only be offered with the notice (review, 7 Oct
+// 2026). The date difference (presale.ts usShipsLater) only picks the date.
+export const fccPending = (handle: string | null | undefined) =>
+  !!handle && (FCC_SDOC_PENDING as readonly string[]).includes(handle)
+
+// The board's name as the notice gives it.
+export const fccBoardName = (handle: string | null | undefined) =>
+  fccPending(handle) ? FCC_BOARD_NAMES[handle as FccBoard] : null
+
+// The notice in one paragraph for the surfaces with no room for the full
+// text, a US feed's description and llms.txt: the compliance pack's ad
+// version (Compliance/store-disclosure.md 2.2), all three notices in it.
+// noticeUrl is /us/terms#fcc-notice, absolute (seo.ts imports this file).
+export const fccShortNotice = (name: string, noticeUrl: string) =>
+  `FCC notice for US orders: ${name}'s FCC authorization isn't complete yet, and no board ships to a US address until it is. The FCC's rules don't address consumer-protection, contract or other law. If authorization isn't completed, we cancel your order and refund it in full. Details: ${noticeUrl}`
+
 // The ship date US orders get while a board's SDoC is pending (YYYY-MM-DD):
 // no board may reach a US address before its authorization, and the FTC's
 // Mail Order Rule (16 CFR 435.2(a)(1)) wants a shown date to have a
@@ -41,9 +58,7 @@ const US_SHIPS_BY: Partial<Record<FccBoard, string>> = {
 }
 
 export const usShipFloor = (handle: string | null | undefined) =>
-  handle && (FCC_SDOC_PENDING as readonly string[]).includes(handle)
-    ? US_SHIPS_BY[handle as FccBoard] ?? null
-    : null
+  fccPending(handle) ? US_SHIPS_BY[handle as FccBoard] ?? null : null
 
 // The names of the boards a page or an order for this country must give the
 // notice for, out of the handles it offers or holds: each pending one once,
