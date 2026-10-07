@@ -150,7 +150,7 @@ export async function GET() {
     "",
     `- [Typing trainer](${absoluteUrl(
       `/${home}/train`
-    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the numbers, symbols and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on a KeBe or on any keyboard with the computer set to Dvorak.`,
+    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the symbols, numbers and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on a KeBe or on any keyboard with the computer set to Dvorak.`,
     "",
     "## More",
     "",

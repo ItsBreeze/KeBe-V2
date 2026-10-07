@@ -2,14 +2,14 @@
 // from the 1,000 most common English words (words.ts); a level takes only the
 // ones its keys can type.
 //
-// The order is the owner's (5 Oct 2026): four home keys to start, A E T S,
-// the fewest that make a round of real words (ten of the thousand; three
-// keys make five), then one key at a time: O N U H I D to finish the home
-// row, then (owner, 6 Oct 2026) the top row's G C R L and P . , ', the
-// pointer fingers' reaches F Y, the bottom row's right hand B M W V Z, then
-// the numbers, symbols and Fn layer, and last of all the bottom row's left
-// hand, the rarest letters, X K J Q ;, so the game ends on the semicolon. Then the number row, the middle
-// columns, the modifiers and the Fn layer, a few keys a level.
+// The order is the owner's (5 and 6 Oct 2026): four home keys to start,
+// A E T S, the fewest that make a round of real words (ten of the thousand;
+// three keys make five), then one key at a time: O N U H I D to finish the
+// home row, the top row's G C R L, P . , ' and F Y, the bottom row's B M W
+// V Z, then X K J Q ;. Every letter comes first, with . , ' and ; where they
+// fall among them, then Capitals, the symbols, the numbers and the Fn layer.
+// [ and ] are taught only by tapping the Ctrls, and = and _ only by tapping
+// the Alts, so the middle columns' [ ] - = keys have no level of their own.
 //
 // One key a level makes the levels themselves the build-up, so each is a
 // single round: ten fresh random words, every one using the new key where
@@ -227,23 +227,14 @@ const numberSource = (fresh: string): Source => ({
 // The symbol levels use words too, joined or wrapped the way the symbols
 // are written: and/or, [edit], well-known, first_name, why?, {name}.
 
-// The middle columns: / \ on the home row, [ ] above, - = on the number row.
-const MIDDLE = [
+// The home row's middle keys, / and \.
+const SLASHES = [
   "and/or", "on/off", "yes/no", "either/or", "his/her", "he/she", "input/output",
   "read/write", "true/false", "in/out", "up/down", "open/close", "black/white",
   "day/night", "this/that", "left/right", "start/stop", "before/after", "now/then",
   "docs\\notes", "src\\main", "users\\me", "home\\work", "temp\\logs", "music\\old",
   "photos\\new", "games\\save", "work\\done", "back\\up", "files\\old", "notes\\new",
-  "[edit]", "[note]", "[draft]", "[done]", "[quote]", "[new]", "[read]", "[sent]",
-  "[update]", "[video]", "[photo]", "[link]", "[source]", "[help]", "[open]", "[sic]",
-  "well-known", "long-term", "self-made", "x-ray", "e-mail", "follow-up", "part-time",
-  "full-time", "so-called", "up-to-date", "one-way", "real-time", "high-end", "low-key",
-  "old-school", "check-in", "sign-up", "built-in", "drop-down", "hot-swap", "day-to-day",
-  "face-to-face", "twenty-one", "all-time", "half-time", "world-class", "short-term",
-  "key=value", "size=large", "mode=dark", "sort=new", "page=home", "type=text",
-  "status=done", "theme=light", "view=list", "name=value", "color=red", "state=open",
 ]
-const MIDDLE_STEPS = ["/\\", "[]", "-="]
 
 const listSource = (list: string[], fresh: string): Source => ({
   fresh,
@@ -253,8 +244,7 @@ const listSource = (list: string[], fresh: string): Source => ({
 // Capitals: Shift held with the other hand.
 const UPPER = LETTERS.toUpperCase()
 // The capitals level teaches Shift, not new keys: after it, a capital is
-// typeable once its letter is, so the levels after it (K J Q ; X) bring
-// their own capitals with them. "⇧" in what is known stands for it.
+// typeable wherever its letter is. "⇧" in what is known stands for it.
 const SHIFT_MARK = "⇧"
 const withCapitals = (known: string) =>
   known.includes(SHIFT_MARK)
@@ -272,22 +262,30 @@ const TAPPED = [
   "(maybe)", "(again)", "(please)", "(thanks)", "(later)", "(soon)", "(here)", "(there)",
   "(both)", "(often)", "(usually)", "print()", "open()", "close()", "save()", "start()",
   "stop()", "(today)",
+  "[edit]", "[note]", "[draft]", "[done]", "[quote]", "[new]", "[read]", "[sent]",
+  "[update]", "[video]", "[photo]", "[link]", "[source]", "[help]", "[open]", "[sic]",
   "snake_case", "user_name", "file_name", "max_size", "is_open", "first_name",
   "last_name", "zip_code", "top_score", "new_line", "is_on", "sort_order", "page_size",
-  "start_time", "end_date", "home_page", "[edit]", "[done]", "[note]", "[new]",
-  "key=value", "size=large", "mode=dark", "is_done=true", "user_name=you",
+  "start_time", "end_date", "home_page",
+  "key=value", "size=large", "mode=dark", "sort=new", "page=home", "type=text",
+  "status=done", "theme=light", "view=list", "name=value", "color=red", "state=open",
+  "is_done=true", "user_name=you",
 ]
-const SHIFTED_CHARS = "!@#$%^&*?:\"|<>{}+"
+const TAP_CHARS = "()[]=_"
+
+// Shift with the punctuation keys, among the symbols, and with the digits,
+// after the number row.
+const SHIFTED_MARKS = "?:\"|<>"
+const SHIFTED_DIGITS = "!@#$%^&*"
 const SHIFTED = [
-  "why?", "what?", "who?", "how?", "when?", "where?", "really?", "ready?", "yes!", "no!",
-  "wow!", "stop!", "go!", "hello!", "thanks!", "wait!", "note:", "re:", "to:", "from:",
-  "subject:", "date:", "time:", '"quote"', '"hello"', '"yes"', '"word"', '"home"',
-  "#tag", "#home", "#news", "#love", "#music", "@home", "@work", "@you", "@team",
-  "$name", "$value", "$home", "%path%", "%home%", "%user%", "R&D", "Q&A", "you&me",
-  "this&that", "*note*", "*very*", "*not*", "this|that", "yes|no", "left|right",
-  "<html>", "<body>", "<head>", "<title>", "<main>", "<form>", "<table>", "<style>",
-  "{name}", "{value}", "{date}", "{user}", "{title}", "C++", "A+", "salt+pepper",
-  "this+that", "Dear:",
+  "why?", "what?", "who?", "how?", "when?", "where?", "really?", "ready?", "note:", "re:",
+  "to:", "from:", "subject:", "date:", "time:", "Dear:", '"quote"', '"hello"', '"yes"',
+  '"word"', '"home"', "this|that", "yes|no", "left|right", "<html>", "<body>", "<head>",
+  "<title>", "<main>", "<form>", "<table>", "<style>",
+  "yes!", "no!", "wow!", "stop!", "go!", "hello!", "thanks!", "wait!", "#tag", "#home",
+  "#news", "#love", "#music", "@home", "@work", "@you", "@team", "$name", "$value",
+  "$home", "%path%", "%home%", "%user%", "x^2", "n^2", "2^8", "10^3", "R&D", "Q&A",
+  "you&me", "this&that", "*note*", "*very*", "*not*",
 ]
 
 // The Fn layer's number pad: right-hand digits, + - * / and . beside them,
@@ -359,7 +357,7 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-k", "Bottom row, left hand", "K", "Straight down from U, with the left pointer finger."],
   ["key-j", "Bottom row, left hand", "J", "Straight down from E, with the left middle finger."],
   ["key-q", "Bottom row, left hand", "Q", "Straight down from O, with the left ring finger."],
-  ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon. That is every letter, and the last level."],
+  ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon. That is every letter."],
 ]
 
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
@@ -398,52 +396,48 @@ const NUMBER_DEFS: Def[] = [
   source: numberSource(DIGIT_STEPS[i]),
   teaches: DIGIT_STEPS[i],
 }))
+NUMBER_DEFS.push({
+  id: "num-shifted",
+  group: "Number row",
+  title: "! @ # $ % ^ & *",
+  pass: 30,
+  adds: [],
+  taps: TAP_CHARS,
+  blurb:
+    "Shift with the number row: ! @ # $ % over 1 to 5, ^ & * over 6 7 8. ( and ) stay on the Shift taps.",
+  source: listSource(SHIFTED, SHIFTED_DIGITS),
+  teaches: SHIFTED_DIGITS,
+})
 
-const MIDDLE_DEFS: Def[] = [
+const CAPITALS: Def = {
+  id: "mod-caps",
+  group: "Capitals",
+  title: "Capitals",
+  pass: 50,
+  adds: [SHIFT.left, SHIFT.right],
+  blurb:
+    "Hold Shift with the other hand: the right Shift for a left-hand letter, the left Shift for a right-hand one.",
+  source: {
+    fresh: UPPER,
+    pool: (known) =>
+      [...TOP_WORDS.map(capital), ...PROPER].filter(only(withCapitals(known + SHIFT_MARK))),
+  },
+  teaches: SHIFT_MARK,
+}
+
+const SYMBOL_DEFS: Def[] = [
   {
     id: "mid-slash",
     title: "/ and \\",
+    pass: 40,
+    adds: keysFor("/\\"),
     blurb:
       "The two middle keys of the home row, one for each pointer finger: symbols a standard keyboard leaves to the right pinky.",
-  },
-  {
-    id: "mid-brackets",
-    title: "[ and ]",
-    blurb: "The middle keys of the top row, for the pointer fingers again.",
-  },
-  {
-    id: "mid-dash",
-    title: "- and =",
-    blurb: "The middle keys of the number row.",
-  },
-].map((d, i) => ({
-  ...d,
-  group: "Middle columns",
-  pass: 40,
-  adds: keysFor(MIDDLE_STEPS[i]),
-  source: listSource(MIDDLE, MIDDLE_STEPS[i]),
-  teaches: MIDDLE_STEPS[i],
-}))
-
-const MODIFIER_DEFS: Def[] = [
-  {
-    id: "mod-caps",
-    group: "Modifiers",
-    title: "Capitals",
-    pass: 50,
-    adds: [SHIFT.left, SHIFT.right],
-    blurb:
-      "Hold Shift with the other hand: the right Shift for a left-hand letter, the left Shift for a right-hand one.",
-    source: {
-      fresh: UPPER,
-      pool: (known) =>
-        [...TOP_WORDS.map(capital), ...PROPER].filter(only(withCapitals(known + SHIFT_MARK))),
-    },
-    teaches: SHIFT_MARK,
+    source: listSource(SLASHES, "/\\"),
+    teaches: "/\\",
   },
   {
     id: "mod-parens",
-    group: "Modifiers",
     title: "( and )",
     pass: 40,
     adds: [SHIFT.left, SHIFT.right],
@@ -454,41 +448,39 @@ const MODIFIER_DEFS: Def[] = [
     teaches: "()",
   },
   {
-    id: "mod-taps",
-    group: "Modifiers",
-    title: "[ ] = _",
+    id: "mod-ctrl",
+    title: "[ and ]",
     pass: 40,
-    adds: ["CH57", "CH68", "CH60", "CH65"],
-    taps: "()[]=_",
+    adds: ["CH57", "CH68"],
+    taps: "()[]",
     blurb:
-      "Ctrl and Alt type when tapped too: [ and ] on the Ctrls, = on the left Alt, _ on the right Alt. Held, they are Ctrl and Alt as usual.",
-    source: listSource(TAPPED, "_[]="),
-    teaches: "_",
+      "Tap a Ctrl and it types a square bracket: [ on the left, ] on the right. Held, it is Ctrl as usual.",
+    source: listSource(TAPPED, "[]"),
+    teaches: "[]",
+  },
+  {
+    id: "mod-alt",
+    title: "= and _",
+    pass: 40,
+    adds: ["CH60", "CH65"],
+    taps: TAP_CHARS,
+    blurb:
+      "Tap an Alt with your thumb and it types: = on the left, _ on the right. Held, it is Alt as usual.",
+    source: listSource(TAPPED, "=_"),
+    teaches: "=_",
   },
   {
     id: "mod-shifted",
-    group: "Modifiers",
     title: "Shifted symbols",
     pass: 30,
     adds: [],
-    taps: "()[]=_",
+    taps: TAP_CHARS,
     blurb:
-      "Shift with the number row and the punctuation: ! @ # $ % & * over the digits, and ? \" | < > { } + from the keys you know.",
-    source: {
-      fresh: SHIFTED_CHARS,
-      // Only the symbols whose key is learned: the colon waits for the
-      // semicolon key, which comes last.
-      pool: (known) => {
-        const ok = KEYS.filter((k) => k.base && k.shift && known.includes(k.base))
-          .map((k) => k.shift)
-          .filter((c) => SHIFTED_CHARS.includes(c!))
-          .join("")
-        return SHIFTED.filter((t) => only(known + ok)(t) && some(ok)(t))
-      },
-    },
-    teaches: SHIFTED_CHARS,
+      'Shift with the punctuation: ? over /, | over \\, : over ;, " over \', < over , and > over .',
+    source: listSource(SHIFTED, SHIFTED_MARKS),
+    teaches: SHIFTED_MARKS,
   },
-]
+].map((d) => ({ ...d, group: "Symbols" }))
 
 const FN_DEFS: Def[] = [
   {
@@ -523,16 +515,7 @@ const FN_DEFS: Def[] = [
   },
 ]
 
-// The letters up to Z, everything else, then X K J Q ;.
-const LAST_LETTERS = LETTER_DEFS.findIndex((d) => d.id === "key-x")
-const DEFS = [
-  ...LETTER_DEFS.slice(0, LAST_LETTERS),
-  ...NUMBER_DEFS,
-  ...MIDDLE_DEFS,
-  ...MODIFIER_DEFS,
-  ...FN_DEFS,
-  ...LETTER_DEFS.slice(LAST_LETTERS),
-]
+const DEFS = [...LETTER_DEFS, CAPITALS, ...SYMBOL_DEFS, ...NUMBER_DEFS, ...FN_DEFS]
 
 export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, ...d }, i) => {
   const known = DEFS.slice(0, i)

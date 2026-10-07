@@ -13,7 +13,7 @@ import Trainer from "@modules/train/components/trainer"
 // The letters are Dvorak's on any keyboard, so the title says Dvorak.
 const TITLE = "Free Dvorak Typing Trainer: Learn One Letter at a Time"
 const DESCRIPTION =
-  "Learn Dvorak with a free typing game: four home-row keys to start, then one new letter a level, then numbers, symbols and the Fn pad, on a board coloured by finger, with a 10-word speed test."
+  "Learn Dvorak with a free typing game: four home-row keys to start, then one new letter a level, then symbols, numbers and the Fn pad, on a board coloured by finger, with a 10-word speed test."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>

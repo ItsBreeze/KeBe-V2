@@ -31,8 +31,10 @@ const CAP = 16.5
 const PITCH_X = 18
 const PITCH_Y = 17
 const DARK = "#1c1a17"
-// A legend with its light off: readable grey on the black cap.
-const UNLIT = "#85807a"
+// Legends with their light off: readable grey on the keys in play, dimmer
+// on the keys still to come, so the set in play stands out.
+const UNLIT = "#9a948a"
+const IDLE = "#4f4a44"
 const WHITE = "#ffffff"
 
 function mix(a: string, b: string, t: number) {
@@ -74,31 +76,38 @@ export default function Board({ learned, adds, next, flash, className, style }: 
     const isFlash = flashKeys.has(k.id)
     const wrong = isFlash && !flash?.ok
 
-    // Every legend unlit, the same on every key, except the key to press.
-    let ink = UNLIT
-    // The light under the caps: the keys in play, the space bars included.
-    let glow = known ? 0.42 : 0
-    let rim = "#24211d"
-    let rimWidth = 0.35
+    // Legends stay unlit: readable on the keys in play, dim on the rest.
+    let ink = known ? UNLIT : IDLE
+    // How much light comes up round the cap: the keys in play glow.
+    let glow = known ? 0.6 : 0
+    let rim = "#1d1b19"
+    let rimWidth = 0.3
     let glowColour = colour
     if (wrong) {
       ink = "#ff8a7a"
-      glow = 0.8
+      glow = 1
       glowColour = "#e0453a"
     } else if (isNext) {
-      ink = lit(colour, 1, 0.6)
+      ink = lit(colour, 1, 0.65)
       glow = 1
-      rim = colour
-      rimWidth = 0.7
+      rim = mix(colour, WHITE, 0.2)
+      rimWidth = 0.55
     } else if (isHold) {
       ink = lit(colour, 1, 0.45)
-      glow = 0.55
+      glow = 0.85
       rim = colour
-      rimWidth = 0.9
+      rimWidth = 0.8
     } else if (isFlash) {
-      glow = 0.6
+      glow = Math.max(glow, 0.85)
     }
     return { k, ink, glow, glowColour, rim, rimWidth, isNext }
+  })
+
+  const box = (k: (typeof KEYS)[number], grow: number) => ({
+    x: k.col * PITCH_X - grow,
+    y: k.row * PITCH_Y - grow,
+    width: (k.w === 2 ? PITCH_X + CAP : CAP) + 2 * grow,
+    height: CAP + 2 * grow,
   })
 
   return (
@@ -109,18 +118,22 @@ export default function Board({ learned, adds, next, flash, className, style }: 
       role="img"
       aria-label={
         next
-          ? `KeBe's keys, each lit in the colour of the finger that presses it, with ${next.name} lit brightest as the next key`
-          : "KeBe's keys, each lit in the colour of the finger that presses it"
+          ? `KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each, with ${next.name} lit as the next key`
+          : "KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each"
       }
     >
       <defs>
+        {/* A black cap, as KeBe's are: a faint sheen along the top edge only. */}
         <linearGradient id="kebe-cap" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2a2723" />
-          <stop offset="0.45" stopColor="#181614" />
-          <stop offset="1" stopColor="#0f0e0c" />
+          <stop offset="0" stopColor="#1b1a18" />
+          <stop offset="0.1" stopColor="#0c0c0b" />
+          <stop offset="1" stopColor="#060606" />
         </linearGradient>
-        <filter id="kebe-spill" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur stdDeviation="1.8" />
+        <filter id="kebe-halo" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="2.4" />
+        </filter>
+        <filter id="kebe-edge" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="0.6" />
         </filter>
         <filter id="kebe-legend" x="-20%" y="-20%" width="140%" height="140%">
           <feGaussianBlur in="SourceGraphic" stdDeviation="0.3" result="b" />
@@ -130,7 +143,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
           </feMerge>
         </filter>
         <style>{`
-          @keyframes kebe-pulse { 0%, 100% { opacity: 0.95 } 50% { opacity: 0.55 } }
+          @keyframes kebe-pulse { 0%, 100% { opacity: 1 } 50% { opacity: 0.6 } }
           .kebe-next { animation: kebe-pulse 1.4s ease-in-out infinite }
           @media (prefers-reduced-motion: reduce) { .kebe-next { animation: none } }
         `}</style>
@@ -141,32 +154,29 @@ export default function Board({ learned, adds, next, flash, className, style }: 
         width={w + 2 * pad}
         height={h + 2 * pad}
         rx={4}
-        fill="#0b0a09"
-        stroke="#2e2b26"
+        fill="#0e0d0c"
+        stroke="#23201c"
         strokeWidth={0.4}
       />
-      {/* The light under the caps, behind them. */}
-      {keys.map(({ k, glow, glowColour, isNext }) =>
-        glow > 0 ? (
-          <rect
-            key={`glow-${k.id}`}
-            className={isNext ? "kebe-next" : undefined}
-            x={k.col * PITCH_X - 1.6}
-            y={k.row * PITCH_Y - 1.6}
-            width={(k.w === 2 ? PITCH_X + CAP : CAP) + 3.2}
-            height={CAP + 3.2}
-            rx={3.5}
-            fill={glowColour}
-            opacity={glow}
-            filter="url(#kebe-spill)"
-            style={{ transition: "opacity 150ms ease-out" }}
-          />
-        ) : null
-      )}
+      {/* The light under the caps: a wide soft halo and a bright edge in
+          the gaps, added like light (screen) rather than painted over. */}
+      <g style={{ mixBlendMode: "screen" }}>
+        {keys.map(({ k, glow, glowColour, isNext }) =>
+          glow > 0 ? (
+            <g
+              key={`glow-${k.id}`}
+              className={isNext ? "kebe-next" : undefined}
+              opacity={glow}
+              style={{ transition: "opacity 150ms ease-out" }}
+            >
+              <rect {...box(k, 2.4)} rx={4} fill={glowColour} opacity={0.55} filter="url(#kebe-halo)" />
+              <rect {...box(k, 0.7)} rx={2.4} fill={glowColour} opacity={0.95} filter="url(#kebe-edge)" />
+            </g>
+          ) : null
+        )}
+      </g>
       {keys.map(({ k, ink, rim, rimWidth, isNext }) => {
-        const x = k.col * PITCH_X
-        const y = k.row * PITCH_Y
-        const width = k.w === 2 ? PITCH_X + CAP : CAP
+        const { x, y, width } = box(k, 0)
         return (
           <g key={k.id}>
             <rect
@@ -174,7 +184,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
               y={y}
               width={width}
               height={CAP}
-              rx={1.8}
+              rx={2}
               fill="url(#kebe-cap)"
               stroke={rim}
               strokeWidth={rimWidth}

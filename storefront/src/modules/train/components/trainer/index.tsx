@@ -51,6 +51,16 @@ import Board, { FingerKey } from "@modules/train/components/board"
 
 type Mode = "levels" | "test"
 
+// Where Enter and the Results button go after a round: the next level once
+// it is open, and from the last level, once it is passed, on to the 10-word
+// test (owner, 6 Oct 2026).
+function onward(mode: Mode, levelN: number, p: Progress): "level" | "test" | null {
+  if (mode !== "levels") return null
+  if (levelN < LEVELS.length) return openCount(p) > levelN ? "level" : null
+  const last = LEVELS[LEVELS.length - 1]
+  return (p.best[last.id] ?? 0) >= last.pass ? "test" : null
+}
+
 type Run = {
   id: number
   words: string[]
@@ -441,7 +451,9 @@ export default function Trainer({
       if (result || run.end !== null) {
         if (key === "Enter") {
           e.preventDefault()
-          if (mode === "levels" && openCount(progress) > levelN) goLevel(levelN + 1)
+          const to = onward(mode, levelN, progress)
+          if (to === "level") goLevel(levelN + 1)
+          else if (to === "test") setMode("test")
           else newWords()
         } else if (key.length === 1) {
           e.preventDefault()
@@ -549,6 +561,7 @@ export default function Trainer({
         save,
       })
     : null
+  const ahead = result ? onward(mode, levelN, progress) : null
   const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= l.pass).length
   const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id], l.pass), 0)
   const streak = streakOf(run)
@@ -652,10 +665,10 @@ export default function Trainer({
                       ? "border-[#3f9e77]/70 bg-[#3f9e77]/10 text-kebe-text hover:border-[#3f9e77]"
                       : "border-kebe-line text-kebe-text hover:border-kebe-muted",
                     locked &&
-                      "cursor-not-allowed text-kebe-faint opacity-50 hover:border-kebe-line"
+                      "cursor-not-allowed border-transparent text-kebe-faint opacity-40 hover:border-transparent"
                   )}
                 >
-                  {locked ? <Lock /> : l.n}
+                  {l.n}
                 </button>
               </li>
             )
@@ -719,14 +732,14 @@ export default function Trainer({
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         onMouseDown={() => area.current?.focus({ preventScroll: true })}
-        className="relative mt-3 min-h-[128px] cursor-text rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
+        className="relative mt-3 flex min-h-[128px] cursor-text flex-col justify-center rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
       >
         {result ? (
           <Results
             result={result}
             said={said!}
-            canNext={mode === "levels" && levelN < LEVELS.length && open > levelN}
-            onNext={() => goLevel(levelN + 1)}
+            next={ahead}
+            onNext={() => (ahead === "test" ? setMode("test") : goLevel(levelN + 1))}
             onAgain={newWords}
           />
         ) : (
@@ -844,7 +857,7 @@ export default function Trainer({
 function Words({ run }: { run: Run }) {
   if (run.words.length === 0) return <div className="h-24" />
   return (
-    <div className="flex flex-wrap gap-x-[0.65em] gap-y-2 font-mono text-[clamp(1.1rem,2.2vw,1.5rem)] leading-relaxed">
+    <div className="flex flex-wrap gap-x-[0.65em] gap-y-1 font-mono text-[clamp(1.25rem,2.5vw,1.75rem)] leading-relaxed">
       {run.words.map((word, i) => {
         const t = run.typed[i]
         const current = i === run.idx && run.end === null
@@ -945,7 +958,7 @@ function verdict(
     label = passed ? "Passed" : passedBefore ? `Below ${o.pass}` : "Not yet"
     if (over) line = ""
     else if (passed && last)
-      line = "That's every level: every letter, number and symbol, the modifiers and the Fn number pad."
+      line = `That's every level: every letter, symbol and number, and the Fn layer. Next, the ${TEST_WORDS}-word test.`
     else if (passed)
       line = r.opened
         ? `Level ${r.opened}, ${LEVELS[r.opened - 1].title}, is open.`
@@ -971,13 +984,13 @@ function verdict(
 function Results({
   result,
   said,
-  canNext,
+  next,
   onNext,
   onAgain,
 }: {
   result: Result
   said: Said
-  canNext: boolean
+  next: "level" | "test" | null
   onNext: () => void
   onAgain: () => void
 }) {
@@ -1011,12 +1024,12 @@ function Results({
         </div>
       </div>
       <div className="flex shrink-0 flex-wrap gap-2">
-        {canNext && (
+        {next && (
           <button
             onClick={onNext}
             className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-white"
           >
-            Next level{" "}
+            {next === "test" ? `${TEST_WORDS}-word test` : "Next level"}{" "}
             <span className="ml-1 font-mono text-[11px] opacity-60">Enter</span>
           </button>
         )}
@@ -1024,7 +1037,7 @@ function Results({
           onClick={onAgain}
           className={clx(
             "rounded-xl px-4 py-2 text-sm transition-colors",
-            canNext
+            next
               ? "border border-kebe-line hover:border-kebe-muted"
               : "bg-kebe-text font-medium text-kebe-page hover:bg-white"
           )}
@@ -1061,23 +1074,5 @@ function Stars({ n, dim, big }: { n: number; dim?: boolean; big?: boolean }) {
         </span>
       ))}
     </span>
-  )
-}
-
-function Lock() {
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      width="12"
-      height="12"
-      aria-label="Locked"
-      className="inline-block"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-    >
-      <rect x="3" y="7" width="10" height="7" rx="1.5" />
-      <path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" />
-    </svg>
   )
 }
