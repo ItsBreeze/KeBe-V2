@@ -115,7 +115,7 @@ const LISTING_COPY: Record<string, ListingCopy> = {
   },
   [LITE_HANDLE]: {
     title: "KeBe Lite: Backlit Ortholinear Keyboard with USB Hub",
-    lead: "Matrix-Dvorak layout, backlit rubber-dome keys with hard laser-etched key tops, per-key RGB, QMK and a 3-port USB 2.0 hub.",
+    lead: "Matrix-Dvorak layout, backlit silicone keys with laser-etched legends, per-key RGB, QMK and a 3-port USB 2.0 hub.",
     feedTitle:
       "KeBe Lite 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Backlit Rubber-Dome Keys, Per-Key RGB",
   },
