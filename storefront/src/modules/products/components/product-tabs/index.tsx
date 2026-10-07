@@ -1,7 +1,9 @@
 import { HttpTypes } from "@medusajs/types"
+import { productFaq } from "@lib/util/faq"
 import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
 import { CONTACT_EMAIL } from "@lib/constants"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
@@ -15,6 +17,7 @@ type ProductTabsProps = {
 // calculated from the address (6 Oct 2026).
 const ProductTabs = ({ product }: ProductTabsProps) => {
   const specs = productSpecs(product)
+  const faq = productFaq(product)
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product)
 
@@ -35,6 +38,42 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
               >
                 <dt className="text-ui-fg-muted">{s.label}</dt>
                 <dd className="text-ui-fg-subtle">{s.value}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      )}
+      {/* The questions a buyer asks of the hardware, answered from the site,
+          the terms and the board's own source (lib/util/faq.ts), in the
+          specification's rules and type: open text, not accordions, so
+          every answer is on the page as it loads (6 Oct 2026). */}
+      {faq.length > 0 && (
+        <div id="questions" className="scroll-mt-20">
+          <h2 className="font-display text-2xl text-ui-fg-base">Questions</h2>
+          <dl className="mt-4 divide-y divide-ui-border-base border-y border-ui-border-base">
+            {faq.map((f) => (
+              <div key={f.question} className="py-3 text-base">
+                <dt className="text-ui-fg-base">{f.question}</dt>
+                {f.answer.map((p, i) => (
+                  <dd
+                    key={i}
+                    className={`${
+                      i ? "mt-3" : "mt-1"
+                    } leading-relaxed text-ui-fg-subtle`}
+                  >
+                    {p}
+                  </dd>
+                ))}
+                {f.link && (
+                  <dd className="mt-3">
+                    <LocalizedClientLink
+                      href={f.link.href}
+                      className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                    >
+                      {f.link.label}
+                    </LocalizedClientLink>
+                  </dd>
+                )}
               </div>
             ))}
           </dl>

@@ -24,6 +24,7 @@ import {
   productUrl,
   variantPrice,
 } from "@lib/util/seo"
+import { productFaq } from "@lib/util/faq"
 import { productSpecs } from "@lib/util/specs"
 
 // /llms.txt (llmstxt.org): what KeBe is, for AI answer engines, in plain
@@ -64,7 +65,8 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
 
 const productSection = (
   listings: Listing[],
-  names: Record<string, string>
+  names: Record<string, string>,
+  home: string
 ) => {
   const product = listings[0].product
   const open = presaleAvailability(product).open
@@ -98,6 +100,22 @@ const productSection = (
     .filter(Boolean)
   // A blank line between paragraphs, or Markdown runs them together.
   if (paragraphs.length) lines.push("", paragraphs.join("\n\n"))
+
+  // The questions the product page answers under its specification, in the
+  // same words (lib/util/faq.ts), each link on the default country's site.
+  const faq = productFaq(product)
+  if (faq.length) {
+    lines.push("", "### Questions")
+    for (const f of faq) {
+      lines.push("", `**${f.question}**`, "", f.answer.join("\n\n"))
+      if (f.link) {
+        lines.push(
+          "",
+          `[${f.link.label}](${absoluteUrl(`/${home}${f.link.href}`)})`
+        )
+      }
+    }
+  }
 
   return lines.join("\n")
 }
@@ -145,7 +163,7 @@ export async function GET() {
     "",
     "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is chosen at checkout. KeBe's keyboards are wired.",
     "",
-    ...handles.map((h) => productSection(byHandle[h], names) + "\n"),
+    ...handles.map((h) => productSection(byHandle[h], names, home) + "\n"),
     "## Learn the layout",
     "",
     `- [Typing trainer](${absoluteUrl(

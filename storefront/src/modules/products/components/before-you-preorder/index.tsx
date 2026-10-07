@@ -21,7 +21,9 @@ type BeforeYouPreorderProps = {
 // Rows 1 and 2 say only what holds whatever keymap a board ships with. The
 // longer answers, that the Dvorak layout lives in the keyboard so the
 // computer stays on English (US), and that Super works as Command on a Mac,
-// wait until the shipped v2 keymap and a Mac have been checked.
+// waited until the shipped v2 keymap and a Mac had been checked. The keymap
+// has been (6 Oct 2026), so the first is in the Questions under the
+// specification (lib/util/faq.ts); the Mac one still waits for a Mac.
 //
 // The ship date is not a row: the eyebrow and the presale note above already
 // say it. If it ever becomes one, it reads presaleShipLine(product) live,
