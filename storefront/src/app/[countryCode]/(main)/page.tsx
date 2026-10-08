@@ -252,7 +252,12 @@ export default async function Home(props: {
         </>
       )}
       {presale.state !== "open" && (
-        <div className={lite?.price ? "mt-6" : ""}>
+        <div className={lite?.price ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
+          {lite?.price && (
+            <p className="mb-3 text-base text-kebe-text/80">
+              Hear when KeBe v2 pre-orders open:
+            </p>
+          )}
           <WaitlistForm source="v2" />
         </div>
       )}
@@ -278,7 +283,7 @@ export default async function Home(props: {
           variant="backdrop"
           angle="-25deg 62deg"
           fill={0.72}
-          stageClassName="inset-x-0 bottom-0 top-[46%] small:top-[20%]"
+          stageClassName="inset-x-0 bottom-14 top-[44%] small:bottom-0 small:top-[30%]"
           className="h-[clamp(420px,58svh,540px)] small:h-[calc(100svh-4rem)] small:min-h-[640px] small:max-h-[1000px] bg-[radial-gradient(ellipse_at_50%_68%,#2c2821_0%,#1c1a17_38%,#12110f_72%)]"
         >
           <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
