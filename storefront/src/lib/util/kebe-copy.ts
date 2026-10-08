@@ -111,8 +111,13 @@ export const WHY = [
 // against it within a second of landing. It replaces a line rather than
 // adding one, and must stay within two lines at 320 px wide, or it pushes
 // Pre-order off a phone's first screen (6 Oct 2026).
+//
+// Each board's line now leads with its kind (owner, 7 Oct 2026: v2 "mechanical", the Lite "slim, membrane"), in the
+// same two lines.
 export const BUYBOX_TAGLINE =
-  "68 keys in straight columns, with August Dvorak's letter order."
+  "Mechanical keys in straight columns, with Dvorak's letter order."
+export const BUYBOX_TAGLINE_LITE =
+  "Slim membrane keys in straight columns, with Dvorak's letters."
 
 // Entries are looked up by their label or title, never by position, and the
 // literal types make a renamed one a type error here.

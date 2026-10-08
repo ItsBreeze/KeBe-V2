@@ -108,16 +108,16 @@ type ListingCopy = {
 
 const LISTING_COPY: Record<string, ListingCopy> = {
   [PRESALE_HANDLE]: {
-    title: "KeBe v2: Low-Profile Ortholinear Keyboard with USB Hub",
-    lead: "Matrix-Dvorak layout, Kailh Choc hot-swap switches, per-key RGB, QMK and a 3-port USB 2.0 hub, assembled by hand in Canada.",
+    title: "KeBe v2: Mechanical Low-Profile Ortholinear Keyboard",
+    lead: "Mechanical Kailh Choc hot-swap switches, Matrix-Dvorak layout, per-key RGB and a USB 2.0 hub, assembled by hand in Canada.",
     feedTitle:
-      "KeBe v2 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
+      "KeBe v2 68-Key Wired Mechanical Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
   },
   [LITE_HANDLE]: {
-    title: "KeBe Lite: Backlit Ortholinear Keyboard with USB Hub",
-    lead: "Matrix-Dvorak layout, backlit hard keys with laser-etched legends, per-key RGB, QMK and a 3-port USB 2.0 hub.",
+    title: "KeBe Lite: Slim Membrane Ortholinear Keyboard, USB Hub",
+    lead: "Slim membrane keyboard: rubber-dome keys with shine-through legends, Matrix-Dvorak layout, per-key RGB and a USB hub.",
     feedTitle:
-      "KeBe Lite 68-Key Wired Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Backlit Hard Keys, Per-Key RGB",
+      "KeBe Lite 68-Key Wired Slim Membrane Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Rubber-Dome Keys, Shine-Through Legends",
   },
 }
 

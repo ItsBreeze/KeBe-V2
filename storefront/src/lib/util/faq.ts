@@ -33,6 +33,15 @@ export type Faq = {
 
 const V2: Faq[] = [
   {
+    // The two kinds (owner, 7 Oct 2026): v2 mechanical, the Lite slim and membrane. The same electronics: the
+    // circuit, controller, hub and LEDs (Compliance/lite.md; the Lite's PCB layout is derived, not identical).
+    question: "How is KeBe v2 different from KeBe Lite?",
+    answer: [
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, and it costs less.",
+    ],
+    link: { href: "/products/kebe-lite", label: "See KeBe Lite" },
+  },
+  {
     // The product page's subtitle, "68 keys in straight columns, with
     // August Dvorak's letter order", and its reasons "The home row does
     // the work" and "Symbols in the middle" (lib/util/kebe-copy.ts); the
@@ -132,7 +141,7 @@ const LITE: Faq[] = [
     // hard plastic cap bonded on each, each dome's carbon pill closing a gold contact; the backend's start-lite.ts.
     question: "How is KeBe Lite different from KeBe v2?",
     answer: [
-      "The board, the controller, the four USB-C ports, the per-key lights and the firmware are KeBe v2's. Where KeBe v2 has Kailh Choc switches in hot-swap sockets and separate keycaps, each Lite key is a rubber dome with a hard plastic key top: pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, so there are no switches or keycaps to change, and it costs less.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are not. KeBe v2 is mechanical, with Kailh Choc switches in hot-swap sockets under separate keycaps. KeBe Lite is the slim, membrane one: each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, 10.95 mm to the key tops, so there are no switches or keycaps to change, and it costs less.",
     ],
     link: { href: "/products/kebe-v2-keyboard", label: "See KeBe v2" },
   },
@@ -143,6 +152,14 @@ const LITE: Faq[] = [
     question: "Are the keys backlit?",
     answer: [
       "Yes. The key tops are translucent plastic painted black, with the legends laser-etched through the paint, and each key has its own RGB LED under its main legend, so the legends light up and the rest of the key stays dark.",
+    ],
+  },
+  {
+    // "Membrane" is the owner's word for it (7 Oct 2026). It has no membrane sheet: PCBs/lite/README.md, the carbon
+    // pills close gold combs on the PCB.
+    question: "Is it a membrane keyboard?",
+    answer: [
+      "It works like one: each key is a rubber dome rather than a mechanical switch. Most membrane keyboards have a plastic membrane sheet under the domes; on the Lite the domes press their carbon contacts straight onto gold pads on the circuit board, under hard plastic key tops.",
     ],
   },
   shared("What is Matrix-Dvorak?"),

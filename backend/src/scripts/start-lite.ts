@@ -36,7 +36,7 @@ import {
 // variant's own prices once they exist.
 
 const HANDLE = "kebe-lite";
-const TITLE = "KeBe Lite — 68-Key Ortholinear Keyboard, Backlit Hard Keys"; // owner, 7 Oct 2026: no longer "rubber dome"
+const TITLE = "KeBe Lite — Slim Membrane 68-Key Ortholinear Keyboard"; // owner, 7 Oct 2026: "slim, membrane keyboard"
 const SKU = "KEBE-LITE-BACKLIT";
 const PRICE_LIST = "KeBe Lite pre-order";
 const PREORDER = { cad: 129.99, usd: 89.99 }; // plus shipping, calculated at checkout
@@ -58,19 +58,19 @@ const IMAGES = [
 // KeBe v2 description. No count, no
 // battery or radio, nothing about a build that has not happened.
 export const DESCRIPTION =
-  "KeBe Lite is KeBe's 68-key Matrix-Dvorak keyboard at a lower price. It is the same board as KeBe v2, with " +
-  "its USB hub and a light under every key, but the keys are one moulded keypad instead of switches and " +
-  "keycaps.\n\n" +
-  "Each key is hard plastic, backlit, on a rubber dome. Pressing it collapses the dome, and a carbon contact " +
-  "under it closes gold pads on the board. The keys are backlit: the key tops are translucent plastic painted " +
-  "black, with the legends laser-etched through, so each key's LED lights its own legend. Where a key has an " +
+  "KeBe Lite is the slim, membrane KeBe: the 68-key Matrix-Dvorak keyboard with KeBe v2's electronics, its USB " +
+  "hub and a light under every key, at a lower price. Where KeBe v2 has mechanical switches and keycaps, the " +
+  "Lite's keys are one moulded keypad, 10.95 mm from the case's underside to the key tops.\n\n" +
+  "Each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact " +
+  "under it closes gold pads on the circuit board. The key tops are translucent plastic painted black, with the " +
+  "legends laser-etched through, so they shine through: each LED lights its key's legend. Where a key has an " +
   "Fn-layer legend, it sits below the main one.\n\n" +
   "Four USB-C ports sit on the back edge: one goes to your computer, and the other three are a USB 2.0 hub. The " +
   "STM32F072 runs QMK, the same firmware as KeBe v2, so the layout and the Fn layer are the same, and the free " +
   "typing trainer on this site teaches both.\n\n" +
-  "It snaps into KeBe v2's screwless case, cut down so its rim is flush with the keypad, printed in black " +
-  "nylon. There is no top plate: the keypad covers the board edge to edge. " +
-  "Each board is assembled by hand in Canada. None of the pictures are photographs: they and the 3D model are " +
+  "It snaps into a version of KeBe v2's screwless case, printed in black nylon with its rim 1.07 mm lower, " +
+  "flush with the keypad. There is no top plate: the keypad covers the board edge to edge. " +
+  "Each keyboard is assembled by hand in Canada. None of the pictures are photographs: they and the 3D model are " +
   "renders of the Lite's design files.";
 
 const validDate = (v: unknown): v is string => {

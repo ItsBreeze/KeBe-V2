@@ -119,7 +119,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
     !shipsBy &&
     product.handle !== PRESALE_HANDLE &&
     !presaleAvailability(product).open
-  const alsoFacts = ["Layout", "Ports", "Switches", "Lighting"]
+  // "Keys" is the Lite's row in place of v2's "Switches", so its buy box says what its keys are too (7 Oct 2026)
+  const alsoFacts = ["Layout", "Ports", "Switches", "Keys", "Lighting"]
     .map((label) => specs.find((s) => s.label === label)?.value)
     .filter((v): v is string => !!v)
   const paragraphs = (product.description ?? "")

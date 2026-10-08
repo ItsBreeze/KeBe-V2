@@ -26,11 +26,11 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import WaitlistForm from "@modules/home/components/waitlist-form"
 import ProductModel from "@modules/products/components/product-model"
 
-// What the board is, for a search result: the title used to be just "KeBe".
-// The words people search for it by come first (ortholinear, Dvorak, USB
-// hub), in at most 60 characters; the product page's title takes the
-// low-profile ones, so the two do not compete.
-const TITLE = "KeBe v2: Ortholinear Dvorak Keyboard with USB Hub"
+// What the shop sells, for a search result: the title used to be just "KeBe".
+// The words people search for it by come first (ortholinear, Dvorak), then
+// the two boards by kind, mechanical and membrane (owner, 7 Oct 2026), in at
+// most 60 characters; the product pages' titles take the rest.
+const TITLE = "KeBe: Ortholinear Dvorak Keyboards, Mechanical or Membrane"
 
 // The snippet's opening, in facts this page and the product page state, at
 // most 123 characters so this country's price sentence fits in Google's 155.
@@ -38,7 +38,7 @@ const TITLE = "KeBe v2: Ortholinear Dvorak Keyboard with USB Hub"
 // exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP order
 // -- so that claim is gone and not coming back.
 const LEAD =
-  "An ortholinear Dvorak keyboard with a built-in USB hub, Kailh Choc hot-swap and per-key RGB, assembled by hand in Canada."
+  "Ortholinear Dvorak keyboards with a USB hub: KeBe v2 with mechanical Kailh Choc switches, and KeBe Lite, slim and membrane."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -72,12 +72,13 @@ const V2_SPECS = [
     body: "Sixty-eight keys on the same Matrix-Dvorak grid as v1. Nothing you learn on one is wasted on the other. Where a key has an Fn-layer legend, it sits below its main one.",
   },
   {
-    title: "Lower, and no screws",
+    // "than v1": beside the slim Lite, a plain "Lower" could read as lower than the Lite, which it is not
+    title: "Lower than v1, and no screws",
     body: "One piece of black nylon, 8.65 mm tall against v1's 9.45, that snaps around the board, switches and black plate.",
   },
   {
-    title: "Still yours to change",
-    body: "Kailh Choc hot-swap sockets, per-key RGB that lights each legend through the black caps, and QMK on v1's STM32 controller, so a v1 keymap carries straight over.",
+    title: "Mechanical, and yours to change",
+    body: "Kailh Choc low-profile mechanical switches in hot-swap sockets, so a switch changes without solder. Per-key RGB lights each legend through the black caps, and QMK on v1's STM32 controller means a v1 keymap carries straight over.",
   },
 ]
 
@@ -139,17 +140,20 @@ async function getLite(countryCode: string) {
   }
 }
 
-// A hero price button (owner, 7 Oct 2026: "2 price buttons instead of hiding the lite"): the board and its
-// pre-order price, and under them what its keys are and when it ships. Both buttons look the same, so neither
-// board is the hidden one.
+// A hero price button (owner, 7 Oct 2026: "2 price buttons instead of hiding the lite"): the board's kind over
+// its name and pre-order price, and under them what its keys are and when it ships. Both buttons look the same, so
+// neither board is the hidden one; the kind tells them apart (owner, 7 Oct 2026: v2 "mechanical", the Lite "slim,
+// membrane keyboard, with shinethrough caps").
 function PriceButton({
   handle,
+  kind,
   name,
   price,
   keys,
   shipLine,
 }: {
   handle: string
+  kind: string
   name: string
   price?: string
   keys: string
@@ -164,6 +168,9 @@ function PriceButton({
       href={`/products/${handle}`}
       className="flex flex-1 flex-col items-center rounded-xl bg-kebe-text px-6 py-3 text-kebe-page transition-colors hover:bg-white small:max-w-[20rem]"
     >
+      <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-kebe-page/60">
+        {kind}
+      </span>
       <span className="text-base font-medium">
         {name}
         {price ? ` — ${price}` : ""}
@@ -172,6 +179,89 @@ function PriceButton({
         {ship ? `${keys} · ${ship}` : keys}
       </span>
     </LocalizedClientLink>
+  )
+}
+
+// The two boards side by side, under the hero, while both can be pre-ordered (owner, 7 Oct 2026: "better describe
+// and differentiate the two offered products"). Only the rows where they differ, then one line for what they share.
+// Every value is in the kebe repo: the switches and sockets (Case_Files/v3/V3-ENVELOPE.md), v2's caps (Chosfox
+// order 21742, CFX "Black Coated", legends lasered through the coating), the Lite's keypad (PCBs/lite/README.md,
+// keypad/RFQ.md), and both heights on one datum, the case's underside without its feet: Kailh's drawing puts a Choc
+// v1 stem 5.80 over the plate's top, 8.65 + 5.80 = 14.45, before the keycap, which nobody has measured yet; the Lite
+// is 10.95 to its key tops (lite-mech-report.json). The pictures are the lit renders, as the hero's.
+const TWO_BOARDS = [
+  {
+    label: "Keys",
+    v2: "Kailh Choc low-profile mechanical switches, under separate keycaps",
+    lite: "Membrane keys: hard plastic key tops on rubber domes, all 68 one moulded keypad",
+  },
+  {
+    label: "Key tops",
+    v2: "Black-coated caps, the legends laser-engraved through the coating so they shine through",
+    lite: "Translucent plastic painted black, the legends laser-etched through so they shine through",
+  },
+  {
+    label: "Change a key",
+    v2: "Yes: hot-swap sockets, no solder",
+    lite: "No: the keypad is one part",
+  },
+  {
+    label: "Height",
+    v2: "Low-profile: the switch tops stand 14.45 mm up, the keycaps above them",
+    lite: "Slim: 10.95 mm to the key tops",
+  },
+] as const
+
+function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice?: string }) {
+  const boards = [
+    { key: "v2" as const, handle: PRESALE_HANDLE, kind: "Mechanical", name: "KeBe v2", price: v2Price,
+      image: "/products/kebe-v2-glow.jpg", alt: "KeBe v2, rendered from its CAD with its per-key lighting on." },
+    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "KeBe Lite", price: litePrice,
+      image: "/products/kebe-lite-r3c-glow.jpg", alt: "KeBe Lite, rendered from its design files with its per-key lighting on." },
+  ]
+  return (
+    <div className="text-left">
+      <p className="text-center font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+        Two KeBes
+      </p>
+      <h2 className="mt-3 text-center font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+        Mechanical or membrane
+      </h2>
+      <div className="mt-10 grid gap-6 small:grid-cols-2">
+        {boards.map((b) => (
+          <div key={b.key} className="flex flex-col rounded-2xl border border-kebe-line bg-kebe-raised p-6">
+            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
+              <Image src={b.image} alt={b.alt} fill sizes="(max-width: 1024px) 100vw, 560px" className="object-cover" />
+            </div>
+            <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">{b.kind}</p>
+            <h3 className="mt-1 font-display text-[clamp(1.5rem,3vw,2rem)]">
+              {b.name}
+              {b.price ? <span className="text-kebe-text/70"> · {b.price}</span> : null}
+            </h3>
+            <dl className="mt-4 flex-1 divide-y divide-kebe-line border-t border-kebe-line">
+              {TWO_BOARDS.map((r) => (
+                <div key={r.label} className="grid grid-cols-[7rem_1fr] gap-4 py-3">
+                  <dt className="text-sm text-kebe-muted">{r.label}</dt>
+                  <dd className="text-base leading-snug text-kebe-text/85">{r[b.key]}</dd>
+                </div>
+              ))}
+            </dl>
+            <LocalizedClientLink
+              href={`/products/${b.handle}`}
+              className="mt-6 inline-block self-start rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
+            >
+              See {b.name}
+            </LocalizedClientLink>
+          </div>
+        ))}
+      </div>
+      <p className="mx-auto mt-8 max-w-2xl text-center text-base leading-relaxed text-kebe-text/75">
+        Both: the Matrix-Dvorak layout, four USB-C ports with a 3-port USB 2.0
+        hub, per-key RGB, QMK and a screwless black nylon case, each keyboard
+        assembled by hand in Canada. Heights are from the case&apos;s underside,
+        before its stick-on feet; the pictures are renders.
+      </p>
+    </div>
   )
 }
 
@@ -221,6 +311,7 @@ export default async function Home(props: {
             {presale.state === "open" && (
               <PriceButton
                 handle={PRESALE_HANDLE}
+                kind="Mechanical"
                 name="KeBe v2"
                 price={presale.price}
                 keys="Choc switches"
@@ -230,9 +321,10 @@ export default async function Home(props: {
             {lite?.price && (
               <PriceButton
                 handle={LITE_HANDLE}
+                kind="Slim membrane"
                 name="KeBe Lite"
                 price={lite.price}
-                keys="Backlit hard keys"
+                keys="Shine-through caps"
                 shipLine={lite.shipLine}
               />
             )}
@@ -265,7 +357,7 @@ export default async function Home(props: {
         <div className={lite?.price ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
           {lite?.price && (
             <p className="mb-3 text-base text-kebe-text/80">
-              Hear when KeBe v2 pre-orders open:
+              Hear when pre-orders open for KeBe v2, the mechanical one:
             </p>
           )}
           <WaitlistForm source="v2" />
@@ -304,11 +396,16 @@ export default async function Home(props: {
                 ? "Pre-orders closed"
                 : "Coming soon"}
             </p>
+            {/* With both boards on offer the hero names neither alone: the
+                buttons under it carry the names and kinds (7 Oct 2026). The
+                model is still v2's, and its alt says so. */}
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
-              KeBe v2
+              {lite?.price ? "KeBe" : "KeBe v2"}
             </h1>
             <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
-              Mindless Mastery, now with a hub
+              {lite?.price
+                ? "Mindless Mastery, mechanical or membrane"
+                : "Mindless Mastery, now with a hub"}
             </p>
             {/* Wide screens: the offer under the name, over the model. */}
             <div className="mt-8 hidden w-full flex-col items-center small:flex">
@@ -325,14 +422,20 @@ export default async function Home(props: {
       </section>
 
       <section className="mx-auto max-w-[1200px] px-[6vw] py-16 text-center small:px-[4vw]">
-        <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
-          The v1 layout, all in black, in a lower, screwless case, with three
-          more USB-C ports on the back.{" "}
+        {lite?.price ? (
+          <TwoBoards v2Price={presale.state === "open" ? presale.price : undefined} litePrice={lite.price} />
+        ) : (
+          <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
+            The v1 layout, all in black, in a lower, screwless case, with three
+            more USB-C ports on the back.
+          </p>
+        )}
+        <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-kebe-text/80">
           {presale.state === "sold-out"
-            ? "Pre-orders are closed for now — leave an address and you'll hear when they open again."
+            ? "KeBe v2 pre-orders are closed for now — leave an address and you'll hear when they open again."
             : presale.state === "none"
-            ? "Leave an address and you'll hear when pre-orders open."
-            : "Shipping is calculated at checkout and the board is charged in full there."}
+            ? "Leave an address and you'll hear when KeBe v2 pre-orders open."
+            : "Shipping is calculated at checkout, and each keyboard is charged in full there."}
         </p>
         {/* The hero offers KeBe v2 and KeBe Lite at their US prices, so /us
             gives the product pages' FCC notice here too for each one it
@@ -349,10 +452,10 @@ export default async function Home(props: {
       <section className="border-t border-kebe-line bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            What changes
+            KeBe v2 · mechanical
           </p>
           <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-            v1&apos;s board, with a hub built in
+            v1&apos;s mechanical board, with a hub built in
           </h2>
           {/* An AI camera move over the night scene, with the CAD keyboard
               tracked back into every frame (scripts/render-v2). */}

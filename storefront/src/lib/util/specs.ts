@@ -13,16 +13,16 @@ export type Spec = { label: string; value: string }
 const BY_HANDLE: Record<string, Spec[]> = {
   [PRESALE_HANDLE]: [
     { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
-    { label: "Switches", value: "Kailh Choc v1 Brown, low-profile tactile" },
+    { label: "Switches", value: "Kailh Choc v1 Brown: low-profile, tactile mechanical switches" },
     { label: "Sockets", value: "Hot-swap: change switches without solder" },
-    { label: "Keycaps", value: "Black, with shine-through legends" },
+    { label: "Keycaps", value: "Black-coated, with laser-engraved shine-through legends (the two 2U thumb keys plain)" },
     { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
     { label: "Connection", value: "Wired, USB-C" },
     { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
     { label: "Controller", value: "STM32F072, running QMK" },
     { label: "Case", value: "Black-dyed nylon, screwless snap-fit" },
     { label: "Plate", value: "FR4, black soldermask" },
-    { label: "Case size", value: "256.7 × 89.2 × 8.65 mm" },
+    { label: "Case size", value: "256.7 × 89.2 × 8.65 mm: the case; the switches and keycaps stand above it" },
     { label: "Assembly", value: "By hand in Canada" },
   ],
   // KeBe Lite, from the kebe repo's PCBs/lite/README.md (rev 2, 7 Oct 2026: no top plate; the stack, the keypad and the case) and keypad/RFQ.md (the
@@ -31,15 +31,15 @@ const BY_HANDLE: Record<string, Spec[]> = {
   // hard plastic caps bonded on silicone rubber domes), in the Lite case (PCBs/lite/case: v2's case, rim flush with it).
   [LITE_HANDLE]: [
     { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
-    { label: "Keys", value: "Hard plastic keys, each pressing a rubber dome's carbon contact onto gold pads" },
-    { label: "Legends", value: "Backlit, laser-etched through black-painted translucent key tops" },
+    { label: "Keys", value: "Membrane: hard plastic key tops on rubber domes, each dome's carbon contact closing gold pads on the board" },
+    { label: "Legends", value: "Shine-through: laser-etched through black-painted translucent key tops" },
     { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
     { label: "Connection", value: "Wired, USB-C" },
     { label: "Ports", value: "4 × USB-C: 1 to the computer, 3 as a USB 2.0 hub" },
     { label: "Controller", value: "STM32F072, running QMK" },
     { label: "Case", value: "Black nylon, screwless snap-fit: KeBe v2's case, cut down flush with the keypad" },
     { label: "Top plate", value: "None: the keypad covers the board edge to edge" },
-    { label: "Size", value: "256.7 × 89.2 mm, 10.95 mm to the key tops" },
+    { label: "Size", value: "Slim: 256.7 × 89.2 mm, 10.95 mm from the case's underside to the key tops (before feet)" },
     { label: "Assembly", value: "By hand in Canada" },
   ],
 }

@@ -1,6 +1,6 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
-import { BUYBOX_TAGLINE } from "@lib/util/kebe-copy"
+import { LITE_HANDLE, presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { BUYBOX_TAGLINE, BUYBOX_TAGLINE_LITE } from "@lib/util/kebe-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
 type ProductInfoProps = {
@@ -21,7 +21,11 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   // argument instead (kebe-copy.ts). Only this line changes: the title, and
   // with it the cart, link previews, feeds and Admin, stays as it is
   // (6 Oct 2026).
-  const subtitle = shipsBy ? BUYBOX_TAGLINE : kind
+  const subtitle = shipsBy
+    ? product.handle === LITE_HANDLE
+      ? BUYBOX_TAGLINE_LITE
+      : BUYBOX_TAGLINE
+    : kind
 
   return (
     <div id="product-info" className="flex flex-col gap-y-3">

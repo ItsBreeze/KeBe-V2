@@ -9,8 +9,10 @@ import StoreTemplate from "@modules/store/templates"
 // words first; the starter's "Explore all of our products." said nothing a
 // search could match. "Assembled", as the pages say, never "made" in Canada.
 const TITLE = "Ortholinear Dvorak Keyboards Assembled in Canada"
+// The Lite has no Choc switches, so the old line was wrong for it (7 Oct 2026); v1 (sold out) has no hub, so the
+// hub is not promised for every board in the grid.
 const DESCRIPTION =
-  "Ortholinear Dvorak keyboards with Kailh Choc low-profile hot-swap switches and per-key RGB, assembled by hand in Canada. KeBe v2 adds a built-in USB hub."
+  "Ortholinear Dvorak keyboards with per-key RGB, assembled by hand in Canada: KeBe v2, mechanical and hot-swap, and the slim, membrane KeBe Lite."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
