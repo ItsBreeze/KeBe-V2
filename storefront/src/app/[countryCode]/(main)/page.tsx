@@ -176,13 +176,12 @@ function PriceButton({
 }
 
 // KeBe v1's photographs for the home page's "Real photos" section, the first
-// one large. Alt text comes from lib/util/image-alt.ts.
+// one large: only the three lit on black (owner, 7 Oct 2026: not the two on
+// the pale desk). Alt text comes from lib/util/image-alt.ts.
 const V1_PHOTOS = [
   "/products/kebe-v1-hero.jpg",
   "/products/kebe-v1-angle.jpg",
   "/products/kebe-v1-port.jpg",
-  "/products/kebe-v1-front.jpg",
-  "/products/kebe-v1-case.jpg",
 ].map((src, i) => ({ src, alt: productImageAlt({ url: src }, "KeBe v1", i) }))
 
 export default async function Home(props: {
@@ -364,7 +363,7 @@ export default async function Home(props: {
             drawn from, on the same 68-key grid, hand-built in small batches
             and sold out.
           </p>
-          <div className="mt-10 grid grid-cols-2 gap-4 small:grid-cols-4">
+          <div className="mt-10 grid grid-cols-2 gap-4 small:grid-cols-3">
             {V1_PHOTOS.map((p, i) => (
               <div
                 key={p.src}
@@ -378,7 +377,7 @@ export default async function Home(props: {
                   src={p.src}
                   alt={p.alt}
                   fill
-                  sizes={i === 0 ? "(max-width: 1024px) 100vw, 600px" : "(max-width: 1024px) 50vw, 300px"}
+                  sizes={i === 0 ? "(max-width: 1024px) 100vw, 800px" : "(max-width: 1024px) 50vw, 400px"}
                   className="object-cover"
                 />
               </div>
