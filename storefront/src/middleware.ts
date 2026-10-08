@@ -140,17 +140,21 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  // The live reel ads (campaign tag levers-oct26) were built to land on KeBe
-  // v2's product page; the owner wants them on the home page, where both
-  // boards are offered side by side (7 Oct 2026). Until the ads' own URLs are
-  // changed in Ads Manager, their clicks are sent home here, tags and all, so
-  // attribution still works. Nothing else is redirected.
+  // The live reel ads were built to land on KeBe v2's product page; the owner
+  // wants them on the home page, where both boards are offered side by side
+  // (7 Oct 2026). Until the ads' own URLs are changed in Ads Manager, their
+  // clicks are sent home here, tags and all, so attribution still works. The
+  // ads' URL tags (marketing/instagram/meta-campaign.md): utm_content=ca or us,
+  // the first Canada ad also utm_campaign=levers-oct26. Nothing else is
+  // redirected: a shared product link carries neither.
   const adLanding = request.nextUrl.pathname.match(
     /^\/(ca|us)\/(?:products\/kebe-v2-keyboard|store)\/?$/
   )
+  const params = request.nextUrl.searchParams
   if (
     adLanding &&
-    request.nextUrl.searchParams.get("utm_campaign") === "levers-oct26"
+    (params.get("utm_campaign") === "levers-oct26" ||
+      ["ca", "us"].includes(params.get("utm_content") ?? ""))
   ) {
     return NextResponse.redirect(
       `${request.nextUrl.origin}/${adLanding[1]}${request.nextUrl.search}`,
