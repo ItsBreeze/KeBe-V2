@@ -31,7 +31,7 @@ const BY_HANDLE: Record<string, Spec[]> = {
   // hard plastic caps bonded on silicone rubber domes), in the Lite case (PCBs/lite/case: v2's case, rim flush with it).
   [LITE_HANDLE]: [
     { label: "Layout", value: "68 keys, ortholinear, Matrix-Dvorak" },
-    { label: "Keys", value: "Hard plastic key tops on rubber domes, with carbon contacts on gold pads" },
+    { label: "Keys", value: "Hard plastic keys, each pressing a rubber dome's carbon contact onto gold pads" },
     { label: "Legends", value: "Backlit, laser-etched through black-painted translucent key tops" },
     { label: "Lighting", value: "Per-key RGB, 68 SK6812MINI-E LEDs" },
     { label: "Connection", value: "Wired, USB-C" },

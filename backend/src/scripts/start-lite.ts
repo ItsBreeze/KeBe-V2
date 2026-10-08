@@ -31,12 +31,12 @@ import {
 // live in the product's metadata, so moving them is an Admin edit, not a deploy. The site never says how many
 // there are (owner, 1 Oct 2026).
 //
-// Safe to re-run: it creates the product once; afterwards it refreshes the description, pictures, model and dates
+// Safe to re-run: it creates the product once; afterwards it refreshes the title, description, pictures, model and dates
 // (keeping real dates already set in Admin), and sets the pre-order list's two prices. It never changes the
 // variant's own prices once they exist.
 
 const HANDLE = "kebe-lite";
-const TITLE = "KeBe Lite — 68-Key Ortholinear Keyboard, Backlit Rubber Dome";
+const TITLE = "KeBe Lite — 68-Key Ortholinear Keyboard, Backlit Hard Keys"; // owner, 7 Oct 2026: no longer "rubber dome"
 const SKU = "KEBE-LITE-BACKLIT";
 const PRICE_LIST = "KeBe Lite pre-order";
 const PREORDER = { cad: 129.99, usd: 89.99 }; // plus shipping, calculated at checkout
@@ -60,7 +60,7 @@ export const DESCRIPTION =
   "KeBe Lite is KeBe's 68-key Matrix-Dvorak keyboard at a lower price. It is the same board as KeBe v2, with " +
   "its USB hub and a light under every key, but the keys are one moulded keypad instead of switches and " +
   "keycaps.\n\n" +
-  "Each key is a rubber dome with a hard plastic key top. Pressing it collapses the dome, and a carbon contact " +
+  "Each key is hard plastic, backlit, on a rubber dome. Pressing it collapses the dome, and a carbon contact " +
   "under it closes gold pads on the board. The keys are backlit: the key tops are translucent plastic painted " +
   "black, with the legends laser-etched through, so each key's LED lights its own legend. Where a key has an " +
   "Fn-layer legend, it sits below the main one.\n\n" +
@@ -123,6 +123,7 @@ export default async function startLite({ container, args }: ExecArgs) {
         selector: { id: product.id },
         update: {
           status,
+          title: TITLE,
           description: DESCRIPTION,
           thumbnail: THUMBNAIL,
           images: IMAGES,

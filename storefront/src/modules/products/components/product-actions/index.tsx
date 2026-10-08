@@ -370,25 +370,12 @@ export default function ProductActions({
             Pre-order: plus shipping, calculated at checkout, and charged in
             full there; you can cancel for a full refund until it ships.{" "}
             {/* While a board's FCC authorization is pending, /ca offers it
-                to Canada and sends US buyers to the notice, and /us gives
-                its own date when that is later (lib/util/fcc.ts, owner and
-                review 7 Oct 2026). */}
+                to Canada only and says nothing of the FCC: the CA region
+                ships to Canada only, so it makes no US offer (owner, 7 Oct
+                2026; lib/util/fcc.ts). /us gives its own date when that is
+                later. */}
             {countryCode !== "us" && fccPending(product.handle) ? (
-              <>
-                {shipLine ? `${shipLine}, to Canada.` : "Ships to Canada."} US
-                orders{" "}
-                {usShipsLater(product)
-                  ? "ship later"
-                  : "wait on its FCC authorization"}
-                : see the{" "}
-                <a
-                  href="/us/terms#fcc-notice"
-                  className="underline underline-offset-4 hover:text-ui-fg-base"
-                >
-                  FCC notice
-                </a>
-                .
-              </>
+              shipLine ? `${shipLine}, to Canada.` : "Ships to Canada."
             ) : !shipLine ? (
               "Ships to Canada and the US."
             ) : countryCode === "us" && usShipsLater(product) ? (

@@ -1,9 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import {
-  presaleShipLine,
-  presaleShipsBy,
-  usShipsLater,
-} from "@lib/util/presale"
+import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
 import { fccPending } from "@lib/util/fcc"
 import { CONTACT_EMAIL } from "@lib/constants"
@@ -24,8 +20,9 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product, countryCode)
-  // /ca says US orders wait on the FCC while they do (owner and review,
-  // 7 Oct 2026; lib/util/fcc.ts).
+  // While a board's FCC authorization is pending, /ca offers it to Canada
+  // only and says nothing of the FCC or of US orders: the CA region ships to
+  // Canada only (owner, 7 Oct 2026; lib/util/fcc.ts).
   const caPending = countryCode !== "us" && fccPending(product.handle)
 
   return (
@@ -56,32 +53,20 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
           {shipsBy ? (
             <>
               <p>
-                A pre-order, charged in full at checkout and shipped to
-                Canada and the United States.
-                {shipLine && ` ${shipLine}${caPending ? " to Canada" : ""}.`}
-                {caPending && (
-                  <>
-                    {" "}US orders ship{" "}
-                    {usShipsLater(product) ? "later, once" : "once"} its FCC
-                    authorization is complete: see the{" "}
-                    <a
-                      href="/us/terms#fcc-notice"
-                      className="underline underline-offset-4"
-                    >
-                      FCC notice
-                    </a>
-                    .
-                  </>
-                )}
+                A pre-order, charged in full at checkout and shipped to{" "}
+                {caPending ? "Canada" : "Canada and the United States"}.
+                {shipLine && ` ${shipLine}.`}
               </p>
               <p>
                 Shipping goes by Canada Post. You choose the service at
                 checkout, and it is added to the price.
               </p>
-              <p>
-                US orders go by Canada Post with the US duties already paid,
-                so there is nothing more to pay on delivery.
-              </p>
+              {!caPending && (
+                <p>
+                  US orders go by Canada Post with the US duties already paid,
+                  so there is nothing more to pay on delivery.
+                </p>
+              )}
             </>
           ) : (
             <p>
