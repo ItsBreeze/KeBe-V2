@@ -65,9 +65,14 @@ const shadowy = (m) => { m.castShadow = true; m.receiveShadow = true; return m; 
 // 2026): a P+R keypad (rev 3, same day): hard black key caps, laser-etched, on the silicone keys and web; the legends
 // take each key's LED colour when lit
 const M = {
-  nylon: new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.9 }),
-  pcb: new THREE.MeshStandardMaterial({ color: 0xefeee8, roughness: 0.42 }),
-  silicone: new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9 }),
+  // the case and the web drawn double-sided: the case STL's tessellation leaves hairline cracks, and one-sided they
+  // showed the white board through them as faint dashes along the rim (7 Oct 2026)
+  nylon: new THREE.MeshStandardMaterial({ color: 0x1b1b1a, roughness: 0.9, side: THREE.DoubleSide }),
+  // render only: the board dark. The real v3 board is white, but the keypad covers it everywhere except its back edge
+  // at the ports, and hairline gaps at the case's teeth still showed white dashes along the rim (owner, 7 Oct 2026:
+  // "remove them just for the render")
+  pcb: new THREE.MeshStandardMaterial({ color: 0x232321, roughness: 0.6 }),
+  silicone: new THREE.MeshStandardMaterial({ color: 0x161616, roughness: 0.9, side: THREE.DoubleSide }),
   cap: new THREE.MeshStandardMaterial({ color: 0x141414, roughness: 0.42 }),
   metal: new THREE.MeshStandardMaterial({ color: 0xd2d3d6, metalness: 1, roughness: 0.28 }),
   black: new THREE.MeshStandardMaterial({ color: 0x0b0b0b, roughness: 0.8 }),
@@ -126,11 +131,16 @@ for (const x of D.ports_x) {
   model.add(tongue);
 }
 
-// ---- the keypad's web on its tape, flush with the board's edges and the top surface between the keys; the keys
-// rise straight out of it, with their legends
-const web = new THREE.Shape(D.web_outline.map(([x, y]) => new THREE.Vector2(x, y)));
+// ---- the keypad's web on its tape, the top surface between the keys; the keys rise straight out of it, with their
+// legends. Render only: the web runs whole out under the case's wall, with no notches at the teeth, so none of the
+// production clearances (the web stands 0.20 off the wall at the rim, and each tooth's notch leaves a strip of the
+// white board beside it) shows as a white slit (owner, 7 Oct 2026: "I'm fine with some tolerance for the cad files
+// and production but can we remove them just for the render?"). The teeth stop under the web's top, so they vanish
+// inside it. Its top sits a hair under the rim so the two never fight where they overlap.
+const WEB_OUT = 0.3;                                  // past the PCB; the wall's top is 0.20 out, 0.35 below that
+const web = rr(new THREE.Shape(), -WEB_OUT, -WEB_OUT, BW + WEB_OUT, BH + WEB_OUT, BR + WEB_OUT);
 for (const k of D.keys) web.holes.push(rrc(new THREE.Path(), k.x, k.y, k.w - 0.4, k.h - 0.4, 2.2));
-model.add(slab(web, webZ, D.web_t, M.silicone));
+model.add(slab(web, webZ, D.web_t - 0.005, M.silicone));
 const keyZ0 = webTop, capZ0 = keyTop - D.cap_t;      // the silicone key on the web, its hard cap bonded on top
 const keyGeos = new Map();
 for (const k of D.keys) {
