@@ -135,11 +135,11 @@ const keyZ0 = webTop, capZ0 = keyTop - D.cap_t;      // the silicone key on the 
 const keyGeos = new Map();
 for (const k of D.keys) {
   const id = `${k.w}x${k.h}`;
-  if (!keyGeos.has(id)) keyGeos.set(id, [new RoundedBoxGeometry(k.w - 0.8, k.h - 0.8, capZ0 - keyZ0 + 0.2, 2, 0.6),
+  if (!keyGeos.has(id)) keyGeos.set(id, [new RoundedBoxGeometry(k.w - 0.2, k.h - 0.2, capZ0 - webZ + 0.2, 2, 0.6),
                                         new RoundedBoxGeometry(k.w, k.h, D.cap_t, 3, 0.6)]);
   const [baseGeo, capGeo] = keyGeos.get(id);
   const key = shadowy(new THREE.Mesh(baseGeo, M.silicone));
-  key.position.set(k.x, k.y, (keyZ0 + capZ0 + 0.2) / 2);
+  key.position.set(k.x, k.y, (webZ + capZ0 + 0.2) / 2);   // from the web's underside, so it fills the web's hole: no board shows round the key
   model.add(key);
   const cap = shadowy(new THREE.Mesh(capGeo, M.cap));
   cap.position.set(k.x, k.y, capZ0 + D.cap_t / 2);
