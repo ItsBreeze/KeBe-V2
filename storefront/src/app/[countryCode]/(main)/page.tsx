@@ -16,7 +16,7 @@ import {
   presaleShipLine,
   presaleShipsBy,
 } from "@lib/util/presale"
-import { HABITS, WHY } from "@lib/util/kebe-copy"
+import { DVORAK, HABITS, WHY } from "@lib/util/kebe-copy"
 import { productImageAlt } from "@lib/util/image-alt"
 import { fccNoticeBoards } from "@lib/util/fcc"
 import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
@@ -81,7 +81,7 @@ const V2_SPECS = [
   },
 ]
 
-// The case for the layout, HABITS and WHY, lives in lib/util/kebe-copy.ts:
+// The case for the layout, HABITS, DVORAK and WHY, lives in lib/util/kebe-copy.ts:
 // the product page quotes it under its button, so a change there shows on
 // both pages (6 Oct 2026).
 
@@ -525,6 +525,38 @@ export default async function Home(props: {
             Nothing on a digital keyboard can jam. Keeping either habit only
             costs your hands.
           </p>
+          {/* Dvorak's reasoning, one rule each (DVORAK in lib/util/kebe-copy.ts,
+              figures from scripts/layout-stats.py). The history is Dvorak and
+              Dealey's: University of Washington, slow-motion films of
+              typists, US patent 2,040,248 of 1936. */}
+          <div className="mt-20">
+            <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+              Dvorak&apos;s reasoning
+            </p>
+            <h3 className="mt-2 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
+              How he placed the letters
+            </h3>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+              August Dvorak taught education at the University of Washington.
+              With William Dealey he counted which letters and which pairs of
+              letters English uses most, studied how the hand moves, and
+              watched slow-motion films of typists at work. The order they
+              patented in 1936 follows from a few rules. KeBe&apos;s letters
+              are theirs, so every rule below holds on KeBe.
+            </p>
+            <div className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
+              {DVORAK.map((d) => (
+                <div key={d.title} className="border-t border-kebe-line pt-6">
+                  <h4 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
+                    {d.title}
+                  </h4>
+                  <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
+                    {d.body}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
           <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-kebe-line">
             <Image
               src="/products/kebe-v2-top.jpg"
@@ -534,15 +566,21 @@ export default async function Home(props: {
               className="object-cover"
             />
           </div>
-          <ol className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
+          <p className="mt-14 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+            Beyond the letters
+          </p>
+          <h3 className="mt-2 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
+            What KeBe adds
+          </h3>
+          <ol className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {WHY.map((w, i) => (
               <li key={w.title} className="border-t border-kebe-line pt-6">
                 <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
                   {String(i + 1).padStart(2, "0")}
                 </p>
-                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+                <h4 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {w.title}
-                </h3>
+                </h4>
                 <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
                   {w.body}
                 </p>
