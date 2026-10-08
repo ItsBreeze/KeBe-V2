@@ -345,60 +345,8 @@ export default async function Home(props: {
         )}
       </section>
 
-      {/* KeBe v1, photographed: the one KeBe that is built, so the one with
-          real pictures, set before the v2 renders and scenes below (owner,
-          7 Oct 2026: it shows what comes of KeBe's design files). Every
-          picture here is a photograph of v1 (public/products/kebe-v1-*). */}
-      <section className="border-t border-kebe-line bg-kebe-raised py-24">
-        <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            Real photos
-          </p>
-          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-            KeBe v1, built and photographed
-          </h2>
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            v2 and the Lite are not built yet, so their pictures are renders.
-            v1 is: these are photographs of one. It is the board both are
-            drawn from, on the same 68-key grid, hand-built in small batches
-            and sold out.
-          </p>
-          <div className="mt-10 grid grid-cols-2 gap-4 small:grid-cols-3">
-            {V1_PHOTOS.map((p, i) => (
-              <div
-                key={p.src}
-                className={
-                  i === 0
-                    ? "relative col-span-2 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line small:aspect-auto"
-                    : "relative aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line"
-                }
-              >
-                <Image
-                  src={p.src}
-                  alt={p.alt}
-                  fill
-                  sizes={i === 0 ? "(max-width: 1024px) 100vw, 800px" : "(max-width: 1024px) 50vw, 400px"}
-                  className="object-cover"
-                />
-              </div>
-            ))}
-          </div>
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <LocalizedClientLink
-              href="/products/kebe-v1-keyboard"
-              className="rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
-            >
-              More photos of v1
-            </LocalizedClientLink>
-            <p className="text-base text-kebe-text/60">
-              v2 is v1&apos;s board with a USB hub built in.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* What v2 is */}
-      <section className="border-t border-kebe-line py-24">
+      <section className="border-t border-kebe-line bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
             What changes
@@ -449,6 +397,58 @@ export default async function Home(props: {
             straight from its CAD; the desk, studio and night scenes, the clip
             above included, set that CAD model in AI-generated surroundings.
           </p>
+        </div>
+      </section>
+
+      {/* KeBe v1, photographed: the one KeBe that is built, so the one with
+          real pictures (owner, 7 Oct 2026: it shows what comes of KeBe's
+          design files). It follows the v2 renders and scenes above and comes
+          before the case for the layout (owner, 7 Oct 2026). Every picture
+          here is a photograph of v1 (public/products/kebe-v1-*). Its
+          background is plain and v2's raised, so the sections still
+          alternate. */}
+      <section className="border-t border-kebe-line py-24">
+        <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+            Real photos
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            KeBe v1, built and photographed
+          </h2>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            v2 and the Lite are not built yet, so their pictures are renders.
+            v1 is: these are photographs of one. It is the board both are
+            drawn from, on the same 68-key grid, hand-built in small batches
+            and sold out.
+          </p>
+          <div className="mt-10 grid grid-cols-2 gap-4 small:grid-cols-3">
+            {V1_PHOTOS.map((p, i) => (
+              <div
+                key={p.src}
+                className={
+                  i === 0
+                    ? "relative col-span-2 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line small:aspect-auto"
+                    : "relative aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line"
+                }
+              >
+                <Image
+                  src={p.src}
+                  alt={p.alt}
+                  fill
+                  sizes={i === 0 ? "(max-width: 1024px) 100vw, 800px" : "(max-width: 1024px) 50vw, 400px"}
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-8">
+            <LocalizedClientLink
+              href="/products/kebe-v1-keyboard"
+              className="inline-block rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
+            >
+              More photos of v1
+            </LocalizedClientLink>
+          </div>
         </div>
       </section>
 
