@@ -140,7 +140,8 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
-  // The live reel ads were built to land on KeBe v2's product page; the owner
+  // The live reel ads were built to land on the shop (categories/keyboards, the
+  // ads' actual URL, 8 Oct 2026) or KeBe v2's product page; the owner
   // wants them on the home page, where both boards are offered side by side
   // (7 Oct 2026). Until the ads' own URLs are changed in Ads Manager, their
   // clicks are sent home here, tags and all, so attribution still works. The
@@ -148,7 +149,7 @@ export async function middleware(request: NextRequest) {
   // the first Canada ad also utm_campaign=levers-oct26. Nothing else is
   // redirected: a shared product link carries neither.
   const adLanding = request.nextUrl.pathname.match(
-    /^\/(ca|us)\/(?:products\/kebe-v2-keyboard|store)\/?$/
+    /^\/(ca|us)\/(?:products\/kebe-v2-keyboard|store|categories\/keyboards)\/?$/
   )
   const params = request.nextUrl.searchParams
   if (
