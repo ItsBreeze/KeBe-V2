@@ -42,15 +42,16 @@ const PRICE_LIST = "KeBe Lite pre-order";
 const PREORDER = { cad: 129.99, usd: 89.99 }; // plus shipping, calculated at checkout
 const LATER = { cad: 143.99, usd: 99.99 }; // after pre-orders close; never shown while the list is active
 const SHIPS = "2027-01-31";
-const MODEL_GLB = "/products/kebe-lite.glb";
-const MODEL_POSTER = "/products/kebe-lite-hero.jpg";
-const THUMBNAIL = "/products/kebe-lite-hero.jpg";
+// New names whenever the renders change: the store caches /products/* for days (render-lite/shoot.mjs).
+const MODEL_GLB = "/products/kebe-lite-r3.glb";
+const MODEL_POSTER = "/products/kebe-lite-r3-hero.jpg";
+const THUMBNAIL = "/products/kebe-lite-r3-hero.jpg";
 // storefront/scripts/render-lite: straight renders of the Lite's design files, no scenes.
 const IMAGES = [
-  { url: "/products/kebe-lite-hero.jpg" },
-  { url: "/products/kebe-lite-top.jpg" },
-  { url: "/products/kebe-lite-glow.jpg" },
-  { url: "/products/kebe-lite-ports.jpg" },
+  { url: "/products/kebe-lite-r3-hero.jpg" },
+  { url: "/products/kebe-lite-r3-top.jpg" },
+  { url: "/products/kebe-lite-r3-glow.jpg" },
+  { url: "/products/kebe-lite-r3-ports.jpg" },
 ];
 
 // Every claim here is in the kebe repo's PCBs/lite/README.md (rev 3: the P+R keypad, the Lite case) or the live

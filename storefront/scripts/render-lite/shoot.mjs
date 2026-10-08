@@ -9,8 +9,11 @@
 // from the Lite's board, keypad drawing and the v3 case report) and PCBs/lite/case/KEBE-LITE-CASE.stl (the Lite case it
 // snaps into, printed in black SLS 3201PA-F nylon for the Lite). Renders index.html in headless Chromium and writes to
 // public/products/:
-//   stills  kebe-lite-{hero,top,glow,ports}.jpg, 2400 x 1800 (glow is also the 3D viewer's poster)
-//   glb     kebe-lite.glb, the model at true size in metres, LEDs on (the product page's 3D viewer)
+//   stills  kebe-lite-r3-{hero,top,glow,ports}.jpg, 2400 x 1800 (glow is also the 3D viewer's poster)
+//   glb     kebe-lite-r3.glb, the model at true size in metres, LEDs on (the product page's 3D viewer)
+//
+// The store caches /products/* for a day and serves it stale for a week, so a changed render needs a new NAME
+// (and backend/src/scripts/start-lite.ts and lib/util/image-alt.ts to match), or browsers keep the old one.
 //
 // Needs Playwright (playwright or playwright-core, through NODE_PATH like render-v2) and network access for three.js
 // from jsDelivr. PW_CHANNEL=chrome drives the installed Chrome instead of Playwright's own Chromium.
@@ -26,6 +29,7 @@ import sharp from "sharp";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, "..", "..", "public", "products");
 const ROOT = process.env.KEBE_ROOT ?? "C:/Users/brise/OneDrive/Documents/Projects/KeBe";
+const NAME = "kebe-lite-r3"; // rev 3; see the note above before re-rendering under the same name
 const VIEWS = ["hero", "top", "glow", "ports"];
 const W = 2400, H = 1800;
 const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb"];
@@ -87,14 +91,14 @@ try {
     const page = await open("glb", 64, 64);
     const b64 = await page.evaluate(() => window.__glb);
     await page.close();
-    const out = path.join(OUT, "kebe-lite.glb");
+    const out = path.join(OUT, `${NAME}.glb`);
     await writeFile(out, Buffer.from(b64, "base64"));
     console.log(`wrote ${path.relative(process.cwd(), out)}`);
   }
   for (const view of JOBS.includes("stills") ? VIEWS : []) {
     const page = await open(view, W, H);
     const png = await page.locator("canvas").screenshot();
-    const out = path.join(OUT, `kebe-lite-${view}.jpg`);
+    const out = path.join(OUT, `${NAME}-${view}.jpg`);
     await sharp(png).jpeg({ quality: 84, mozjpeg: true }).toFile(out);
     console.log(`wrote ${path.relative(process.cwd(), out)}`);
     await page.close();

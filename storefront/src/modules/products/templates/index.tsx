@@ -277,7 +277,12 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           {shipsBy && product.handle === LITE_HANDLE && (
             <p className="mb-3 text-small-regular text-white/80">
               None of the KeBe Lite pictures here are photographs: they and
-              the 3D model are renders of the Lite&apos;s design files.
+              the 3D model are renders of the Lite&apos;s design files. For a
+              built KeBe, see{" "}
+              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-white">
+                KeBe v1&apos;s photographs
+              </LocalizedClientLink>
+              .
             </p>
           )}
           {shipsBy && product.handle !== LITE_HANDLE && (
@@ -285,7 +290,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               None of the v2 pictures here are photographs: the plain renders
               and the 3D model come straight from v2&apos;s CAD, and the desk,
               studio and night pictures and the clip set that CAD model in
-              AI-generated scenes.
+              AI-generated scenes. For a built KeBe, see{" "}
+              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-white">
+                KeBe v1&apos;s photographs
+              </LocalizedClientLink>
+              .
             </p>
           )}
           <div className="grid grid-cols-1 gap-4 small:grid-cols-2">

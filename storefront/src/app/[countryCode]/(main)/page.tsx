@@ -17,6 +17,7 @@ import {
   presaleShipsBy,
 } from "@lib/util/presale"
 import { HABITS, WHY } from "@lib/util/kebe-copy"
+import { productImageAlt } from "@lib/util/image-alt"
 import { fccNoticeBoards } from "@lib/util/fcc"
 import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
 import FccNotice from "@modules/common/components/fcc-notice"
@@ -173,6 +174,16 @@ function PriceButton({
     </LocalizedClientLink>
   )
 }
+
+// KeBe v1's photographs for the home page's "Real photos" section, the first
+// one large. Alt text comes from lib/util/image-alt.ts.
+const V1_PHOTOS = [
+  "/products/kebe-v1-hero.jpg",
+  "/products/kebe-v1-angle.jpg",
+  "/products/kebe-v1-port.jpg",
+  "/products/kebe-v1-front.jpg",
+  "/products/kebe-v1-case.jpg",
+].map((src, i) => ({ src, alt: productImageAlt({ url: src }, "KeBe v1", i) }))
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
@@ -333,6 +344,58 @@ export default async function Home(props: {
             className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80"
           />
         )}
+      </section>
+
+      {/* KeBe v1, photographed: the one KeBe that is built, so the one with
+          real pictures, set before the v2 renders and scenes below (owner,
+          7 Oct 2026: it shows what comes of KeBe's design files). Every
+          picture here is a photograph of v1 (public/products/kebe-v1-*). */}
+      <section className="border-t border-kebe-line bg-kebe-raised py-24">
+        <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
+            Real photos
+          </p>
+          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            KeBe v1, built and photographed
+          </h2>
+          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
+            v2 and the Lite are not built yet, so their pictures are renders.
+            v1 is: these are photographs of one. It is the board both are
+            drawn from, on the same 68-key grid, hand-built in small batches
+            and sold out.
+          </p>
+          <div className="mt-10 grid grid-cols-2 gap-4 small:grid-cols-4">
+            {V1_PHOTOS.map((p, i) => (
+              <div
+                key={p.src}
+                className={
+                  i === 0
+                    ? "relative col-span-2 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line small:aspect-auto"
+                    : "relative aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line"
+                }
+              >
+                <Image
+                  src={p.src}
+                  alt={p.alt}
+                  fill
+                  sizes={i === 0 ? "(max-width: 1024px) 100vw, 600px" : "(max-width: 1024px) 50vw, 300px"}
+                  className="object-cover"
+                />
+              </div>
+            ))}
+          </div>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <LocalizedClientLink
+              href="/products/kebe-v1-keyboard"
+              className="rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
+            >
+              More photos of v1
+            </LocalizedClientLink>
+            <p className="text-base text-kebe-text/60">
+              v2 is v1&apos;s board with a USB hub built in.
+            </p>
+          </div>
+        </div>
       </section>
 
       {/* What v2 is */}
@@ -510,24 +573,6 @@ export default async function Home(props: {
         </div>
       </section>
 
-      {/* v1 */}
-      <section className="border-t border-kebe-line py-16">
-        <div className="mx-auto flex max-w-[1200px] flex-col items-start justify-between gap-6 px-[6vw] small:flex-row small:items-center small:px-[4vw]">
-          <div>
-            <h2 className="font-display text-3xl">KeBe v1</h2>
-            <p className="mt-2 max-w-xl text-base leading-relaxed text-kebe-text/70">
-              The board that started it. Sixty-eight keys, wired, hand-built in
-              small batches — and sold out.
-            </p>
-          </div>
-          <LocalizedClientLink
-            href="/products/kebe-v1-keyboard"
-            className="rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
-          >
-            See the v1
-          </LocalizedClientLink>
-        </div>
-      </section>
     </div>
   )
 }

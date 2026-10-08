@@ -19,18 +19,24 @@ const BY_PATH: Record<string, string> = {
     "KeBe v2 CAD model on a slab of dark stone, in an AI-generated scene.",
   "/products/kebe-v2-desk.jpg":
     "KeBe v2 CAD model on a wooden desk beside a laptop and a cup of coffee, in an AI-generated scene.",
-  "/products/kebe-lite-hero.jpg":
+  "/products/kebe-lite-r3-hero.jpg":
     "KeBe Lite, rendered from its design files: black key tops with white laser-etched legends in a black nylon case.",
-  "/products/kebe-lite-top.jpg":
+  "/products/kebe-lite-r3-top.jpg":
     "KeBe Lite from above, rendered from its design files: 68 keys in straight columns, the Dvorak letters in the middle.",
-  "/products/kebe-lite-glow.jpg":
+  "/products/kebe-lite-r3-glow.jpg":
     "KeBe Lite, rendered from its design files with its per-key lighting on: each key's legend lit in a rainbow.",
-  "/products/kebe-lite-ports.jpg":
+  "/products/kebe-lite-r3-ports.jpg":
     "The back edge of KeBe Lite, rendered from its design files: four USB-C ports, one to the computer and three for its USB 2.0 hub.",
   "/products/kebe-v1-hero.jpg":
     "KeBe v1 in white, its shine-through legends lit in a rainbow.",
   "/products/kebe-v1-angle.jpg":
     "KeBe v1 from a low angle at one end, the RGB glowing through its switches.",
+  "/products/kebe-v1-port.jpg":
+    "KeBe v1 lit in a rainbow, a white USB-C cable plugged into its back edge.",
+  "/products/kebe-v1-front.jpg":
+    "KeBe v1 on a pale desk with its cable plugged in, the legends lit in blue and violet.",
+  "/products/kebe-v1-case.jpg":
+    "A corner of KeBe v1 up close: white keycaps on clear low-profile switches over its grey case.",
   "/products/kebe-v1-rgb.jpg":
     "KeBe v1 in white from above, 68 keys in straight columns lit from underneath.",
 }
