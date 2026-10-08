@@ -29,7 +29,7 @@ import sharp from "sharp";
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(HERE, "..", "..", "public", "products");
 const ROOT = process.env.KEBE_ROOT ?? "C:/Users/brise/OneDrive/Documents/Projects/KeBe";
-const NAME = "kebe-lite-r3"; // rev 3; see the note above before re-rendering under the same name
+const NAME = "kebe-lite-r3b"; // rev 3; see the note above before re-rendering under the same name
 const VIEWS = ["hero", "top", "glow", "ports"];
 const W = 2400, H = 1800;
 const JOBS = process.argv.slice(2).length ? process.argv.slice(2) : ["stills", "glb"];
