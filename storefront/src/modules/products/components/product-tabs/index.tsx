@@ -1,5 +1,5 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { isOnHold, presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
 import { fccPending } from "@lib/util/fcc"
 import { CONTACT_EMAIL } from "@lib/constants"
@@ -50,7 +50,12 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
       <div>
         <h2 className="font-display text-2xl text-ui-fg-base">Shipping</h2>
         <div className="mt-4 flex flex-col gap-3 text-base leading-relaxed text-ui-fg-subtle">
-          {shipsBy ? (
+          {isOnHold(product.handle) ? (
+            <p>
+              KeBe Lite is on hold, so it can&apos;t be ordered and nothing
+              ships yet.
+            </p>
+          ) : shipsBy ? (
             <>
               <p>
                 A pre-order, charged in full at checkout and shipped to{" "}

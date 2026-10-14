@@ -37,7 +37,7 @@ const V2: Faq[] = [
     // circuit, controller, hub and LEDs (Compliance/lite.md; the Lite's PCB layout is derived, not identical).
     question: "How is KeBe v2 different from KeBe Lite?",
     answer: [
-      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, and it costs less.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, at a lower planned price. KeBe Lite is on hold: its keypad needs moulds that don't pay off until enough people want one, so it has a free waitlist instead of pre-orders.",
     ],
     link: { href: "/products/kebe-lite", label: "See KeBe Lite" },
   },
@@ -126,8 +126,8 @@ const V2: Faq[] = [
 ]
 
 // The same board and firmware as KeBe v2, so these of v2's answers are the Lite's too: the layout, the computer's
-// setting, the keymap, the hub ports and the pre-order terms. Not the switch and keycap answers: the Lite has
-// neither.
+// setting, the keymap and the hub ports. Not the switch and keycap answers: the Lite has neither. Not the pre-order
+// terms either while it is on hold (14 Oct 2026): it has a waitlist answer of its own.
 const shared = (q: string): Faq => {
   const f = V2.find((x) => x.question === q)
   if (!f) throw new Error(`faq.ts: no v2 answer "${q}" to share`)
@@ -141,7 +141,7 @@ const LITE: Faq[] = [
     // hard plastic cap bonded on each, each dome's carbon pill closing a gold contact; the backend's start-lite.ts.
     question: "How is KeBe Lite different from KeBe v2?",
     answer: [
-      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are not. KeBe v2 is mechanical, with Kailh Choc switches in hot-swap sockets under separate keycaps. KeBe Lite is the slim, membrane one: each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, 10.95 mm to the key tops, so there are no switches or keycaps to change, and it costs less.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are not. KeBe v2 is mechanical, with Kailh Choc switches in hot-swap sockets under separate keycaps. KeBe Lite is the slim, membrane one: each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, 10.95 mm to the key tops, so there are no switches or keycaps to change, and its planned price is lower.",
     ],
     link: { href: "/products/kebe-v2-keyboard", label: "See KeBe v2" },
   },
@@ -166,7 +166,13 @@ const LITE: Faq[] = [
   shared("Do I set my computer to Dvorak?"),
   shared("Can I change the keymap?"),
   shared("What do the three extra USB-C ports do?"),
-  shared("Can I cancel, or return it?"),
+  {
+    // Owner, 14 Oct 2026: on hold, a free waitlist in place of pre-orders, no ship date.
+    question: "Can I order KeBe Lite?",
+    answer: [
+      "Not now. KeBe Lite is on hold: its keypad needs moulds that don't pay off until enough people want one. Join its waitlist: no payment, and we'll email you once if it goes ahead.",
+    ],
+  },
 ]
 
 const BY_HANDLE: Record<string, Faq[]> = {

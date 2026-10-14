@@ -8,6 +8,7 @@ import BuyBoxBoundary from "@modules/products/components/product-actions/buy-box
 import ProductTabs from "@modules/products/components/product-tabs"
 import ProductQuestions from "@modules/products/components/product-questions"
 import BeforeYouPreorder from "@modules/products/components/before-you-preorder"
+import LiteWaitlist from "@modules/products/components/lite-waitlist"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
@@ -20,6 +21,7 @@ import { getProductPrice } from "@lib/util/get-product-price"
 import {
   LITE_HANDLE,
   PRESALE_HANDLE,
+  isOnHold,
   presaleAvailability,
   presaleShipsBy,
 } from "@lib/util/presale"
@@ -111,12 +113,15 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // place, the argument the reel and the ad make, and the same four facts
   // shrink to one line after them (6 Oct 2026).
   const shipsBy = presaleShipsBy(product)
+  // KeBe Lite on hold: a waitlist in the buy box's place (14 Oct 2026).
+  const onHold = isOnHold(product.handle)
   // v1's page, once it cannot be bought, points at the board that can,
   // rather than ending at a disabled button (6 Oct 2026). The handle check
   // keeps the line off v2's own page should its presale ever end, and
   // V2OnPreorder says it only while v2 can be pre-ordered.
   const soldOutToV2 =
     !shipsBy &&
+    !onHold &&
     product.handle !== PRESALE_HANDLE &&
     !presaleAvailability(product).open
   // "Keys" is the Lite's row in place of v2's "Switches", so its buy box says what its keys are too (7 Oct 2026)
@@ -180,19 +185,23 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           </div>
           <div className="flex flex-col gap-8 small:col-span-5">
             <ProductInfo product={product} countryCode={countryCode} />
-            <BuyBoxBoundary productId={product.id} preorder={!!shipsBy}>
-              <Suspense
-                fallback={
-                  <ProductActions
-                    disabled={true}
-                    product={product}
-                    region={region}
-                  />
-                }
-              >
-                <ProductActionsWrapper id={product.id} region={region} />
-              </Suspense>
-            </BuyBoxBoundary>
+            {onHold ? (
+              <LiteWaitlist product={product} countryCode={countryCode} />
+            ) : (
+              <BuyBoxBoundary productId={product.id} preorder={!!shipsBy}>
+                <Suspense
+                  fallback={
+                    <ProductActions
+                      disabled={true}
+                      product={product}
+                      region={region}
+                    />
+                  }
+                >
+                  <ProductActionsWrapper id={product.id} region={region} />
+                </Suspense>
+              </BuyBoxBoundary>
+            )}
             {soldOutToV2 && (
               <Suspense fallback={null}>
                 <V2OnPreorder regionId={region.id} />
@@ -251,7 +260,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             {/* Every KeBe has the same layout, so every product page points
                 at the trainer: v2 from Before you pre-order, v1 here
                 (6 Oct 2026). */}
-            {!shipsBy && (
+            {!shipsBy && !onHold && (
               <p className="text-base text-ui-fg-subtle">
                 New to Dvorak?{" "}
                 <LocalizedClientLink
@@ -275,7 +284,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               caption's style (6 Oct 2026). KeBe Lite's are plain renders of
               its design files (storefront/scripts/render-lite), with no AI
               scenes (7 Oct 2026). */}
-          {shipsBy && product.handle === LITE_HANDLE && (
+          {product.handle === LITE_HANDLE && (
             <p className="mb-3 text-small-regular text-white/80">
               None of the KeBe Lite pictures here are photographs: they and
               the 3D model are renders of the Lite&apos;s design files. For a

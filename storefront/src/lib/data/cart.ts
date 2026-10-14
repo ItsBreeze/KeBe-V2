@@ -306,8 +306,8 @@ export async function preorderNow(
 ): Promise<{ error?: boolean }> {
   const variantId = formData.get("variant_id")
   const countryCode = formData.get("country_code")
-  // Which pre-order board the form is for (KeBe v2 or KeBe Lite): its ship line goes on the line. Anything else
-  // reads as KeBe v2, the form's only board before the Lite.
+  // Which pre-order board the form is for: its ship line goes on the line. Anything else reads as KeBe v2, the
+  // form's only board since KeBe Lite went on hold (14 Oct 2026).
   const posted = formData.get("handle")
   const handle =
     typeof posted === "string" && isPresaleHandle(posted) ? posted : PRESALE_HANDLE

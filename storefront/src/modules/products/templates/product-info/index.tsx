@@ -1,5 +1,10 @@
 import { HttpTypes } from "@medusajs/types"
-import { LITE_HANDLE, presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import {
+  LITE_HANDLE,
+  isOnHold,
+  presaleShipLine,
+  presaleShipsBy,
+} from "@lib/util/presale"
 import { BUYBOX_TAGLINE, BUYBOX_TAGLINE_LITE } from "@lib/util/kebe-copy"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 
@@ -17,11 +22,13 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product, countryCode)
+  // KeBe Lite on hold keeps its tagline, under "On hold · waitlist".
+  const onHold = isOnHold(product.handle)
   // On the presale board the line under the name continues the reel's
   // argument instead (kebe-copy.ts). Only this line changes: the title, and
   // with it the cart, link previews, feeds and Admin, stays as it is
   // (6 Oct 2026).
-  const subtitle = shipsBy
+  const subtitle = shipsBy || onHold
     ? product.handle === LITE_HANDLE
       ? BUYBOX_TAGLINE_LITE
       : BUYBOX_TAGLINE
@@ -29,7 +36,11 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
 
   return (
     <div id="product-info" className="flex flex-col gap-y-3">
-      {shipsBy ? (
+      {onHold ? (
+        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
+          On hold · waitlist
+        </p>
+      ) : shipsBy ? (
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
           {shipLine ? `Pre-order · ${shipLine}` : "Pre-order"}
         </p>

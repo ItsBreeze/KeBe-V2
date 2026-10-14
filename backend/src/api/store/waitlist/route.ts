@@ -3,7 +3,8 @@ import { WAITLIST_MODULE } from "../../../modules/waitlist";
 import WaitlistModuleService from "../../../modules/waitlist/service";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
-const ALLOWED_SOURCES = new Set(["v2", "v1-restock"]);
+// "lite": KeBe Lite's waitlist while it is on hold (14 Oct 2026).
+const ALLOWED_SOURCES = new Set(["v2", "v1-restock", "lite"]);
 
 type Body = { email?: unknown; source?: unknown };
 

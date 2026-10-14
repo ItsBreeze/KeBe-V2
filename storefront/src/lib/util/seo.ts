@@ -5,6 +5,7 @@ import { isAiGeneratedImage } from "@lib/util/image-alt"
 import {
   PRESALE_HANDLE,
   LITE_HANDLE,
+  isOnHold,
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
@@ -160,7 +161,9 @@ export const priceForCopy = (price: { amount: string; currency: string }) => {
 // shipping." after it, "from" when variants differ. A price in copy always
 // says "plus shipping" (owner, 1 Oct 2026), and it is the region's
 // calculated price, never the later one. Null when nothing can be bought.
+// KeBe Lite on hold has no price to offer, only its waitlist (14 Oct 2026).
 export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
+  if (isOnHold(product.handle)) return "On hold: join the free waitlist."
   const prices = (product.variants ?? [])
     .filter(variantOpen)
     .map(variantPrice)
@@ -352,8 +355,8 @@ export type Availability =
 // out is the Pre-order button's own rule (presale.ts variantOpen), never a
 // number.
 //
-// A presale board built to order (no inventory-managed variant: KeBe Lite)
-// has no counted boards to run out of: it is a pre-order of a product not yet
+// A presale board built to order (no inventory-managed variant, as KeBe Lite
+// was before it went on hold) has no counted boards to run out of: it is a pre-order of a product not yet
 // released for as long as its presale runs, never a backorder (7 Oct 2026).
 export const variantAvailability = (
   product: HttpTypes.StoreProduct,

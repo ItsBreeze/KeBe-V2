@@ -127,17 +127,10 @@ async function getPresale(countryCode: string): Promise<Presale> {
   }
 }
 
-// KeBe Lite's price and ship line, for its price button beside v2's while the Lite can be pre-ordered: the lower
-// price the ads lead with (owner, 6 and 7 Oct 2026). Any failure leaves the button out.
+// Whether KeBe Lite's page is there for its button beside v2's. The Lite is on hold with a waitlist (owner, 14 Oct
+// 2026), so the button gives no price or ship line. Any failure leaves the button out.
 async function getLite(countryCode: string) {
-  const product = await presaleProduct(countryCode, LITE_HANDLE)
-  if (!product || !presaleShipsBy(product) || !presaleAvailability(product).open) {
-    return null
-  }
-  return {
-    price: getProductPrice({ product }).cheapestPrice?.calculated_price,
-    shipLine: presaleShipLine(product, countryCode),
-  }
+  return !!(await presaleProduct(countryCode, LITE_HANDLE))
 }
 
 // A hero price button (owner, 7 Oct 2026: "2 price buttons instead of hiding the lite"): the board's kind over
@@ -182,7 +175,7 @@ function PriceButton({
   )
 }
 
-// The two boards side by side, under the hero, while both can be pre-ordered (owner, 7 Oct 2026: "better describe
+// The two boards side by side, under the hero, KeBe Lite marked on hold (owner, 7 Oct 2026: "better describe
 // and differentiate the two offered products"). Only the rows where they differ, then one line for what they share.
 // Every value is in the kebe repo: the switches and sockets (Case_Files/v3/V3-ENVELOPE.md), v2's caps (Chosfox
 // order 21742, CFX "Black Coated", legends lasered through the coating), the Lite's keypad (PCBs/lite/README.md,
@@ -212,11 +205,11 @@ const TWO_BOARDS = [
   },
 ] as const
 
-function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice?: string }) {
+function TwoBoards({ v2Price }: { v2Price?: string }) {
   const boards = [
     { key: "v2" as const, handle: PRESALE_HANDLE, kind: "Mechanical", name: "KeBe v2", price: v2Price,
       image: "/products/kebe-v2-glow.jpg", alt: "KeBe v2, rendered from its CAD with its per-key lighting on." },
-    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "KeBe Lite", price: litePrice,
+    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "KeBe Lite", price: "on hold",
       image: "/products/kebe-lite-r3c-glow.jpg", alt: "KeBe Lite, rendered from its design files with its per-key lighting on." },
   ]
   return (
@@ -291,7 +284,8 @@ export default async function Home(props: {
   // any of them (none on /ca: lib/util/fcc.ts).
   const offered = [
     presale.state === "open" ? PRESALE_HANDLE : null,
-    lite?.price ? LITE_HANDLE : null,
+    // Still advertised, so /us keeps its FCC notice as the Lite's page does.
+    lite ? LITE_HANDLE : null,
   ]
   const usNotice = fccNoticeBoards(countryCode, offered).length > 0
 
@@ -300,12 +294,12 @@ export default async function Home(props: {
   // under the name, over the model; on phones under the model.
   const offer = (
     <>
-      {/* Two price buttons, one a board, side by side: KeBe v2 and
-          KeBe Lite, each with its pre-order price, what its keys are
-          and when it ships (owner, 7 Oct 2026: "2 price buttons
-          instead of hiding the lite"). A board that cannot be
-          pre-ordered has no button. */}
-      {(presale.state === "open" || lite?.price) && (
+      {/* Two buttons, one a board, side by side: KeBe v2 with its
+          pre-order price, what its keys are and when it ships, and KeBe
+          Lite on hold, leading to its waitlist (owner, 7 Oct 2026: "2
+          price buttons instead of hiding the lite"; 14 Oct: the Lite on
+          hold). v2 has no button when it cannot be pre-ordered. */}
+      {(presale.state === "open" || lite) && (
         <>
           <div className="flex w-full max-w-2xl flex-col items-stretch gap-3 small:flex-row small:justify-center">
             {presale.state === "open" && (
@@ -318,44 +312,44 @@ export default async function Home(props: {
                 shipLine={presale.shipLine}
               />
             )}
-            {lite?.price && (
+            {lite && (
               <PriceButton
                 handle={LITE_HANDLE}
                 kind="Slim membrane"
                 name="KeBe Lite"
-                price={lite.price}
-                keys="Shine-through caps"
-                shipLine={lite.shipLine}
+                keys="On hold · join the waitlist"
               />
             )}
           </div>
-          <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-            {/* While a board's FCC authorization is pending, /us
-                sends US buyers to the notice further down this page,
-                which the full-screen hero hides (review, 7 Oct
-                2026). /ca says nothing of it: the CA region ships
-                to Canada only, so it makes no US offer (owner, 7 Oct
-                2026; lib/util/fcc.ts). */}
-            Pre-order · plus shipping
-            {countryCode === "us"
-              ? usNotice
-                ? " · "
-                : " · US"
-              : " · Canada"}
-            {countryCode === "us" && usNotice && (
-              <a
-                href="#fcc-notice"
-                className="underline underline-offset-4 hover:text-white"
-              >
-                US orders: FCC notice
-              </a>
-            )}
-          </p>
+          {presale.state === "open" && (
+            <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+              {/* While a board's FCC authorization is pending, /us
+                  sends US buyers to the notice further down this page,
+                  which the full-screen hero hides (review, 7 Oct
+                  2026). /ca says nothing of it: the CA region ships
+                  to Canada only, so it makes no US offer (owner, 7 Oct
+                  2026; lib/util/fcc.ts). */}
+              {lite ? "KeBe v2 pre-order" : "Pre-order"} · plus shipping
+              {countryCode === "us"
+                ? usNotice
+                  ? " · "
+                  : " · US"
+                : " · Canada"}
+              {countryCode === "us" && usNotice && (
+                <a
+                  href="#fcc-notice"
+                  className="underline underline-offset-4 hover:text-white"
+                >
+                  US orders: FCC notice
+                </a>
+              )}
+            </p>
+          )}
         </>
       )}
       {presale.state !== "open" && (
-        <div className={lite?.price ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
-          {lite?.price && (
+        <div className={lite ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
+          {lite && (
             <p className="mb-3 text-base text-kebe-text/80">
               Hear when pre-orders open for KeBe v2, the mechanical one:
             </p>
@@ -390,7 +384,7 @@ export default async function Home(props: {
         >
           <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
             <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-              {presale.state === "open" || lite?.price
+              {presale.state === "open"
                 ? "Pre-orders open"
                 : presale.state === "sold-out"
                 ? "Pre-orders closed"
@@ -400,10 +394,10 @@ export default async function Home(props: {
                 buttons under it carry the names and kinds (7 Oct 2026). The
                 model is still v2's, and its alt says so. */}
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
-              {lite?.price ? "KeBe" : "KeBe v2"}
+              {lite ? "KeBe" : "KeBe v2"}
             </h1>
             <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
-              {lite?.price
+              {lite
                 ? "Mindless Mastery, mechanical or membrane"
                 : "Mindless Mastery, now with a hub"}
             </p>
@@ -422,8 +416,8 @@ export default async function Home(props: {
       </section>
 
       <section className="mx-auto max-w-[1200px] px-[6vw] py-16 text-center small:px-[4vw]">
-        {lite?.price ? (
-          <TwoBoards v2Price={presale.state === "open" ? presale.price : undefined} litePrice={lite.price} />
+        {lite ? (
+          <TwoBoards v2Price={presale.state === "open" ? presale.price : undefined} />
         ) : (
           <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
             The v1 layout, all in black, in a lower, screwless case, with three
@@ -437,7 +431,7 @@ export default async function Home(props: {
             ? "Leave an address and you'll hear when KeBe v2 pre-orders open."
             : "Shipping is calculated at checkout, and each keyboard is charged in full there."}
         </p>
-        {/* The hero offers KeBe v2 and KeBe Lite at their US prices, so /us
+        {/* The hero offers KeBe v2 at its US price and shows KeBe Lite, so /us
             gives the product pages' FCC notice here too for each one it
             offers whose SDoC is pending (lib/util/fcc.ts, 7 Oct 2026). */}
         {usNotice && (

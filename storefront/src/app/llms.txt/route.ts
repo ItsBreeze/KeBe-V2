@@ -6,7 +6,9 @@ import {
   storefrontCountryNames,
 } from "@lib/data/seo"
 import {
+  isOnHold,
   isPreorderPrice,
+  litePlannedPrice,
   presaleAvailability,
   presaleShipDate,
   presaleShipLine,
@@ -56,6 +58,9 @@ const priceRange = (product: HttpTypes.StoreProduct) => {
 }
 
 const statusLine = (product: HttpTypes.StoreProduct) => {
+  // KeBe Lite (owner, 14 Oct 2026): no ship date, nothing to buy.
+  if (isOnHold(product.handle))
+    return "Status: on hold, not for sale. Its keypad needs moulds that don't pay off until enough people want one. Its page has a free waitlist: an email address, no payment, and one email if it goes ahead."
   if (!presaleAvailability(product).open) return "Status: sold out."
   if (!presaleShipsBy(product)) return "Status: in stock."
   const line = presaleShipLine(product)
@@ -103,6 +108,8 @@ const productSection = (
         ? `- [${where}](${url}): ${range} plus shipping${
             preorder ? " (the pre-order price)" : ""
           }`
+        : isOnHold(priced.handle)
+        ? `- [${where}](${url}): planned price ${litePlannedPrice(cc)} plus shipping`
         : `- [${where}](${url})`
     )
   }

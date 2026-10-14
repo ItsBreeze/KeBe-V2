@@ -2,12 +2,24 @@ import { HttpTypes } from "@medusajs/types"
 import { usShipFloor } from "@lib/util/fcc"
 
 export const PRESALE_HANDLE = "kebe-v2-keyboard"
-// KeBe Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite), on pre-order since 6 Oct 2026.
+// KeBe Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite): on pre-order from 6 Oct 2026, on hold since 14 Oct.
 export const LITE_HANDLE = "kebe-lite"
 // Every board sold on pre-order. The pre-order terms' cancel promise, the cart's ship line, the Stripe
 // description and the order page's help cover each one; PRESALE_HANDLE stays the flagship the homepage and the
 // other pages' links lead to.
-export const PRESALE_HANDLES: readonly string[] = [PRESALE_HANDLE, LITE_HANDLE]
+export const PRESALE_HANDLES: readonly string[] = [PRESALE_HANDLE]
+
+// KeBe Lite is on hold (owner, 14 Oct 2026): its keypad needs about US$4,500 of moulds before the first board, which
+// does not pay at low volume. Its page is a free waitlist and nothing on the site sells it, whatever its Medusa
+// metadata and pre-order price list still say: it has no presale (presaleShipsBy) and nothing open to buy
+// (presaleAvailability), so no ship line, ship date, feed item or offer.
+export const isOnHold = (handle: string | null | undefined) =>
+  handle === LITE_HANDLE
+
+// The Lite's planned price, fixed here rather than read from Medusa, so ending its pre-order price list can never
+// show the later price. The CA region ships to Canada only, so every other store is Canada's.
+export const litePlannedPrice = (countryCode?: string | null) =>
+  countryCode?.toLowerCase() === "us" ? "US$89.99" : "CA$129.99"
 
 export const isPresaleHandle = (handle: string | null | undefined) =>
   !!handle && PRESALE_HANDLES.includes(handle)
@@ -88,7 +100,8 @@ export const usShipsLater = (product: HttpTypes.StoreProduct) =>
 // the presale off.
 export const presaleShipsBy = (
   product: HttpTypes.StoreProduct
-): string | null => metadataDate(product, "ships_by")
+): string | null =>
+  isOnHold(product.handle) ? null : metadataDate(product, "ships_by")
 
 // The pre-order price is a Medusa "sale" price list (the backend's
 // preorder-sale.ts) over the product's own price, which it keeps charging
@@ -117,7 +130,7 @@ export const variantOpen = (v: HttpTypes.StoreProductVariant) =>
 // board is still unsold, so an order placed now is one of them. Neither is a
 // count: the site never says how many boards there are (owner, 1 Oct 2026).
 export const presaleAvailability = (product: HttpTypes.StoreProduct) => {
-  const variants = product.variants ?? []
+  const variants = isOnHold(product.handle) ? [] : product.variants ?? []
   return {
     open: variants.some(variantOpen),
     fromStock: variants.some(
@@ -186,7 +199,7 @@ export const holdsPresaleBoard = (
 ) =>
   !!items?.some((i) => isPresaleHandle(lineHandle(i)))
 
-// What a payment is for, on Stripe's record of it: "KeBe v2 pre-order", "KeBe Lite pre-order", from the first
+// What a payment is for, on Stripe's record of it: "KeBe v2 pre-order", from the first
 // pre-order line's title (the name before " — "); null for a cart without one.
 export const presalePaymentLabel = (
   items:

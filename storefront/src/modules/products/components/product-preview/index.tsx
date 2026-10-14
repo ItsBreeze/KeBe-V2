@@ -1,7 +1,7 @@
 import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
-import { isPreorderPrice } from "@lib/util/presale"
+import { isOnHold, isPreorderPrice } from "@lib/util/presale"
 import { productImageAlt } from "@lib/util/image-alt"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -52,7 +52,12 @@ export default async function ProductPreview({
             {product.title}
           </Text>
           <div className="flex items-center gap-x-2">
-            {cheapestPrice && (
+            {/* KeBe Lite on hold: no price that reads as buyable. */}
+            {isOnHold(product.handle) ? (
+              <Text className="text-ui-fg-muted" data-testid="on-hold-label">
+                On hold · waitlist
+              </Text>
+            ) : cheapestPrice && (
               <PreviewPrice
                 price={cheapestPrice}
                 preorder={isPreorderPrice(product, cheapestPrice)}

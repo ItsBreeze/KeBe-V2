@@ -1,7 +1,7 @@
 import { HttpTypes } from "@medusajs/types"
 import { CONTACT_EMAIL } from "@lib/constants"
 import { isAiGeneratedImage } from "@lib/util/image-alt"
-import { presaleShipDate } from "@lib/util/presale"
+import { isOnHold, presaleShipDate } from "@lib/util/presale"
 import {
   Availability,
   BRAND,
@@ -121,7 +121,8 @@ const offerFor = (
   countryCode: string
 ) => {
   const price = variantPrice(variant)
-  if (!price) return null
+  // KeBe Lite on hold cannot be bought, so it has no offer (14 Oct 2026).
+  if (!price || isOnHold(product.handle)) return null
   const availability = variantAvailability(product, variant)
   const startsAt =
     availability === "preorder" || availability === "backorder"

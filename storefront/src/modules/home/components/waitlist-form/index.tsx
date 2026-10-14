@@ -21,7 +21,7 @@ function SubmitButton() {
 export default function WaitlistForm({
   source = "v2",
 }: {
-  source?: "v2" | "v1-restock"
+  source?: "v2" | "v1-restock" | "lite"
 }) {
   const [state, action] = useActionState<WaitlistState, FormData>(joinWaitlist, {
     status: "idle",
@@ -41,7 +41,10 @@ export default function WaitlistForm({
   if (state.status === "ok") {
     return (
       <p className="text-lg text-kebe-text" role="status">
-        {state.message} We'll write once, when there's something to see.
+        {state.message}{" "}
+        {source === "lite"
+          ? "We'll email you once if KeBe Lite goes ahead."
+          : "We'll write once, when there's something to see."}
       </p>
     )
   }
