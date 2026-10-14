@@ -22,7 +22,7 @@ export default function LiteWaitlist({
         Planned price {litePlannedPrice(countryCode)} plus shipping
       </p>
       <p className="text-base leading-relaxed text-ui-fg-subtle">
-        KeBe Lite is on hold. Its keypad needs moulds that don&apos;t pay off
+        KeBe Lite is planned, not made yet. Its keypad needs moulds that don&apos;t pay off
         until enough people want one. Join the waitlist: no payment, and
         we&apos;ll email you once if it goes ahead.
       </p>

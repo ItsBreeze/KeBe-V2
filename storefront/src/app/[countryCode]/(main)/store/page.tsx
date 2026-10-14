@@ -12,7 +12,7 @@ const TITLE = "Ortholinear Dvorak Keyboards Assembled in Canada"
 // The Lite has no Choc switches, so the old line was wrong for it (7 Oct 2026); v1 (sold out) has no hub, so the
 // hub is not promised for every board in the grid. The Lite is on hold with a waitlist (14 Oct 2026).
 const DESCRIPTION =
-  "Ortholinear Dvorak keyboards with per-key RGB, assembled by hand in Canada: KeBe v2, mechanical and hot-swap, and the slim, membrane KeBe Lite, on hold."
+  "Ortholinear Dvorak keyboards with per-key RGB, assembled by hand in Canada: KeBe v2, mechanical and hot-swap, and KeBe Lite, slim and membrane, planned with a free waitlist."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>

@@ -22,7 +22,7 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product, countryCode)
-  // KeBe Lite on hold keeps its tagline, under "On hold · waitlist".
+  // KeBe Lite, planned, keeps its tagline, under "Planned, with a free waitlist."
   const onHold = isOnHold(product.handle)
   // On the presale board the line under the name continues the reel's
   // argument instead (kebe-copy.ts). Only this line changes: the title, and
@@ -59,7 +59,7 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
           case: each was a monospace caps label over it until the design
           audit (14 Oct 2026). */}
       {onHold ? (
-        <p className="text-base text-ui-fg-muted">On hold, with a waitlist.</p>
+        <p className="text-base text-ui-fg-muted">Planned, with a free waitlist.</p>
       ) : (
         shipsBy && (
           <p className="text-base text-ui-fg-muted">

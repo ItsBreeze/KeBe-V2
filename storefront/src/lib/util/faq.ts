@@ -37,7 +37,7 @@ const V2: Faq[] = [
     // circuit, controller, hub and LEDs (Compliance/lite.md; the Lite's PCB layout is derived, not identical).
     question: "How is KeBe v2 different from KeBe Lite?",
     answer: [
-      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, at a lower planned price. KeBe Lite is on hold: its keypad needs moulds that don't pay off until enough people want one, so it has a free waitlist instead of pre-orders.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, at a lower planned price. KeBe Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one, so it has a free waitlist instead of pre-orders.",
     ],
     link: { href: "/products/kebe-lite", label: "See KeBe Lite" },
   },
@@ -170,7 +170,7 @@ const LITE: Faq[] = [
     // Owner, 14 Oct 2026: on hold, a free waitlist in place of pre-orders, no ship date.
     question: "Can I order KeBe Lite?",
     answer: [
-      "Not now. KeBe Lite is on hold: its keypad needs moulds that don't pay off until enough people want one. Join its waitlist: no payment, and we'll email you once if it goes ahead.",
+      "Not yet. KeBe Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one. Join its waitlist: no payment, and we'll email you once if it goes ahead.",
     ],
   },
 ]

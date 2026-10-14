@@ -12,6 +12,7 @@ import {
 import {
   PRESALE_HANDLE,
   LITE_HANDLE,
+  litePlannedPrice,
   presaleAvailability,
   presaleShipLine,
   presaleShipsBy,
@@ -39,7 +40,7 @@ const TITLE = "KeBe: Ortholinear Dvorak Keyboards, Mechanical or Membrane"
 // -- so that claim is gone and not coming back. The Lite is named on hold
 // before v2, so the price sentence after it reads as v2's (14 Oct 2026).
 const LEAD =
-  "Ortholinear Dvorak keyboards with a USB hub. KeBe Lite, slim membrane, is on hold. KeBe v2 has mechanical Choc switches."
+  "Ortholinear Dvorak keyboards with a USB hub. KeBe Lite, slim membrane, is planned. KeBe v2 has mechanical Choc switches."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -204,11 +205,11 @@ const TWO_BOARDS = [
   },
 ] as const
 
-function TwoBoards({ v2Price }: { v2Price?: string }) {
+function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice: string }) {
   const boards = [
     { key: "v2" as const, handle: PRESALE_HANDLE, kind: "Mechanical", name: "KeBe v2", price: v2Price,
       image: "/products/kebe-v2-glow.jpg", alt: "KeBe v2, rendered from its CAD with its per-key lighting on." },
-    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "KeBe Lite", price: "on hold",
+    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "KeBe Lite", price: `${litePrice} planned`,
       image: "/products/kebe-lite-r3c-glow.jpg", alt: "KeBe Lite, rendered from its design files with its per-key lighting on." },
   ]
   return (
@@ -310,8 +311,9 @@ export default async function Home(props: {
                 handle={LITE_HANDLE}
                 kind="Slim membrane"
                 name="KeBe Lite"
-                keys="on hold"
-                shipLine="Join the waitlist"
+                price={litePlannedPrice(countryCode)}
+                keys="shine-through caps"
+                shipLine="Planned price, join the waitlist"
               />
             )}
           </div>
@@ -410,7 +412,7 @@ export default async function Home(props: {
 
       <section className="mx-auto max-w-[1200px] px-[6vw] py-16 text-center small:px-[4vw]">
         {lite ? (
-          <TwoBoards v2Price={presale.state === "open" ? presale.price : undefined} />
+          <TwoBoards v2Price={presale.state === "open" ? presale.price : undefined} litePrice={litePlannedPrice(countryCode)} />
         ) : (
           <p className="mx-auto max-w-xl text-lg leading-relaxed text-kebe-text/80">
             The v1 layout, all in black, in a lower, screwless case, with three
@@ -518,8 +520,8 @@ export default async function Home(props: {
             KeBe v1, built and photographed
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            v2 is not built yet and the Lite is on hold, so their pictures
-            are renders. v1 is built: these are photographs of one. It is the board both are
+            v2 and the Lite are not built yet, so their pictures are
+            renders. v1 is built: these are photographs of one. It is the board both are
             drawn from, on the same 68-key grid, hand-built in small batches
             and sold out.
           </p>

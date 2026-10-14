@@ -163,7 +163,7 @@ export const priceForCopy = (price: { amount: string; currency: string }) => {
 // calculated price, never the later one. Null when nothing can be bought.
 // KeBe Lite on hold has no price to offer, only its waitlist (14 Oct 2026).
 export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
-  if (isOnHold(product.handle)) return "On hold: join the free waitlist."
+  if (isOnHold(product.handle)) return "Planned, not for sale yet: join the free waitlist."
   const prices = (product.variants ?? [])
     .filter(variantOpen)
     .map(variantPrice)

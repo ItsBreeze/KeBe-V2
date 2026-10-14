@@ -1,6 +1,11 @@
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
-import { isOnHold, isPreorderPrice, presaleAvailability } from "@lib/util/presale"
+import {
+  isOnHold,
+  isPreorderPrice,
+  litePlannedPrice,
+  presaleAvailability,
+} from "@lib/util/presale"
 import { productImageAlt } from "@lib/util/image-alt"
 import { HttpTypes } from "@medusajs/types"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
@@ -60,12 +65,17 @@ export default async function ProductPreview({
           {rest.length > 0 && (
             <p className="text-ui-fg-subtle">{rest.join(" — ")}</p>
           )}
-          {/* KeBe Lite on hold: no price that reads as buyable. A board
+          {/* KeBe Lite, planned: its planned price, never one that reads as buyable. A board
               nobody can buy says so, as its page does (v1, 14 Oct 2026): the
               card showed its old price as if it were on sale. */}
           {isOnHold(product.handle) ? (
             <p className="text-ui-fg-muted" data-testid="on-hold-label">
-              On hold, join the waitlist
+              {/* The region's own planned price: the US store is the one in USD. */}
+              Planned price{" "}
+              <span className="text-ui-fg-base">
+                {litePlannedPrice(region.currency_code === "usd" ? "us" : "ca")}
+              </span>
+              , free waitlist
             </p>
           ) : !presaleAvailability(product).open ? (
             <p className="text-ui-fg-muted" data-testid="sold-out">
