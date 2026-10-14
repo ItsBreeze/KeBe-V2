@@ -11,9 +11,10 @@
 // [ and ] are taught only by tapping the Ctrls, and = and _ only by tapping
 // the Alts, so the middle columns' [ ] - = keys have no level of their own.
 //
-// One key a level makes the levels themselves the build-up, so each is a
-// single round: ten fresh random words, every one using the new key where
-// the thousand words allow, and its target speed (`pass`) opens the next.
+// One key at a time makes the levels themselves the build-up, so each is a
+// single round, and its target speed (`pass`) opens the next. A letter's
+// rounds are its commonest words, a few a level, with review of the keys
+// before it (STEP_PARTS); the other levels draw ten random words.
 // Only whole words, never letters on their own: a word is learned as one
 // movement, like a chord. The targets drop after the letters, where the
 // reaches are longer and the words are not prose (owner, 5 Oct 2026), and
@@ -198,19 +199,44 @@ const wordsUsing = (known: string, fresh: string) => {
     : []
 }
 
-const letterSource = (i: number): Source => ({
-  fresh: LETTER_STEPS[i],
-  pool: (known) => wordsUsing(known, LETTER_STEPS[i]),
-  // Short of words (Z, say, or a punctuation key): the step before's, then
-  // anything known.
-  fallback: (known) =>
-    i > 0
-      ? [
-          ...shuffle(wordsUsing(known, LETTER_STEPS[i - 1])),
-          ...shuffle(TOP_WORDS.filter(only(known))),
-        ]
-      : [],
+// A letter is learned on its commonest words, a few at a time (owner, 14 Oct
+// 2026: "aets has too many words", "the most common ones most", "spaced
+// repetition after that for each key already learned"). Its words, most
+// common first, split into parts of PART; a letter keeps its first PARTS
+// parts, so R's 120 words become its 12 commonest. Each part is a level whose
+// round types its words twice and fills the rest with review: one word at a
+// time from the letter's earlier parts, then from the letters 1, 2, 4, 8 and
+// 16 steps back, so a key comes round again at growing gaps.
+const PART = 4
+const PARTS = 3
+const REVIEW_GAPS = [1, 2, 4, 8, 16]
+
+const STEP_PARTS: string[][][] = LETTER_STEPS.map((step, i) => {
+  const words = wordsUsing(LETTER_STEPS.slice(0, i).join(""), step).slice(0, PART * PARTS)
+  const parts: string[][] = []
+  for (let k = 0; k < words.length; k += PART) parts.push(words.slice(k, k + PART))
+  // A punctuation key has no words of its own: one level of review, marked.
+  return parts.length ? parts : [[]]
 })
+
+function letterRound(i: number, p: number) {
+  const known = LETTER_STEPS.slice(0, i).join("")
+  const mine = STEP_PARTS[i][p]
+  const sources = [
+    STEP_PARTS[i].slice(0, p).flat(),
+    ...REVIEW_GAPS.filter((g) => i - g >= 0).map((g) => STEP_PARTS[i - g].flat()),
+  ].filter((s) => s.length)
+  return (avoid: Set<string>) => {
+    const words = [...mine, ...mine]
+    // One word from each source in turn, last round's only if nothing else.
+    for (let k = 0; words.length < TEST_WORDS && sources.length; k++) {
+      const src = sources[k % sources.length]
+      const fresh = src.filter((w) => !avoid.has(w) && !words.includes(w))
+      words.push(pick(fresh.length ? fresh : src))
+    }
+    return punctuate(shuffle(fill(words, TEST_WORDS)), known, LETTER_STEPS[i])
+  }
+}
 
 // Numbers made of the digits so far, each using a new one, written the way
 // numbers are (no leading zero).
@@ -328,7 +354,9 @@ const padSums = () =>
 // ---- the levels -----------------------------------------------------------
 
 type Def = Omit<Level, "n" | "make" | "pass"> & {
-  source: Source
+  // Where a round's words come from, or the round itself (the letters).
+  source?: Source
+  make?: Level["make"]
   // What it adds to what later levels can type.
   teaches: string
   pass?: number
@@ -376,16 +404,32 @@ const LETTER_PASS = [
 ]
 if (LETTER_PASS.length !== LETTER_INFO.length) throw new Error("levels.ts: one pass mark per letter level")
 
-const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
-  id,
-  group,
-  title,
-  blurb,
-  pass: LETTER_PASS[i],
-  adds: keysFor(LETTER_STEPS[i]),
-  source: letterSource(i),
-  teaches: LETTER_STEPS[i],
-}))
+// A letter's first part keeps the letter's old id, so progress saved before
+// the parts (14 Oct 2026) still opens everything up to it.
+const LETTER_DEFS: Def[] = LETTER_INFO.flatMap(([id, group, title, blurb], i) =>
+  STEP_PARTS[i].map((part, p) => ({
+    id: p ? `${id}-${p + 1}` : id,
+    group,
+    title: STEP_PARTS[i].length > 1 ? `${title}, part ${p + 1}` : title,
+    blurb: p
+      ? `The next commonest words with ${title}: ${part.join(", ")}.`
+      : blurb,
+    pass: LETTER_PASS[i],
+    adds: keysFor(LETTER_STEPS[i]),
+    make: letterRound(i, p),
+    teaches: p ? "" : LETTER_STEPS[i],
+  }))
+)
+
+// Self-check: every letter round is ten words its keys can type, its own
+// words in it twice.
+LETTER_DEFS.forEach((d) => {
+  const i = LETTER_INFO.findIndex(([id]) => d.id === id || d.id.startsWith(`${id}-`))
+  const can = LETTER_STEPS.slice(0, i + 1).join("")
+  const words = d.make!(new Set())
+  if (words.length !== TEST_WORDS || !words.every((w) => only(can)(bare(w))))
+    throw new Error(`levels.ts: ${d.id} makes ${words.join(" ")}`)
+})
 
 const DIGIT_STEPS = ["7890", "1234", "56"]
 const NUMBER_DEFS: Def[] = [
@@ -534,7 +578,7 @@ const FN_DEFS: Def[] = [
 
 const DEFS = [...LETTER_DEFS, CAPITALS, ...SYMBOL_DEFS, ...NUMBER_DEFS, ...FN_DEFS]
 
-export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, ...d }, i) => {
+export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, make, ...d }, i) => {
   const known = DEFS.slice(0, i)
     .map((p) => p.teaches)
     .join("")
@@ -542,7 +586,7 @@ export const LEVELS: Level[] = DEFS.map(({ source, teaches, pass, ...d }, i) => 
     ...d,
     n: i + 1,
     pass: pass ?? PASS_WPM,
-    make: round(source, withCapitals(known)),
+    make: make ?? round(source!, withCapitals(known)),
   }
 })
 
