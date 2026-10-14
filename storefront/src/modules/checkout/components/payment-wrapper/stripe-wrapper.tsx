@@ -14,6 +14,27 @@ type StripeWrapperProps = {
 
 export const StripeContext = createContext(false)
 
+// Stripe draws its payment field in its own iframe, so the store's dark theme
+// has to be passed in: bone text on the field colour, as the other fields.
+// 16px text, as the other fields too: iOS zooms in on a smaller field when it
+// is focused, and stays zoomed.
+const appearance: StripeElementsOptions["appearance"] = {
+  theme: "night",
+  variables: {
+    fontFamily: "Inter, sans-serif",
+    fontSizeBase: "16px",
+    colorPrimary: "#f5f1ea",
+    colorBackground: "#1c1a17",
+    colorText: "#f5f1ea",
+    colorTextPlaceholder: "#9b948a",
+    colorDanger: "#fb7185",
+  },
+  rules: {
+    ".Input": { borderColor: "#2e2b26" },
+    ".Tab": { borderColor: "#2e2b26" },
+  },
+}
+
 const StripeWrapper: React.FC<StripeWrapperProps> = ({
   paymentSession,
   stripeKey,
@@ -22,6 +43,7 @@ const StripeWrapper: React.FC<StripeWrapperProps> = ({
 }) => {
   const options: StripeElementsOptions = {
     clientSecret: paymentSession!.data?.client_secret as string | undefined,
+    appearance,
   }
 
   if (!stripeKey) {

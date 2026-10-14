@@ -74,7 +74,8 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
             page has them for this country. */}
         <Row question="How do I pay, and can I cancel?">
           <p>
-            By card, in full at checkout, through Stripe. The card number goes
+            By card, Apple Pay, Google Pay or Link, in full at checkout,
+            through Stripe. The card number goes
             to Stripe, not to us. You check out as a guest, with no account
             needed.
           </p>

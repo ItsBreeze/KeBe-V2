@@ -6,14 +6,14 @@ import { subdivisionCode } from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
 import { Button } from "@medusajs/ui"
 import { useElements, useStripe } from "@stripe/react-stripe-js"
-import { unstable_rethrow } from "next/navigation"
+import { unstable_rethrow, useParams } from "next/navigation"
 import React, { useState } from "react"
 import ErrorMessage from "../error-message"
 
 // What the buyer reads when the card has gone through but placeOrder could
 // not make the order. They must not pay a second time, and the cart's id is
 // the reference that leads to their payment.
-const paidButNotPlaced = (cartId: string) =>
+export const paidButNotPlaced = (cartId: string) =>
   `Your payment went through, but the order did not finish saving. Please do not pay again. Email ${CONTACT_EMAIL} and quote ${cartId}.`
 
 type PaymentButtonProps = {
@@ -85,10 +85,7 @@ const StripePaymentButton = ({
 
   const stripe = useStripe()
   const elements = useElements()
-
-  const session = cart.payment_collection?.payment_sessions?.find(
-    (s) => s.status === "pending"
-  )
+  const { countryCode } = useParams<{ countryCode: string }>()
 
   const disabled = !stripe || !elements ? true : false
 
@@ -106,47 +103,65 @@ const StripePaymentButton = ({
     let completing = false
 
     try {
-      // Read on the tap, not during render: the card field is created after
-      // this button first renders, so a value read then can still be null.
-      const card = elements.getElement("card")
-
-      if (!card) {
+      // Read on the tap, not during render: the payment field is created
+      // after this button first renders, so a value read then can still be
+      // null.
+      if (!elements.getElement("payment")) {
         setErrorMessage(
-          "The card form isn't ready yet. Wait a moment and tap Place order again."
+          "The payment form isn't ready yet. Wait a moment and tap Place order again."
         )
         return
       }
 
-      const { error, paymentIntent } = await stripe.confirmCardPayment(
-        session?.data.client_secret as string,
-        {
-          payment_method: {
-            card: card,
+      const billing = cart.billing_address
+      const shipping = cart.shipping_address
+
+      // Cards, Apple Pay, Google Pay and Link finish here, with no redirect.
+      // A way to pay that leaves the site (Klarna, Afterpay) comes back to
+      // return_url, which places the order.
+      const { error, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        redirect: "if_required",
+        confirmParams: {
+          return_url: `${window.location.origin}/api/stripe-return?cart_id=${cart.id}&country_code=${countryCode}`,
+          payment_method_data: {
             billing_details: {
-              name:
-                cart.billing_address?.first_name +
-                " " +
-                cart.billing_address?.last_name,
+              name: billing?.first_name + " " + billing?.last_name,
+              // The payment field leaves the address out, so every part of it
+              // has to be passed, if only as "".
               address: {
-                city: cart.billing_address?.city ?? undefined,
-                country: cart.billing_address?.country_code ?? undefined,
-                line1: cart.billing_address?.address_1 ?? undefined,
-                line2: cart.billing_address?.address_2 ?? undefined,
-                postal_code: cart.billing_address?.postal_code ?? undefined,
+                city: billing?.city ?? "",
+                country: billing?.country_code ?? "",
+                line1: billing?.address_1 ?? "",
+                line2: billing?.address_2 ?? "",
+                postal_code: billing?.postal_code ?? "",
                 // The cart stores the province as its tax code, "ca-on";
                 // the card's billing state is the two letters, "ON".
-                state: subdivisionCode(cart.billing_address?.province),
+                state: subdivisionCode(billing?.province) ?? "",
               },
               email: cart.email,
-              phone: cart.billing_address?.phone ?? undefined,
+              phone: billing?.phone ?? undefined,
             },
           },
+          shipping: shipping
+            ? {
+                name: shipping.first_name + " " + shipping.last_name,
+                address: {
+                  city: shipping.city ?? undefined,
+                  country: shipping.country_code ?? undefined,
+                  line1: shipping.address_1 ?? "",
+                  line2: shipping.address_2 ?? undefined,
+                  postal_code: shipping.postal_code ?? undefined,
+                  state: subdivisionCode(shipping.province),
+                },
+              }
+            : undefined,
           // Stripe's receipt is the one email the buyer gets (6 Oct 2026):
           // the order mail reaches only KeBe's own inbox. In live mode Stripe
           // sends it whenever this is set; test mode sends none.
           receipt_email: cart.email ?? undefined,
-        }
-      )
+        },
+      })
 
       if (error) {
         const pi = error.payment_intent

@@ -7,6 +7,7 @@ import { ON_HOLD_CHECKOUT } from "@lib/util/presale"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
+import { paidButNotPlaced } from "@modules/checkout/components/payment-button"
 import PaymentContainer, {
   StripeCardContainer,
   StripeCardField,
@@ -129,8 +130,16 @@ const Payment = ({
     }
   }
 
+  // /api/stripe-return lands here with ?payment_failed=1 or ?paid=1 when a
+  // way to pay that leaves the site did not end in an order.
   useEffect(() => {
-    setError(null)
+    setError(
+      searchParams.get("paid")
+        ? paidButNotPlaced(cart.id)
+        : searchParams.get("payment_failed")
+          ? "That payment did not go through. Try again, or pick another way to pay."
+          : null
+    )
   }, [isOpen])
 
   // Starts the card's payment session when the step opens without one, as
@@ -187,7 +196,7 @@ const Payment = ({
           {!paidByGiftcard && onlyStripe && (
             <div data-testid="stripe-card-field">
               <StripeCardField
-                label="Card, through Stripe"
+                label="Card or wallet, through Stripe"
                 setCardBrand={setCardBrand}
                 setError={setError}
                 setCardComplete={setCardComplete}
@@ -258,7 +267,7 @@ const Payment = ({
             data-testid="submit-payment-button"
           >
             {!activeSession && isStripeLike(selectedPaymentMethod)
-              ? " Enter card details"
+              ? " Enter payment details"
               : "Continue to review"}
           </Button>
         </div>

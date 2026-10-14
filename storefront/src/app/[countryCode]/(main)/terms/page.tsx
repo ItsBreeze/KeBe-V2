@@ -121,8 +121,8 @@ export default async function TermsPage(props: {
           <section>
             <h2 className="font-display text-2xl text-ui-fg-base">Paying</h2>
             <p className="mt-3">
-              You pay in full when you order, by card through Stripe. We never
-              see your card number. The charge shows on your card statement as{" "}
+              You pay in full when you order, by card, Apple Pay, Google Pay or
+              Link, through Stripe. We never see your card number. The charge shows on your card statement as{" "}
               {STATEMENT_DESCRIPTOR}.
             </p>
           </section>

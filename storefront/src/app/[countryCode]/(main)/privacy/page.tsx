@@ -68,9 +68,9 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               <strong className="font-normal text-ui-fg-base">Payment.</strong>{" "}
-              Your card is taken by Stripe, in a field Stripe runs on this
-              page. The card number goes to Stripe, not to us, and we never see
-              or store it. Stripe tells us whether the payment went through.
+              Your card, Apple Pay, Google Pay or Link payment is taken by
+              Stripe, in a field Stripe runs on this page. The card number
+              goes to Stripe, not to us, and we never see or store it. Stripe tells us whether the payment went through.
               Stripe handles what it receives under its own privacy policy.
             </p>
             <p className="mt-3">
