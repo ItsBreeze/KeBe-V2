@@ -39,7 +39,8 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
       <h2 id="byp" className="font-display text-xl text-ui-fg-base">
         Before you pre-order
       </h2>
-      <div className="divide-y divide-ui-border-base border-y border-ui-border-base">
+      {/* Each question on its own raised row, no rules between them (design audit, 14 Oct 2026). */}
+      <div className="flex flex-col gap-2">
         <Row question="Will I have to relearn typing?">
           {/* The first two sentences after "Yes." are the homepage's
               learning paragraph, word for word. */}
@@ -104,12 +105,12 @@ const Row = ({
   question: string
   children: React.ReactNode
 }) => (
-  <details className="group">
+  <details className="group rounded-xl bg-kebe-raised px-4">
     <summary className="flex cursor-pointer list-none justify-between gap-4 py-3 text-base text-ui-fg-base [&::-webkit-details-marker]:hidden">
       {question}
       <span
         aria-hidden
-        className="shrink-0 font-mono text-ui-fg-muted transition-transform group-open:rotate-45 motion-reduce:transition-none"
+        className="shrink-0 text-ui-fg-muted transition-transform group-open:rotate-45 motion-reduce:transition-none"
       >
         +
       </span>

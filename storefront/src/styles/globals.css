@@ -149,6 +149,15 @@
   --button-neutral-hover: rgba(245, 241, 234, 0.1);
 }
 
+/* Below lg the product page's Pre-order bar is fixed to the bottom
+   (mobile-actions.tsx), so the page ends a bar's height lower and the
+   footer's last lines clear it (design audit, 14 Oct 2026). */
+@media (max-width: 1023px) {
+  body:has([data-mobile-bar]) {
+    padding-bottom: 7rem;
+  }
+}
+
 /* The suite's one roundness: 12 on buttons and fields. */
 .dark button,
 .dark input,

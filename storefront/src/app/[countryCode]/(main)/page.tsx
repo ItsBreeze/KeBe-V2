@@ -134,10 +134,11 @@ async function getLite(countryCode: string) {
   return !!(await presaleProduct(countryCode, LITE_HANDLE))
 }
 
-// A hero price button (owner, 7 Oct 2026: "2 price buttons instead of hiding the lite"): the board's kind over
-// its name and pre-order price, and under them what its keys are and when it ships. Both buttons look the same, so
+// A hero price button (owner, 7 Oct 2026: "2 price buttons instead of hiding the lite"): the board's name and
+// pre-order price, and under them its kind, what its keys are and when it ships. Both buttons look the same, so
 // neither board is the hidden one; the kind tells them apart (owner, 7 Oct 2026: v2 "mechanical", the Lite "slim,
-// membrane keyboard, with shinethrough caps").
+// membrane keyboard, with shinethrough caps"). The kind was a monospace caps label over the name until the design
+// audit (14 Oct 2026): it now opens the sentence-case line under it.
 function PriceButton({
   handle,
   kind,
@@ -153,25 +154,22 @@ function PriceButton({
   keys: string
   shipLine?: string | null
 }) {
-  // "Currently shipping October 31" reads "ships October 31" here, so a phone's
+  // "Currently shipping October 31" reads "Ships October 31" here, so a phone's
   // button keeps it on one line.
-  const short = shipLine?.replace(/^Currently shipping /, "Ships ")
-  const ship = short ? short.charAt(0).toLowerCase() + short.slice(1) : null
+  const ship = shipLine?.replace(/^Currently shipping /, "Ships ")
   return (
     <LocalizedClientLink
       href={`/products/${handle}`}
       className="flex flex-1 flex-col items-center rounded-xl bg-kebe-text px-6 py-3 text-kebe-page transition-colors hover:bg-white small:max-w-[20rem]"
     >
-      <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-kebe-page/60">
-        {kind}
-      </span>
       <span className="text-base font-medium">
         {name}
-        {price ? ` — ${price}` : ""}
+        {price && <span className="text-kebe-page/70"> {price}</span>}
       </span>
       <span className="mt-0.5 text-sm text-kebe-page/70">
-        {ship ? `${keys} · ${ship}` : keys}
+        {kind}, {keys}
       </span>
+      {ship && <span className="text-sm text-kebe-page/70">{ship}</span>}
     </LocalizedClientLink>
   )
 }
@@ -215,26 +213,23 @@ function TwoBoards({ v2Price }: { v2Price?: string }) {
   ]
   return (
     <div className="text-left">
-      <p className="text-center font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-        Two KeBes
-      </p>
-      <h2 className="mt-3 text-center font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+      <h2 className="text-center font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
         Mechanical or membrane
       </h2>
       <div className="mt-10 grid gap-6 small:grid-cols-2">
         {boards.map((b) => (
-          <div key={b.key} className="flex flex-col rounded-2xl border border-kebe-line bg-kebe-raised p-6">
+          <div key={b.key} className="flex flex-col rounded-2xl bg-kebe-raised p-6">
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
               <Image src={b.image} alt={b.alt} fill sizes="(max-width: 1024px) 100vw, 560px" className="object-cover" />
             </div>
-            <p className="mt-6 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">{b.kind}</p>
-            <h3 className="mt-1 font-display text-[clamp(1.5rem,3vw,2rem)]">
+            <h3 className="mt-6 font-display text-[clamp(1.5rem,3vw,2rem)]">
               {b.name}
-              {b.price ? <span className="text-kebe-text/70"> · {b.price}</span> : null}
+              {b.price ? <span className="text-kebe-text/70"> {b.price}</span> : null}
             </h3>
-            <dl className="mt-4 flex-1 divide-y divide-kebe-line border-t border-kebe-line">
+            <p className="mt-1 text-lg text-kebe-text/80">{b.kind}</p>
+            <dl className="mt-4 flex flex-1 flex-col gap-4">
               {TWO_BOARDS.map((r) => (
-                <div key={r.label} className="grid grid-cols-[7rem_1fr] gap-4 py-3">
+                <div key={r.label} className="grid grid-cols-[7rem_1fr] gap-4">
                   <dt className="text-sm text-kebe-muted">{r.label}</dt>
                   <dd className="text-base leading-snug text-kebe-text/85">{r[b.key]}</dd>
                 </div>
@@ -242,7 +237,7 @@ function TwoBoards({ v2Price }: { v2Price?: string }) {
             </dl>
             <LocalizedClientLink
               href={`/products/${b.handle}`}
-              className="mt-6 inline-block self-start rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
+              className="mt-6 inline-block self-start py-3 text-base underline decoration-kebe-muted underline-offset-4 transition-colors hover:decoration-kebe-text"
             >
               See {b.name}
             </LocalizedClientLink>
@@ -315,24 +310,25 @@ export default async function Home(props: {
                 handle={LITE_HANDLE}
                 kind="Slim membrane"
                 name="KeBe Lite"
-                keys="On hold · join the waitlist"
+                keys="on hold"
+                shipLine="Join the waitlist"
               />
             )}
           </div>
           {presale.state === "open" && (
-            <p className="mt-4 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+            <p className="mt-4 text-sm text-kebe-muted">
               {/* While a board's FCC authorization is pending, /us
                   sends US buyers to the notice further down this page,
                   which the full-screen hero hides (review, 7 Oct
                   2026). /ca says nothing of it: the CA region ships
                   to Canada only, so it makes no US offer (owner, 7 Oct
                   2026; lib/util/fcc.ts). */}
-              {lite ? "KeBe v2 pre-order" : "Pre-order"} · plus shipping
+              {lite ? "KeBe v2 pre-order" : "Pre-order"}, plus shipping
               {countryCode === "us"
                 ? usNotice
-                  ? " · "
-                  : " · US"
-                : " · Canada"}
+                  ? ". "
+                  : ", to the US."
+                : ", to Canada."}
               {countryCode === "us" && usNotice && (
                 <a
                   href="#fcc-notice"
@@ -381,25 +377,22 @@ export default async function Home(props: {
           className="h-[clamp(420px,58svh,540px)] small:h-[calc(100svh-4rem)] small:min-h-[640px] small:max-h-[1000px] bg-[radial-gradient(ellipse_at_50%_68%,#2c2821_0%,#1c1a17_38%,#12110f_72%)]"
         >
           <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
-            <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-              {presale.state === "open"
-                ? lite
-                  ? "KeBe v2 pre-orders open"
-                  : "Pre-orders open"
-                : presale.state === "sold-out"
-                ? "Pre-orders closed"
-                : "Coming soon"}
-            </p>
             {/* With both boards on offer the hero names neither alone: the
                 buttons under it carry the names and kinds (7 Oct 2026). The
-                model is still v2's, and its alt says so. */}
+                model is still v2's, and its alt says so. The "Pre-orders
+                open" label over the name went in the design audit (14 Oct
+                2026): the buttons and the line under them say pre-order. */}
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
               {lite ? "KeBe" : "KeBe v2"}
             </h1>
-            <p className="mt-4 max-w-xl text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
-              {lite
-                ? "Mindless Mastery, mechanical or membrane"
-                : "Mindless Mastery, now with a hub"}
+            {/* What KeBe is, before the tagline: until 14 Oct 2026 the first
+                screen never said Dvorak or straight columns, and an ad
+                visitor had only the model to go on (design audit). With the
+                Lite on hold the tagline is the owner's alone, no "mechanical
+                or membrane" (14 Oct 2026). */}
+            <p className="mt-4 max-w-xl text-balance text-[clamp(1.1rem,2.5vw,1.35rem)] text-kebe-text/80">
+              Dvorak&apos;s letters in straight columns.{" "}
+              {lite ? "Mindless Mastery." : "Mindless Mastery, now with a hub."}
             </p>
             {/* Wide screens: the offer under the name, over the model. */}
             <div className="mt-8 hidden w-full flex-col items-center small:flex">
@@ -441,11 +434,11 @@ export default async function Home(props: {
         {usNotice && (
           <FccNotice
             boards={fccNoticeBoards(countryCode, offered)}
-            className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80"
+            className="mx-auto mt-6 max-w-xl rounded-xl bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80"
           />
         )}
         {lite && countryCode === "us" && fccPending(LITE_HANDLE) && (
-          <p className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80">
+          <p className="mx-auto mt-6 max-w-xl rounded-xl bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80">
             <strong className="font-medium text-ui-fg-base">
               FCC notice for KeBe Lite.
             </strong>{" "}
@@ -455,17 +448,18 @@ export default async function Home(props: {
       </section>
 
       {/* What v2 is */}
-      <section className="border-t border-kebe-line bg-kebe-raised py-24">
+      {/* Sections are told apart by their background alone, page and
+          raised in turn: the hairline over each went in the design audit
+          (14 Oct 2026), and so did the monospace caps labels over the
+          headings, whose facts the headings now carry. */}
+      <section className="bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            KeBe v2 · mechanical
-          </p>
-          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-            v1&apos;s mechanical board, with a hub built in
+          <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+            KeBe v2: v1&apos;s board, with a hub built in
           </h2>
           {/* An AI camera move over the night scene, with the CAD keyboard
               tracked back into every frame (scripts/render-v2). */}
-          <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl border border-kebe-line">
+          <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl">
             <Image
               src="/products/kebe-v2-night-clip.jpg"
               alt="KeBe v2 on a desk at night, its legends lit in a rainbow by the per-key RGB."
@@ -489,7 +483,7 @@ export default async function Home(props: {
           </div>
           <div className="mt-14 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {V2_SPECS.map((s) => (
-              <div key={s.title} className="border-t border-kebe-line pt-6">
+              <div key={s.title}>
                 <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {s.title}
                 </h3>
@@ -499,7 +493,9 @@ export default async function Home(props: {
               </div>
             ))}
           </div>
-          <p className="mt-14 max-w-2xl text-sm leading-relaxed text-kebe-faint">
+          {/* The pictures' disclosure, in the section's body ink: it was
+              faint 14 px text at 3.1:1 until the design audit (14 Oct 2026). */}
+          <p className="mt-14 max-w-2xl text-base leading-relaxed text-kebe-text/80">
             v2 is wired: the battery-and-Bluetooth design is not for sale, and
             this is the board that ships. None of the v2 pictures or videos are
             photographs. The 3D model at the top and the plain renders come
@@ -516,12 +512,9 @@ export default async function Home(props: {
           here is a photograph of v1 (public/products/kebe-v1-*). Its
           background is plain and v2's raised, so the sections still
           alternate. */}
-      <section className="border-t border-kebe-line py-24">
+      <section className="py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            Real photos
-          </p>
-          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+          <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
             KeBe v1, built and photographed
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
@@ -536,8 +529,8 @@ export default async function Home(props: {
                 key={p.src}
                 className={
                   i === 0
-                    ? "relative col-span-2 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line small:aspect-auto"
-                    : "relative aspect-[4/3] overflow-hidden rounded-2xl border border-kebe-line"
+                    ? "relative col-span-2 row-span-2 aspect-[4/3] overflow-hidden rounded-2xl small:aspect-auto"
+                    : "relative aspect-[4/3] overflow-hidden rounded-2xl"
                 }
               >
                 <Image
@@ -553,7 +546,7 @@ export default async function Home(props: {
           <div className="mt-8">
             <LocalizedClientLink
               href="/products/kebe-v1-keyboard"
-              className="inline-block rounded-xl border border-kebe-line px-6 py-3 text-base transition-colors hover:border-kebe-muted"
+              className="inline-block py-3 text-base underline decoration-kebe-muted underline-offset-4 transition-colors hover:decoration-kebe-text"
             >
               More photos of v1
             </LocalizedClientLink>
@@ -564,12 +557,9 @@ export default async function Home(props: {
       {/* Why the layout. Every claim is checkable on the caps themselves
           (the Fn legends in Keycaps/print) or is the textbook description of
           Dvorak; the home-row shares are the usual English-text figures. */}
-      <section className="border-t border-kebe-line bg-kebe-raised py-24">
+      <section className="bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
-          <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            Peace of mind · speed of thought
-          </p>
-          <h2 className="mt-3 font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
+          <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
             Why make the change?
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
@@ -589,7 +579,7 @@ export default async function Home(props: {
               markets and copy all four files here under NEW names: /products/*
               is cached for days. No autoplay: it has a voice. */}
           <div className="mt-10 grid gap-8 small:grid-cols-[minmax(0,360px)_1fr] small:items-center">
-            <div className="relative mx-auto aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-2xl border border-kebe-line bg-black small:mx-0">
+            <div className="relative mx-auto aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-2xl bg-black small:mx-0">
               <video
                 controls
                 playsInline
@@ -603,11 +593,8 @@ export default async function Home(props: {
               </video>
             </div>
             <div className="max-w-xl">
-              <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-                Watch, 48 seconds
-              </p>
-              <p className="mt-3 font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
-                The whole argument, drawn in KeBe&apos;s own keys.
+              <p className="font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
+                The whole argument in 48 seconds, drawn in KeBe&apos;s own keys.
               </p>
               <p className="mt-4 text-lg leading-relaxed text-kebe-text/75">
                 Or read on: the words below have the history, the rest of the
@@ -617,14 +604,8 @@ export default async function Home(props: {
           </div>
           <div className="mt-14 grid gap-6 small:grid-cols-2">
             {HABITS.map((h) => (
-              <div
-                key={h.title}
-                className="rounded-2xl border border-kebe-line bg-kebe-page p-8"
-              >
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-                  {h.label}
-                </p>
-                <h3 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+              <div key={h.title} className="rounded-2xl bg-kebe-page p-8">
+                <h3 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {h.title}
                 </h3>
                 <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
@@ -642,11 +623,8 @@ export default async function Home(props: {
               Dealey's: University of Washington, slow-motion films of
               typists, US patent 2,040,248 of 1936. */}
           <div className="mt-20">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-              Dvorak&apos;s reasoning
-            </p>
-            <h3 className="mt-2 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
-              How he placed the letters
+            <h3 className="font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
+              How Dvorak placed the letters
             </h3>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
               August Dvorak taught education at the University of Washington.
@@ -658,7 +636,7 @@ export default async function Home(props: {
             </p>
             <div className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
               {DVORAK.map((d) => (
-                <div key={d.title} className="border-t border-kebe-line pt-6">
+                <div key={d.title}>
                   <h4 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                     {d.title}
                   </h4>
@@ -669,7 +647,7 @@ export default async function Home(props: {
               ))}
             </div>
           </div>
-          <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl border border-kebe-line">
+          <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl">
             <Image
               src="/products/kebe-v2-top.jpg"
               alt="KeBe v2 from above: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides."
@@ -678,19 +656,14 @@ export default async function Home(props: {
               className="object-cover"
             />
           </div>
-          <p className="mt-14 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-            Beyond the letters
-          </p>
-          <h3 className="mt-2 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
+          {/* Not a sequence, so no 01 to 04 over them (design audit, 14 Oct 2026). */}
+          <h3 className="mt-14 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
             What KeBe adds
           </h3>
-          <ol className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
-            {WHY.map((w, i) => (
-              <li key={w.title} className="border-t border-kebe-line pt-6">
-                <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
-                  {String(i + 1).padStart(2, "0")}
-                </p>
-                <h4 className="mt-2 font-display text-[clamp(1.5rem,3vw,2rem)]">
+          <ul className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
+            {WHY.map((w) => (
+              <li key={w.title}>
+                <h4 className="font-display text-[clamp(1.5rem,3vw,2rem)]">
                   {w.title}
                 </h4>
                 <p className="mt-3 text-lg leading-relaxed text-kebe-text/75">
@@ -698,7 +671,7 @@ export default async function Home(props: {
                 </p>
               </li>
             ))}
-          </ol>
+          </ul>
           <p className="mt-14 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
             Nothing sits where a standard keyboard puts it, so you learn KeBe
             as a new instrument instead of unpicking old habits one key at a

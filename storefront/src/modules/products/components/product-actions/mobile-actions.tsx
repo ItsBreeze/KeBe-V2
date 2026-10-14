@@ -67,7 +67,10 @@ const MobileActions: React.FC<MobileActionsProps> = ({
 
   return (
     <>
+      {/* data-mobile-bar: globals.css pads the page by the bar's height,
+          or it covers the footer's last lines on a phone (14 Oct 2026). */}
       <div
+        data-mobile-bar
         className={clx("lg:hidden inset-x-0 bottom-0 fixed z-50", {
           "pointer-events-none": !show,
         })}

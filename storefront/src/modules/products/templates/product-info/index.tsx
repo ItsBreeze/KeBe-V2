@@ -36,23 +36,13 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
 
   return (
     <div id="product-info" className="flex flex-col gap-y-3">
-      {onHold ? (
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
-          On hold · waitlist
-        </p>
-      ) : shipsBy ? (
-        <p className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted">
-          {shipLine ? `Pre-order · ${shipLine}` : "Pre-order"}
-        </p>
-      ) : (
-        product.collection && (
-          <LocalizedClientLink
-            href={`/collections/${product.collection.handle}`}
-            className="font-mono text-xs uppercase tracking-[0.2em] text-ui-fg-muted hover:text-ui-fg-subtle"
-          >
-            {product.collection.title}
-          </LocalizedClientLink>
-        )
+      {!shipsBy && !onHold && product.collection && (
+        <LocalizedClientLink
+          href={`/collections/${product.collection.handle}`}
+          className="text-sm text-ui-fg-muted hover:text-ui-fg-subtle"
+        >
+          {product.collection.title}
+        </LocalizedClientLink>
       )}
       <h1
         className="font-display text-[clamp(2.5rem,6vw,3.75rem)] leading-[1.05] text-ui-fg-base"
@@ -64,6 +54,18 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
         <p className="text-[clamp(1.05rem,2vw,1.25rem)] leading-snug text-ui-fg-subtle">
           {subtitle}
         </p>
+      )}
+      {/* The ship date, or the Lite's hold, under the name in sentence
+          case: each was a monospace caps label over it until the design
+          audit (14 Oct 2026). */}
+      {onHold ? (
+        <p className="text-base text-ui-fg-muted">On hold, with a waitlist.</p>
+      ) : (
+        shipsBy && (
+          <p className="text-base text-ui-fg-muted">
+            {shipLine ? `Pre-order. ${shipLine}.` : "Pre-order."}
+          </p>
+        )
       )}
     </div>
   )

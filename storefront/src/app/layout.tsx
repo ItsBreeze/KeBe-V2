@@ -25,11 +25,14 @@ const body = Inter({
   display: "swap",
 })
 
+// Only the typing trainer sets type in it since the design audit (14 Oct
+// 2026), so no page preloads it: a browser fetches it when /train uses it.
 const mono = IBM_Plex_Mono({
   subsets: ["latin"],
   weight: "600",
   variable: "--font-mono",
   display: "swap",
+  preload: false,
 })
 
 // Google Search Console and Bing Webmaster Tools check a site is the owner's

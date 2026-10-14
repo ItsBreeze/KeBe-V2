@@ -221,9 +221,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 >
                   Why the keys are where they are
                 </h2>
-                <ul className="flex flex-col divide-y divide-ui-border-base border-y border-ui-border-base">
+                <ul className="flex flex-col gap-4">
                   {BUYBOX_REASONS.map((r) => (
-                    <li key={r.title} className="py-3">
+                    <li key={r.title}>
                       <p className="text-base text-ui-fg-base">{r.title}</p>
                       <p className="mt-1 text-base leading-relaxed text-ui-fg-subtle">
                         {r.body}
@@ -283,9 +283,10 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               the description, set where the pictures start, in the clip
               caption's style (6 Oct 2026). KeBe Lite's are plain renders of
               its design files (storefront/scripts/render-lite), with no AI
-              scenes (7 Oct 2026). */}
+              scenes (7 Oct 2026). Body size since the design audit (14 Oct
+              2026): a disclosure has to be read. */}
           {product.handle === LITE_HANDLE && (
-            <p className="mb-3 text-small-regular text-white/80">
+            <p className="mb-4 max-w-3xl text-base leading-relaxed text-white/80">
               None of the KeBe Lite pictures here are photographs: they and
               the 3D model are renders of the Lite&apos;s design files. For a
               built KeBe, see{" "}
@@ -296,7 +297,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
             </p>
           )}
           {shipsBy && product.handle !== LITE_HANDLE && (
-            <p className="mb-3 text-small-regular text-white/80">
+            <p className="mb-4 max-w-3xl text-base leading-relaxed text-white/80">
               None of the v2 pictures here are photographs: the plain renders
               and the 3D model come straight from v2&apos;s CAD, and the desk,
               studio and night pictures and the clip set that CAD model in
@@ -329,7 +330,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         </section>
       )}
 
-      <section className="border-t border-ui-border-base">
+      <section>
         <div className="content-container grid grid-cols-1 gap-12 py-16 small:py-24 small:grid-cols-12 small:gap-16">
           {paragraphs.length > 0 && (
             <div className="small:col-span-7">

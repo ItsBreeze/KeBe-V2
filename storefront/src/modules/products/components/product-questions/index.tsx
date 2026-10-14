@@ -13,7 +13,8 @@ const ProductQuestions = ({ product }: { product: HttpTypes.StoreProduct }) => {
   if (!faq.length) return null
 
   return (
-    <section className="border-t border-ui-border-base">
+    // A raised section instead of a rule over it (design audit, 14 Oct 2026).
+    <section className="bg-kebe-raised">
       <div
         id="questions"
         className="content-container scroll-mt-20 py-16 small:py-24"
@@ -25,7 +26,7 @@ const ProductQuestions = ({ product }: { product: HttpTypes.StoreProduct }) => {
           {faq.map((f) => (
             <div
               key={f.question}
-              className="border-t border-ui-border-base py-5 text-base"
+              className="py-5 text-base"
             >
               <dt className="text-ui-fg-base">{f.question}</dt>
               {f.answer.map((p, i) => (
