@@ -59,15 +59,18 @@ export default async function TrainPage(props: {
         <h1 className="sr-only">Learn KeBe&apos;s layout: a typing trainer</h1>
         <Trainer
           account={account}
-          initialMode={mode === "test" ? "test" : "levels"}
+          initialMode={
+            mode === "test" || mode === "levels" || mode === "learn" ? mode : undefined
+          }
         />
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-kebe-line pt-8 text-sm text-kebe-muted small:flex-row small:items-center">
           <p className="max-w-xl leading-relaxed">
-            It reads the letters your computer receives, so it works on a KeBe,
-            or on any keyboard with your computer set to Dvorak. On a KeBe,
-            turn autocorrect off with Fn + A while you practise: words it
-            fixes don&apos;t count. The board above is KeBe v2&apos;s, legends
-            and all.
+            The letters work on any keyboard: press the key in the same place
+            as on the board, with no need to set your computer to Dvorak. The
+            symbol and Fn levels use keys only KeBe has. On a KeBe, tick
+            &ldquo;Typing on a KeBe&rdquo;, and turn autocorrect off with Fn +
+            A while you practise: words it fixes don&apos;t count. The board
+            above is KeBe v2&apos;s, legends and all.
           </p>
           <LocalizedClientLink
             href={`/products/${PRESALE_HANDLE}`}

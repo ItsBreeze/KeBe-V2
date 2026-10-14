@@ -41,15 +41,19 @@ import {
   sameProgress,
   STORAGE_KEY,
 } from "@lib/train/progress"
+import { LESSONS, typedChar } from "@lib/train/lessons"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Board, { FingerKey } from "@modules/train/components/board"
+import Learn, { KebeToggle } from "@modules/train/components/learn"
 
 // The typing trainer: levels that open one at a time at each one's target, and
 // a 10-word speed test over the 1,000 most common English words. Words are
 // judged one at a time: Space moves on, Backspace can step back into a word
 // that went wrong, and only correctly typed words count toward the speed.
 
-type Mode = "levels" | "test"
+// Learn teaches the layout's rules (components/learn); levels drill speed a
+// key at a time; the test times all of it.
+export type Mode = "learn" | "levels" | "test"
 
 // Where Enter and the Results button go after a round: the next level once
 // it is open, and from the last level, once it is passed, on to the 10-word
@@ -228,6 +232,8 @@ type Result = {
 
 type KeyLike = {
   key: string
+  code: string
+  shiftKey: boolean
   ctrlKey: boolean
   metaKey: boolean
   altKey: boolean
@@ -280,15 +286,20 @@ function migrateLocal() {
 }
 
 const BOARD_PREF = "kebe-trainer-board"
+// "1": read the letters a KeBe sends; "0": read any keyboard's keys by their
+// place (typedChar). Unset: by place for a newcomer, by letter for anyone who
+// has played a level, since the levels read letters before 14 Oct 2026.
+const KEBE_PREF = "kebe-trainer-on-kebe"
 
 export default function Trainer({
   account,
   initialMode,
 }: {
   account: { id: string; firstName: string | null; progress: Progress } | null
-  initialMode: Mode
+  // Unset: Learn for a newcomer, the levels for anyone who has played one.
+  initialMode?: Mode
 }) {
-  const [mode, setMode] = useState<Mode>(initialMode)
+  const [mode, setMode] = useState<Mode>(initialMode ?? "learn")
   const [levelN, setLevelN] = useState(1)
   const [progress, setProgress] = useState<Progress>(
     account?.progress ?? EMPTY_PROGRESS
@@ -301,6 +312,13 @@ export default function Trainer({
   const [save, setSave] = useState<"idle" | "saving" | "saved" | "failed">("idle")
   const [showBoard, setShowBoard] = useState(true)
   const [coarse, setCoarse] = useState(false)
+  const [onKebe, setOnKebeState] = useState(false)
+  const setOnKebe = useCallback((v: boolean) => {
+    setOnKebeState(v)
+    try {
+      localStorage.setItem(KEBE_PREF, v ? "1" : "0")
+    } catch {}
+  }, [])
 
   const area = useRef<HTMLDivElement>(null)
   const strip = useRef<HTMLOListElement>(null)
@@ -344,10 +362,14 @@ export default function Trainer({
     const merged = mergeProgress(local, account?.progress ?? EMPTY_PROGRESS)
     setProgress(merged)
     goLevel(openCount(merged))
+    const played = LEVELS.some((l) => merged.best[l.id])
+    if (!initialMode && played) setMode("levels")
     writeSlot(owner, merged)
     if (account && !sameProgress(merged, account.progress)) persist(merged)
     try {
       setShowBoard(localStorage.getItem(BOARD_PREF) !== "hidden")
+      const kebe = localStorage.getItem(KEBE_PREF)
+      setOnKebeState(kebe ? kebe === "1" : played)
     } catch {}
     setCoarse(window.matchMedia?.("(pointer: coarse)").matches ?? false)
     // Once, on arrival: later changes go through persist().
@@ -367,6 +389,7 @@ export default function Trainer({
   // ---- tests ---------------------------------------------------------------
 
   const newWords = useCallback(() => {
+    if (mode === "learn") return
     const avoid = lastWords.current
     const words =
       mode === "test" ? speedTest(avoid) : level.make(avoid)
@@ -420,13 +443,14 @@ export default function Trainer({
 
   // ---- keys ----------------------------------------------------------------
 
-  const state = useRef({ run, result, levelN, progress, mode, opts })
-  state.current = { run, result, levelN, progress, mode, opts }
+  const state = useRef({ run, result, levelN, progress, mode, opts, onKebe })
+  state.current = { run, result, levelN, progress, mode, opts, onKebe }
 
   const handleKey = useCallback(
     (e: KeyLike) => {
-      const { run, result, levelN, progress, mode, opts } = state.current
-      if (e.isComposing) return
+      const { run, result, levelN, progress, mode, opts, onKebe } = state.current
+      // Learn reads its own keys.
+      if (e.isComposing || mode === "learn") return
       const el = e.target as HTMLElement | null
       if (
         (e.key === "Enter" || e.key === " ") &&
@@ -475,15 +499,16 @@ export default function Trainer({
       }
       if (e.key === " " || e.key.length === 1) {
         e.preventDefault()
+        const ch = typedChar(e, onKebe)
         const expected = nextChar(run)
         const t = performance.now()
-        if (e.key === " ") dispatch({ type: "space", t })
-        else dispatch({ type: "char", ch: e.key, t })
+        if (ch === " ") dispatch({ type: "space", t })
+        else dispatch({ type: "char", ch, t })
         const keys =
-          e.key === " "
+          ch === " "
             ? spaceAfter(run.typed[run.idx]?.slice(-1), opts).keys
-            : strokeFor(e.key, opts)?.keys ?? []
-        setFlash({ keys, ok: e.key === expected })
+            : strokeFor(ch, opts)?.keys ?? []
+        setFlash({ keys, ok: ch === expected })
         if (flashTimer.current) clearTimeout(flashTimer.current)
         flashTimer.current = setTimeout(() => setFlash(null), 160)
       }
@@ -495,6 +520,7 @@ export default function Trainer({
   // level) go to it, so nobody has to click the box before typing.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (state.current.mode === "learn") return
       if (e.defaultPrevented || area.current?.contains(e.target as Node)) return
       const el = e.target as HTMLElement
       // Only from the page itself or the trainer's own controls: menus and
@@ -565,6 +591,13 @@ export default function Trainer({
   const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= l.pass).length
   const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id], l.pass), 0)
   const streak = streakOf(run)
+  const lessonsDone = LESSONS.filter((l) => progress.best[l.id]).length
+  const lessonDone = (id: string, score: number) => {
+    const after = recordResult(progress, id, score)
+    if (sameProgress(after, progress)) return
+    setProgress(after)
+    persist(after)
+  }
   const toggleBoard = () => {
     setShowBoard((v) => {
       try {
@@ -587,6 +620,7 @@ export default function Trainer({
         >
           {(
             [
+              ["learn", "Learn"],
               ["levels", "Levels"],
               ["test", `${TEST_WORDS}-word test`],
             ] as [Mode, string][]
@@ -613,17 +647,39 @@ export default function Trainer({
           >
             <div
               className="h-full rounded-full bg-[#3f9e77] transition-[width] duration-500"
-              style={{ width: `${(passedCount / LEVELS.length) * 100}%` }}
+              style={{
+                width: `${
+                  mode === "learn"
+                    ? (lessonsDone / LESSONS.length) * 100
+                    : (passedCount / LEVELS.length) * 100
+                }%`,
+              }}
             />
           </div>
-          <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-            <span className="text-kebe-text">{passedCount}</span>/{LEVELS.length}{" "}
-            passed · <span className="text-[#e3b04b]">★</span>{" "}
-            <span className="text-kebe-text">{starCount}</span>
-          </p>
+          {mode === "learn" ? (
+            <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+              <span className="text-kebe-text">{lessonsDone}</span>/{LESSONS.length} lessons
+            </p>
+          ) : (
+            <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
+              <span className="text-kebe-text">{passedCount}</span>/{LEVELS.length}{" "}
+              passed · <span className="text-[#e3b04b]">★</span>{" "}
+              <span className="text-kebe-text">{starCount}</span>
+            </p>
+          )}
         </div>
       </div>
 
+      {mode === "learn" ? (
+        <Learn
+          best={progress.best}
+          onScore={lessonDone}
+          onLevels={() => pickLevel(openCount(progress))}
+          onKebe={onKebe}
+          setOnKebe={setOnKebe}
+        />
+      ) : (
+      <>
       {/* The level strip: every level in one row, grouped, filled for the
           one being played, outlined green once passed, locked until the one
           before it is passed. Scrolls sideways where the screen is narrow. */}
@@ -809,6 +865,7 @@ export default function Trainer({
         )}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
           {showBoard ? <FingerKey press={result ? null : press} /> : <span />}
+          <KebeToggle on={onKebe} set={setOnKebe} />
           <button
             onClick={toggleBoard}
             className="font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
@@ -817,8 +874,10 @@ export default function Trainer({
           </button>
         </div>
       </div>
+      </>
+      )}
 
-      {coarse && (
+      {coarse && mode !== "learn" && (
         <p className="mt-6 text-sm text-kebe-muted">
           The trainer needs a physical keyboard: plug one in, or come back on a
           computer.

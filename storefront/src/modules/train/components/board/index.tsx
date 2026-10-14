@@ -117,11 +117,15 @@ type Props = {
   adds: Set<string>
   next: Stroke | null
   flash: { keys: string[]; ok: boolean } | null
+  // Keys drawn without their legend (the Learn tab's tests), except when
+  // pressed by mistake; and a click on a key, for pointer and touch.
+  blind?: Set<string>
+  onPress?: (id: string) => void
   className?: string
   style?: CSSProperties
 }
 
-export default function Board({ learned, adds, next, flash, className, style }: Props) {
+export default function Board({ learned, adds, next, flash, blind, onPress, className, style }: Props) {
   const nextKeys = new Set(next?.keys ?? [])
   const holdKeys = new Set(next?.hold ?? [])
   const flashKeys = new Set(flash?.keys ?? [])
@@ -326,7 +330,7 @@ export default function Board({ learned, adds, next, flash, className, style }: 
             key to hold, which shine through in their finger's light: a
             saturated glow under a brighter core, as an LED does. */}
         {keys.map(({ k, lit, state }) => {
-          if (k.w !== 1) return null
+          if (k.w !== 1 || (blind?.has(k.id) && state !== MISS)) return null
           const { x, y } = box(k, 0)
           const at = { href: `/train/caps.svg#${k.id}`, x, y, width: CAP, height: CAP }
           if (state === NEXT || state === HOLD)
@@ -349,6 +353,19 @@ export default function Board({ learned, adds, next, flash, className, style }: 
             />
           )
         })}
+        {onPress &&
+          KEYS.map((k) => (
+            <rect
+              key={`hit-${k.id}`}
+              {...box(k, 0.75)}
+              fill="transparent"
+              className="cursor-pointer"
+              onPointerDown={(e) => {
+                e.preventDefault()
+                onPress(k.id)
+              }}
+            />
+          ))}
       </g>
     </svg>
   )

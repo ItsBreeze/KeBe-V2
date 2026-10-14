@@ -5,6 +5,7 @@
 // in the customer's metadata (under PROGRESS_KEY) when they are signed in, so
 // a top score follows the account. Both copies are merged by taking the
 // better of each, so practising signed out is never lost by signing in.
+import { LESSONS } from "./lessons"
 import { LEVELS } from "./levels"
 
 export const PROGRESS_KEY = "kebe_trainer"
@@ -14,7 +15,8 @@ export type Progress = { best: Record<string, number> }
 
 export const EMPTY_PROGRESS: Progress = { best: {} }
 
-const KEYS = new Set(["test", ...LEVELS.map((l) => l.id)])
+// A lesson's score is the share of keys found unaided in its last step.
+const KEYS = new Set(["test", ...LEVELS.map((l) => l.id), ...LESSONS.map((l) => l.id)])
 // Faster than anyone has typed: a result above it is not a score.
 export const MAX_WPM = 300
 
