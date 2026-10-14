@@ -1,4 +1,3 @@
-import { Text } from "@medusajs/ui"
 import { listProducts } from "@lib/data/products"
 import { getProductPrice } from "@lib/util/get-product-price"
 import { isOnHold, isPreorderPrice } from "@lib/util/presale"
@@ -29,6 +28,10 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({
     product,
   })
+  // "KeBe v2 — Mechanical 68-Key …": the name large, the kind under it and
+  // the price under that, as the product page sets them; side by side, the
+  // title wrapped to three lines beside the price (design audit, 14 Oct 2026).
+  const [name, ...rest] = (product.title ?? "").split(" — ")
 
   return (
     <LocalizedClientLink href={`/products/${product.handle}`} className="group">
@@ -47,23 +50,29 @@ export default async function ProductPreview({
           size="full"
           isFeatured={isFeatured}
         />
-        <div className="flex txt-compact-medium mt-4 justify-between">
-          <Text className="text-ui-fg-subtle" data-testid="product-title">
-            {product.title}
-          </Text>
-          <div className="flex items-center gap-x-2">
-            {/* KeBe Lite on hold: no price that reads as buyable. */}
-            {isOnHold(product.handle) ? (
-              <Text className="text-ui-fg-muted" data-testid="on-hold-label">
-                On hold · waitlist
-              </Text>
-            ) : cheapestPrice && (
+        <div className="mt-4 flex flex-col gap-y-1 text-base">
+          <h2
+            className="font-display text-2xl text-ui-fg-base"
+            data-testid="product-title"
+          >
+            {name}
+          </h2>
+          {rest.length > 0 && (
+            <p className="text-ui-fg-subtle">{rest.join(" — ")}</p>
+          )}
+          {/* KeBe Lite on hold: no price that reads as buyable. */}
+          {isOnHold(product.handle) ? (
+            <p className="text-ui-fg-muted" data-testid="on-hold-label">
+              On hold, join the waitlist
+            </p>
+          ) : (
+            cheapestPrice && (
               <PreviewPrice
                 price={cheapestPrice}
                 preorder={isPreorderPrice(product, cheapestPrice)}
               />
-            )}
-          </div>
+            )
+          )}
         </div>
       </div>
     </LocalizedClientLink>

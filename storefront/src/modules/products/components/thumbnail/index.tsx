@@ -29,7 +29,9 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   return (
     <Container
       className={clx(
-        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle shadow-elevation-card-rest rounded-large group-hover:shadow-elevation-card-hover transition-shadow ease-in-out duration-150",
+        // No resting shadow, Container's included (design audit, 14 Oct
+        // 2026); a card's hover dims it instead.
+        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle rounded-large !shadow-none group-hover:opacity-90 transition-opacity duration-150",
         className,
         {
           // Keyboards are wide: the starter's portrait frames showed a slice.

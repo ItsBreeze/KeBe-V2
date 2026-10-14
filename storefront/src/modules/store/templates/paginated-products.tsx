@@ -81,10 +81,10 @@ export default async function PaginatedProducts({
           // out (14 Oct 2026); its own page gives its notice.
           products.map((p) => p.handle).filter((h) => !isOnHold(h))
         )}
-        className="mb-8 rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+        className="mb-8 rounded-xl bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
       />
       <ul
-        className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8"
+        className="grid grid-cols-1 xsmall:grid-cols-2 w-full small:grid-cols-3 gap-x-6 gap-y-12"
         data-testid="products-list"
       >
         {products.map((p) => {

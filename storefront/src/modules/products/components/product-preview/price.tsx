@@ -1,4 +1,3 @@
-import { Text } from "@medusajs/ui"
 import { VariantPrice } from "types/global"
 
 // The card's price says "plus shipping", as every price does (PRESALE.md),
@@ -17,18 +16,13 @@ export default async function PreviewPrice({
   }
 
   return (
-    <div className="flex flex-wrap items-baseline gap-x-1">
-      {preorder && (
-        <Text className="text-ui-fg-muted" data-testid="preorder-label">
-          Pre-order
-        </Text>
-      )}
-      <Text className="text-ui-fg-muted" data-testid="price">
+    // Spans at the card's 16 px: Text set it at 14 (design audit, 14 Oct 2026).
+    <div className="flex flex-wrap items-baseline gap-x-1 text-ui-fg-muted">
+      {preorder && <span data-testid="preorder-label">Pre-order</span>}
+      <span className="text-ui-fg-base" data-testid="price">
         {price.calculated_price}
-      </Text>
-      <Text className="text-ui-fg-muted" data-testid="price-shipping">
-        plus shipping
-      </Text>
+      </span>
+      <span data-testid="price-shipping">plus shipping</span>
     </div>
   )
 }
