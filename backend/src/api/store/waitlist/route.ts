@@ -27,6 +27,13 @@ export async function POST(req: MedusaRequest<Body>, res: MedusaResponse) {
     const existing = await service.listSubscribers({ email });
     if (!existing.length) {
       await service.createSubscribers({ email, source });
+    } else if (!existing[0].source.split(",").includes(source)) {
+      // A second list for an address already on one ("v2,lite"), so a count of
+      // one list's signups misses no one: count with includes, never ===.
+      await service.updateSubscribers({
+        id: existing[0].id,
+        source: `${existing[0].source},${source}`,
+      });
     }
   } catch (e) {
     req.scope.resolve("logger").error(`waitlist signup failed: ${e}`);

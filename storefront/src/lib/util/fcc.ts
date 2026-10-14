@@ -46,6 +46,12 @@ export const fccBoardName = (handle: string | null | undefined) =>
 export const fccShortNotice = (name: string, noticeUrl: string) =>
   `FCC notice for US orders: ${name}'s FCC authorization isn't complete yet, and no board ships to a US address until it is. The FCC's rules don't address consumer-protection, contract or other law. If authorization isn't completed, we cancel your order and refund it in full. Details: ${noticeUrl}`
 
+// The notice for a board shown on /us but not sold (KeBe Lite on hold, 14 Oct 2026): 47 CFR 2.803(c)(2)(iii)(A),
+// (d)(2)(iii)(A) since 13 Oct 2026, prescribes these words. Never the conditional-sale notice for it: there is no
+// order to condition (Compliance/store-disclosure.md 1).
+export const FCC_NOT_FOR_SALE =
+  "This device has not been authorized as required by the rules of the Federal Communications Commission. This device is not, and may not be, offered for sale or lease, or sold or leased, until authorization is obtained."
+
 // The ship date US orders get while a board's SDoC is pending (YYYY-MM-DD):
 // no board may reach a US address before its authorization, and the FTC's
 // Mail Order Rule (16 CFR 435.2(a)(1)) wants a shown date to have a

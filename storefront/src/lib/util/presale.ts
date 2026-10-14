@@ -199,6 +199,13 @@ export const holdsPresaleBoard = (
 ) =>
   !!items?.some((i) => isPresaleHandle(lineHandle(i)))
 
+// A cart from before 14 Oct 2026 can still hold KeBe Lite. Checkout refuses it before any card is charged
+// (cart.ts initiatePaymentSession, the Review step), with this line.
+export const holdsOnHoldBoard = (items: LineLike[] | null | undefined) =>
+  !!items?.some((i) => isOnHold(lineHandle(i)))
+export const ON_HOLD_CHECKOUT =
+  "KeBe Lite is on hold and can't be ordered. Remove it from your cart to check out."
+
 // What a payment is for, on Stripe's record of it: "KeBe v2 pre-order", from the first
 // pre-order line's title (the name before " — "); null for a cart without one.
 export const presalePaymentLabel = (

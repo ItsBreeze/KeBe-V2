@@ -11,6 +11,7 @@ import { getRegion } from "@lib/data/regions"
 import { pageAlternates } from "@lib/data/seo"
 import { BRAND, socialMetadata } from "@lib/util/seo"
 import { FCC_SDOC_PENDING, fccNoticeBoards } from "@lib/util/fcc"
+import { isOnHold } from "@lib/util/presale"
 import FccNotice from "@modules/common/components/fcc-notice"
 import { lateTerm } from "@lib/util/terms"
 
@@ -64,8 +65,12 @@ export default async function TermsPage(props: {
     : null
 
   // /us only, while any board's SDoC is pending: every such board, since the
-  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026).
-  const fccBoards = fccNoticeBoards(countryCode, FCC_SDOC_PENDING)
+  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026), but KeBe Lite on hold,
+  // which takes no orders (14 Oct 2026).
+  const fccBoards = fccNoticeBoards(
+    countryCode,
+    FCC_SDOC_PENDING.filter((h) => !isOnHold(h))
+  )
 
   const email = (
     <a className="underline underline-offset-4" href={`mailto:${CONTACT_EMAIL}`}>

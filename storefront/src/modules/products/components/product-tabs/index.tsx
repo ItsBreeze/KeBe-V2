@@ -52,8 +52,8 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
         <div className="mt-4 flex flex-col gap-3 text-base leading-relaxed text-ui-fg-subtle">
           {isOnHold(product.handle) ? (
             <p>
-              KeBe Lite is on hold, so it can&apos;t be ordered and nothing
-              ships yet.
+              KeBe Lite is on hold, so it can&apos;t be ordered and has no
+              ship date.
             </p>
           ) : shipsBy ? (
             <>

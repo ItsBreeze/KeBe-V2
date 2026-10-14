@@ -1,6 +1,7 @@
 import { listProductsWithSort } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { fccNoticeBoards } from "@lib/util/fcc"
+import { isOnHold } from "@lib/util/presale"
 import FccNotice from "@modules/common/components/fcc-notice"
 import ProductPreview from "@modules/products/components/product-preview"
 import { Pagination } from "@modules/store/components/pagination"
@@ -76,7 +77,9 @@ export default async function PaginatedProducts({
       <FccNotice
         boards={fccNoticeBoards(
           countryCode,
-          products.map((p) => p.handle)
+          // KeBe Lite on hold is not offered, so the order notice leaves it
+          // out (14 Oct 2026); its own page gives its notice.
+          products.map((p) => p.handle).filter((h) => !isOnHold(h))
         )}
         className="mb-8 rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
       />

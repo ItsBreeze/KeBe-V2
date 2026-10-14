@@ -18,7 +18,7 @@ import {
 } from "@lib/util/presale"
 import { DVORAK, HABITS, WHY } from "@lib/util/kebe-copy"
 import { productImageAlt } from "@lib/util/image-alt"
-import { fccNoticeBoards } from "@lib/util/fcc"
+import { FCC_NOT_FOR_SALE, fccNoticeBoards, fccPending } from "@lib/util/fcc"
 import { organizationJsonLd, websiteJsonLd } from "@lib/util/structured-data"
 import FccNotice from "@modules/common/components/fcc-notice"
 import JsonLd from "@modules/common/components/json-ld"
@@ -36,9 +36,10 @@ const TITLE = "KeBe: Ortholinear Dvorak Keyboards, Mechanical or Membrane"
 // most 123 characters so this country's price sentence fits in Google's 155.
 // The old site's description ended "Aluminium design". Every KeBe case that
 // exists is 3D printed -- REVISIONS.md proves it from the JLCPCB 3DP order
-// -- so that claim is gone and not coming back.
+// -- so that claim is gone and not coming back. The Lite is named on hold
+// before v2, so the price sentence after it reads as v2's (14 Oct 2026).
 const LEAD =
-  "Ortholinear Dvorak keyboards with a USB hub: KeBe v2 with mechanical Kailh Choc switches, and KeBe Lite, slim and membrane."
+  "Ortholinear Dvorak keyboards with a USB hub. KeBe Lite, slim membrane, is on hold. KeBe v2 has mechanical Choc switches."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -281,12 +282,9 @@ export default async function Home(props: {
   // the US route, CA$349 · Canada everywhere else (the shop's two regions).
   const market = countryCode.toLowerCase() === "us" ? "us" : "ca"
   // The boards the hero offers, and whether /us must give the FCC notice for
-  // any of them (none on /ca: lib/util/fcc.ts).
-  const offered = [
-    presale.state === "open" ? PRESALE_HANDLE : null,
-    // Still advertised, so /us keeps its FCC notice as the Lite's page does.
-    lite ? LITE_HANDLE : null,
-  ]
+  // any of them (none on /ca: lib/util/fcc.ts). Not KeBe Lite, on hold: it is
+  // shown, not offered, so it gets the not-for-sale notice below (14 Oct 2026).
+  const offered = [presale.state === "open" ? PRESALE_HANDLE : null]
   const usNotice = fccNoticeBoards(countryCode, offered).length > 0
 
   // The hero's offer: one price button a board, side by side on wide screens
@@ -385,7 +383,9 @@ export default async function Home(props: {
           <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
             <p className="mb-5 font-mono text-xs uppercase tracking-[0.2em] text-kebe-muted">
               {presale.state === "open"
-                ? "Pre-orders open"
+                ? lite
+                  ? "KeBe v2 pre-orders open"
+                  : "Pre-orders open"
                 : presale.state === "sold-out"
                 ? "Pre-orders closed"
                 : "Coming soon"}
@@ -429,16 +429,28 @@ export default async function Home(props: {
             ? "KeBe v2 pre-orders are closed for now — leave an address and you'll hear when they open again."
             : presale.state === "none"
             ? "Leave an address and you'll hear when KeBe v2 pre-orders open."
+            : lite
+            ? "KeBe v2's shipping is calculated at checkout, where the board is charged in full."
             : "Shipping is calculated at checkout, and each keyboard is charged in full there."}
         </p>
-        {/* The hero offers KeBe v2 at its US price and shows KeBe Lite, so /us
-            gives the product pages' FCC notice here too for each one it
-            offers whose SDoC is pending (lib/util/fcc.ts, 7 Oct 2026). */}
+        {/* The hero offers KeBe v2 at its US price, so /us gives the product
+            page's FCC notice here too while its SDoC is pending
+            (lib/util/fcc.ts, 7 Oct 2026). KeBe Lite, on hold, is only shown:
+            the FCC's notice for a device not offered for sale, as on its
+            page (14 Oct 2026). */}
         {usNotice && (
           <FccNotice
             boards={fccNoticeBoards(countryCode, offered)}
             className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80"
           />
+        )}
+        {lite && countryCode === "us" && fccPending(LITE_HANDLE) && (
+          <p className="mx-auto mt-6 max-w-xl rounded-xl border border-kebe-line bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80">
+            <strong className="font-medium text-ui-fg-base">
+              FCC notice for KeBe Lite.
+            </strong>{" "}
+            {FCC_NOT_FOR_SALE}
+          </p>
         )}
       </section>
 
@@ -513,8 +525,8 @@ export default async function Home(props: {
             KeBe v1, built and photographed
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            v2 and the Lite are not built yet, so their pictures are renders.
-            v1 is: these are photographs of one. It is the board both are
+            v2 is not built yet and the Lite is on hold, so their pictures
+            are renders. v1 is built: these are photographs of one. It is the board both are
             drawn from, on the same 68-key grid, hand-built in small batches
             and sold out.
           </p>

@@ -11,6 +11,7 @@ import {
   productSeoTitle,
   socialMetadata,
 } from "@lib/util/seo"
+import { isOnHold } from "@lib/util/presale"
 import { breadcrumbJsonLd, productJsonLd } from "@lib/util/structured-data"
 import JsonLd from "@modules/common/components/json-ld"
 import ProductTemplate from "@modules/products/templates"
@@ -160,7 +161,11 @@ export default async function ProductPage(props: Props) {
   // in the HTML itself.
   return (
     <>
-      <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />
+      {/* No Product for KeBe Lite on hold: without an offer Google reads it
+          as an invalid item (14 Oct 2026). The breadcrumb stays. */}
+      {!isOnHold(pricedProduct.handle) && (
+        <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />
+      )}
       <JsonLd data={breadcrumbJsonLd(params.countryCode, pricedProduct)} />
       <ProductTemplate
         product={pricedProduct}

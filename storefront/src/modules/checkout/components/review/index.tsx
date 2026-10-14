@@ -5,9 +5,15 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import { Heading, Text, clx } from "@medusajs/ui"
 
 import { convertToLocale } from "@lib/util/money"
-import { cartItemsLabel, holdsPresaleBoard } from "@lib/util/presale"
+import {
+  cartItemsLabel,
+  holdsOnHoldBoard,
+  holdsPresaleBoard,
+  ON_HOLD_CHECKOUT,
+} from "@lib/util/presale"
 import { fccNoticeBoardsIn } from "@lib/util/fcc"
 import FccNotice from "@modules/common/components/fcc-notice"
+import ErrorMessage from "../error-message"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
@@ -138,7 +144,13 @@ const Review = ({
               />
             </div>
           </div>
-          <PaymentButton cart={cart} data-testid="submit-order-button" />
+          {/* A cart from before 14 Oct 2026 can hold KeBe Lite, on hold: no
+              button, so an old payment session cannot charge for it. */}
+          {holdsOnHoldBoard(cart.items) ? (
+            <ErrorMessage error={ON_HOLD_CHECKOUT} data-testid="on-hold-error" />
+          ) : (
+            <PaymentButton cart={cart} data-testid="submit-order-button" />
+          )}
         </>
       )}
     </div>

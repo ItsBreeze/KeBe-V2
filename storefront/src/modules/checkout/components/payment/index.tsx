@@ -3,6 +3,7 @@
 import { RadioGroup } from "@headlessui/react"
 import { isStripeLike, paymentInfoMap } from "@lib/constants"
 import { initiatePaymentSession } from "@lib/data/cart"
+import { ON_HOLD_CHECKOUT } from "@lib/util/presale"
 import { CheckCircleSolid, CreditCard } from "@medusajs/icons"
 import { Button, Container, Heading, Text, clx } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -63,7 +64,7 @@ const Payment = ({
         })
 
         if ("error" in res) {
-          setError(CARD_FORM_ERROR)
+          setError(res.error === ON_HOLD_CHECKOUT ? res.error : CARD_FORM_ERROR)
         }
       } catch {
         setError(CARD_FORM_ERROR)
@@ -108,7 +109,7 @@ const Payment = ({
         })
 
         if ("error" in res) {
-          setError(CARD_FORM_ERROR)
+          setError(res.error === ON_HOLD_CHECKOUT ? res.error : CARD_FORM_ERROR)
           return
         }
       }

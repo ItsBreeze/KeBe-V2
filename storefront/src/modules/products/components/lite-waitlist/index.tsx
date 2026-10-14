@@ -1,14 +1,14 @@
 import { HttpTypes } from "@medusajs/types"
 import { litePlannedPrice } from "@lib/util/presale"
-import { fccNoticeBoards } from "@lib/util/fcc"
-import FccNotice from "@modules/common/components/fcc-notice"
+import { FCC_NOT_FOR_SALE, fccPending } from "@lib/util/fcc"
 import WaitlistForm from "@modules/home/components/waitlist-form"
 
 // KeBe Lite's buy box while it is on hold (owner, 14 Oct 2026): no variant
 // picker, price, Pre-order button or phone bar, so nothing on its page can put
 // it in a cart; an email-only waitlist measures who wants one. The planned
-// price is this store's, never a ship date. /us keeps the FCC notice the page
-// gave before: the page still advertises the board.
+// price is this store's, never a ship date. /us still shows the board, so it
+// gives the FCC's notice for a device not offered for sale while its SDoC is
+// pending, not the conditional-sale one: there is no order.
 export default function LiteWaitlist({
   product,
   countryCode,
@@ -27,10 +27,17 @@ export default function LiteWaitlist({
         we&apos;ll email you once if it goes ahead.
       </p>
       <WaitlistForm source="lite" />
-      <FccNotice
-        boards={fccNoticeBoards(countryCode, [product.handle])}
-        className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
-      />
+      {countryCode === "us" && fccPending(product.handle) && (
+        <p
+          className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+          data-testid="fcc-not-for-sale"
+        >
+          <strong className="font-medium text-ui-fg-base">
+            FCC notice for KeBe Lite.
+          </strong>{" "}
+          {FCC_NOT_FOR_SALE}
+        </p>
+      )}
     </section>
   )
 }

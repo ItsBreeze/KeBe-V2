@@ -59,7 +59,7 @@ const IMAGES = [
 // battery or radio, nothing about a build that has not happened.
 export const DESCRIPTION =
   "KeBe Lite is the slim, membrane KeBe: the 68-key Matrix-Dvorak keyboard with KeBe v2's electronics, its USB " +
-  "hub and a light under every key, at a lower price. Where KeBe v2 has mechanical switches and keycaps, the " +
+  "hub and a light under every key, at a lower planned price. Where KeBe v2 has mechanical switches and keycaps, the " +
   "Lite's keys are one moulded keypad, 10.95 mm from the case's underside to the key tops.\n\n" +
   "Each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact " +
   "under it closes gold pads on the circuit board. The key tops are translucent plastic painted black, with the " +

@@ -4,7 +4,9 @@ import { sdk } from "@lib/config"
 import { isStripeLike } from "@lib/constants"
 import { getCheckoutStep } from "@lib/util/checkout-step"
 import {
+  holdsOnHoldBoard,
   isPresaleHandle,
+  ON_HOLD_CHECKOUT,
   PRESALE_HANDLE,
   presalePaymentLabel,
 } from "@lib/util/presale"
@@ -528,6 +530,10 @@ export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
   data: HttpTypes.StoreInitializePaymentSession
 ): Promise<HttpTypes.StorePaymentCollectionResponse | { error: string }> {
+  // No PaymentIntent for a cart holding a board on hold: capture is
+  // automatic, so a later check would come after the charge.
+  if (holdsOnHoldBoard(cart.items)) return { error: ON_HOLD_CHECKOUT }
+
   try {
     const headers = {
       ...(await getAuthHeaders()),
