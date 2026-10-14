@@ -19,18 +19,18 @@
 // reaches are longer and the words are not prose (owner, 5 Oct 2026), and
 // dropped again (owner, 6 Oct 2026): 40 for Capitals, 30 for the symbol
 // keys and the digits, 25 for shifted punctuation and the Fn pad, 20 for
-// shifted digits and arithmetic. The home row's seven ramp up from 25 to
-// 40 (owner, 14 Oct 2026), since they come straight after the first
+// shifted digits and arithmetic. The letters ramp from 25 to 60 (LETTER_PASS,
+// owner, 14 Oct 2026): the home row comes straight after the first
 // lesson, where a newcomer types about 20.
 import { FN, KEYS, SHIFT } from "./layout"
 import { TOP_WORDS } from "./words"
 
-// The letters' target; later levels set their own.
+// The last letters' target (LETTER_PASS ramps up to it); later levels set their own.
 export const PASS_WPM = 60
 export const TEST_WORDS = 10
 
 // Stars on a level: one for reaching its target, two at 1.25 times it, three
-// at 1.5 times (60, 75, 90 on the letters).
+// at 1.5 times (60, 75, 90 on the semicolon).
 export const starsFor = (wpm: number | undefined, pass = PASS_WPM) =>
   [1, 1.25, 1.5].filter((f) => (wpm ?? 0) >= Math.round(pass * f)).length
 
@@ -365,15 +365,23 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon. That is every letter."],
 ]
 
-// The home row's targets, A E T S to D; every other letter's is PASS_WPM.
-const HOME_PASS = [25, 28, 30, 32, 35, 38, 40]
+// Each letter's target, in LETTER_INFO's order: the home row from 25 to 40,
+// then up 2 every two keys to the semicolon's 60, the old mark for every
+// letter (owner, 14 Oct 2026), so no level is a jump.
+const LETTER_PASS = [
+  25, 28, 30, 32, 35, 38, 40, // A E T S, O N U H I D
+  42, 42, 44, 44, 46, 46, 48, 48, 50, 50, // G C R L P . , ' F Y
+  52, 52, 54, 54, 56, // B M W V Z
+  56, 58, 58, 60, 60, // X K J Q ;
+]
+if (LETTER_PASS.length !== LETTER_INFO.length) throw new Error("levels.ts: one pass mark per letter level")
 
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
   id,
   group,
   title,
   blurb,
-  pass: HOME_PASS[i],
+  pass: LETTER_PASS[i],
   adds: keysFor(LETTER_STEPS[i]),
   source: letterSource(i),
   teaches: LETTER_STEPS[i],
