@@ -4,7 +4,7 @@ import { clx } from "@medusajs/ui"
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
 
 import { saveTrainerProgress } from "@lib/data/trainer"
-import { atOf, CHAPTERS, chapterOf, Item, nextAfter, resume, same } from "@lib/train/course"
+import { atOf, CHAPTERS, chapterOf, isOpen, Item, nextAfter, resume, same } from "@lib/train/course"
 import {
   BACKSPACE,
   KEY_BY_ID,
@@ -359,7 +359,8 @@ export default function Trainer({
     const local = account ? mergeProgress(mine, readSlot(null)) : mine
     const merged = mergeProgress(local, account?.progress ?? EMPTY_PROGRESS)
     setProgress(merged)
-    if (!initial) setItem(resume(merged))
+    // A link to a level not open yet lands where this learner is instead.
+    if (!initial || !isOpen(initial, merged)) setItem(resume(merged))
     writeSlot(owner, merged)
     if (account && !sameProgress(merged, account.progress)) persist(merged)
     try {

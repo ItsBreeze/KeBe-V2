@@ -19,7 +19,9 @@
 // reaches are longer and the words are not prose (owner, 5 Oct 2026), and
 // dropped again (owner, 6 Oct 2026): 40 for Capitals, 30 for the symbol
 // keys and the digits, 25 for shifted punctuation and the Fn pad, 20 for
-// shifted digits and arithmetic.
+// shifted digits and arithmetic. The home row's seven ramp up from 25 to
+// 40 (owner, 14 Oct 2026), since they come straight after the first
+// lesson, where a newcomer types about 20.
 import { FN, KEYS, SHIFT } from "./layout"
 import { TOP_WORDS } from "./words"
 
@@ -363,11 +365,15 @@ const LETTER_INFO: [string, string, string, string][] = [
   ["key-semicolon", "Bottom row, left hand", "Semicolon", "Straight down from A, with the left pinky; with Shift, it types a colon. That is every letter."],
 ]
 
+// The home row's targets, A E T S to D; every other letter's is PASS_WPM.
+const HOME_PASS = [25, 28, 30, 32, 35, 38, 40]
+
 const LETTER_DEFS: Def[] = LETTER_INFO.map(([id, group, title, blurb], i) => ({
   id,
   group,
   title,
   blurb,
+  pass: HOME_PASS[i],
   adds: keysFor(LETTER_STEPS[i]),
   source: letterSource(i),
   teaches: LETTER_STEPS[i],
