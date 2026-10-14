@@ -29,7 +29,7 @@ export default function LiteWaitlist({
       <WaitlistForm source="lite" />
       {countryCode === "us" && fccPending(product.handle) && (
         <p
-          className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+          className="rounded-xl bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
           data-testid="fcc-not-for-sale"
         >
           <strong className="font-medium text-ui-fg-base">

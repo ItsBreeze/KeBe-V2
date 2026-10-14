@@ -399,7 +399,7 @@ export default function ProductActions({
             board can be bought: the page advertises it either way. */}
         <FccNotice
           boards={fccNoticeBoards(countryCode, [product.handle])}
-          className="rounded-xl border border-ui-border-base bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
+          className="rounded-xl bg-kebe-raised p-4 text-base leading-relaxed text-ui-fg-subtle"
         />
         <MobileActions
           product={product}
