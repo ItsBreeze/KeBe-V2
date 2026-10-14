@@ -29,9 +29,10 @@ import ProductModel from "@modules/products/components/product-model"
 
 // What the shop sells, for a search result: the title used to be just "KeBe".
 // The words people search for it by come first (ortholinear, Dvorak), then
-// the two boards by kind, mechanical and membrane (owner, 7 Oct 2026), in at
-// most 60 characters; the product pages' titles take the rest.
-const TITLE = "KeBe: Ortholinear Dvorak Keyboards, Mechanical or Membrane"
+// what is on sale, in at most 60 characters; the product pages' titles take
+// the rest. Not "Mechanical or Membrane" since the Lite is only planned
+// (14 Oct 2026).
+const TITLE = "KeBe: Mechanical Ortholinear Dvorak Keyboard with USB Hub"
 
 // The snippet's opening, in facts this page and the product page state, at
 // most 123 characters so this country's price sentence fits in Google's 155.
@@ -225,7 +226,7 @@ function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice: string
             <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
               <Image src={b.image} alt={b.alt} fill sizes="(max-width: 1024px) 100vw, 560px" className="object-cover" />
             </div>
-            <h3 className="mt-6 font-display text-[clamp(1.5rem,3vw,2rem)]">
+            <h3 className="mt-6 text-balance font-display text-[clamp(1.5rem,3vw,2rem)]">
               {b.name}
               {b.price ? <span className="text-kebe-text/70"> {b.price}</span> : null}
             </h3>

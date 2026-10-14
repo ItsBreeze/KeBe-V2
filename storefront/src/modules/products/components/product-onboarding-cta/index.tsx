@@ -14,7 +14,7 @@ async function ProductOnboardingCta() {
     <Container className="max-w-4xl h-full bg-ui-bg-subtle w-full p-8">
       <div className="flex flex-col gap-y-4 center">
         <Text className="text-ui-fg-base text-xl">
-          Your demo product was successfully created! 🎉
+          Your demo product was created.
         </Text>
         <Text className="text-ui-fg-subtle text-small-regular">
           You can now continue setting up your store in the admin.

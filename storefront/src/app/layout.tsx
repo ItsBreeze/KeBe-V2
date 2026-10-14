@@ -86,6 +86,13 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       </head>
       <body className="bg-ui-bg-base text-ui-fg-base font-body antialiased">
         {PIXEL_ON && <MetaPixelNoscript />}
+        {/* For keyboard users, past the header to the page (design audit, 14 Oct 2026). */}
+        <a
+          href="#content"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60] focus:rounded-xl focus:bg-kebe-text focus:px-4 focus:py-2 focus:text-kebe-page"
+        >
+          Skip to content
+        </a>
         {PIXEL_ON && <PixelPageViews />}
         <main className="relative">{props.children}</main>
       </body>

@@ -115,7 +115,8 @@ const LISTING_COPY: Record<string, ListingCopy> = {
       "KeBe v2 68-Key Wired Mechanical Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
   },
   [LITE_HANDLE]: {
-    title: "KeBe Lite: Slim Membrane Ortholinear Keyboard, USB Hub",
+    // "Planned": a search result must not read as one on sale (14 Oct 2026).
+    title: "KeBe Lite (Planned): Slim Membrane Ortholinear Keyboard",
     lead: "Slim membrane keyboard: rubber-dome keys with shine-through legends, Matrix-Dvorak layout, per-key RGB and a USB hub.",
     feedTitle:
       "KeBe Lite 68-Key Wired Slim Membrane Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Rubber-Dome Keys, Shine-Through Legends",

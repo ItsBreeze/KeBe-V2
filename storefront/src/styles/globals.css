@@ -147,6 +147,9 @@
   --contrast-fg-primary: #12110f;
   --button-neutral: rgba(245, 241, 234, 0.06);
   --button-neutral-hover: rgba(245, 241, 234, 0.1);
+  /* No shadow on a button at rest (design audit, 14 Oct 2026); focus keeps its ring. */
+  --buttons-inverted: none;
+  --buttons-neutral: none;
 }
 
 /* Below lg the product page's Pre-order bar is fixed to the bottom
@@ -156,6 +159,13 @@
   body:has([data-mobile-bar]) {
     padding-bottom: 7rem;
   }
+}
+
+/* A visible ring on whatever the keyboard reaches (design audit, 14 Oct
+   2026). Elements with their own focus style set outline-none. */
+:focus-visible {
+  outline: 2px solid #f5f1ea;
+  outline-offset: 2px;
 }
 
 /* The trainer's stars landing at a round's end (trainer Stars). */

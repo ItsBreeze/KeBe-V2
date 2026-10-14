@@ -186,7 +186,8 @@ function Row({
             ? "bg-[#3f9e77]/15 text-kebe-text ring-1 ring-[#3f9e77]"
             : open
             ? "text-kebe-text/85 hover:bg-kebe-raised hover:text-kebe-text"
-            : "cursor-not-allowed text-kebe-faint"
+            : // Muted, not faint: a locked level's name still has to be read (4.5:1).
+              "cursor-not-allowed text-kebe-muted"
         )}
       >
         <span aria-hidden className="w-4 shrink-0 text-center text-xs">

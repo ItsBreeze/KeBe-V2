@@ -70,6 +70,9 @@ type ProductTemplateProps = {
   images: HttpTypes.StoreProductImage[]
 }
 
+// A picture set in a scene (dark or desk), by its file name, as image-alt.ts names them.
+const SCENE = /-(night|studio|desk|glow)\.jpg$/
+
 // Layout: the 3D model (or the first picture) beside the buy box, the clip
 // and pictures in a grid under them, then the description with the
 // specification and shipping beside it. The starter's three columns put a
@@ -103,7 +106,11 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
 
   // Without a model the first picture leads, and the grid shows the rest.
   const lead = model ? null : images[0]
-  const gallery = model ? images : images.slice(1)
+  // The scenes first, then the plain renders on pale grey together, not a
+  // light and dark checkerboard (design audit, 14 Oct 2026).
+  const gallery = (model ? [...images] : images.slice(1)).sort(
+    (a, b) => Number(SCENE.test(b.url)) - Number(SCENE.test(a.url))
+  )
   // The buy box repeats the four facts that sell it; the full list is below.
   const specs = productSpecs(product)
   const highlights = specs.filter((s) =>

@@ -174,9 +174,9 @@ function FreeShippingInline({
         <div className="flex justify-between gap-1">
           <div
             className={clx(
-              "bg-gradient-to-r from-zinc-400 to-zinc-500 h-1 rounded-full max-w-full duration-500 ease-in-out",
+              "bg-zinc-500 h-1 rounded-full max-w-full duration-500 ease-in-out",
               {
-                "from-green-400 to-green-500": price.target_reached,
+                "bg-[#3f9e77]": price.target_reached,
               }
             )}
             style={{ width: `${price.remaining_percentage}%` }}
@@ -250,9 +250,9 @@ function FreeShippingPopup({
             <div className="flex justify-between gap-1">
               <div
                 className={clx(
-                  "bg-gradient-to-r from-zinc-400 to-zinc-500 h-1.5 rounded-full max-w-full duration-500 ease-in-out",
+                  "bg-zinc-500 h-1.5 rounded-full max-w-full duration-500 ease-in-out",
                   {
-                    "from-green-400 to-green-500": price.target_reached,
+                    "bg-[#3f9e77]": price.target_reached,
                   }
                 )}
                 style={{ width: `${price.remaining_percentage}%` }}
