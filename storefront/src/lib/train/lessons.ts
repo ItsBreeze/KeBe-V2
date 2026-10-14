@@ -1,12 +1,14 @@
-// The Learn tab: the layout's logic in five short lessons, so someone who
-// has never seen it can find any letter by reasoning rather than by drilling
-// every key (owner, 14 Oct 2026: "more and less explicit at the same time").
-// Each lesson says a rule outright, then tests it without saying the keys:
+// The lessons: the layout's logic, so someone who has never seen it can find
+// any letter by reasoning rather than by drilling every key (owner, 14 Oct
+// 2026: "more and less explicit at the same time"). Each opens a chapter of
+// the course (course.ts) and starts with a guess: the learner predicts the
+// rule before it is said. Then it tests the rule without saying the keys:
 // first the board lights WHERE to press and the learner finds out WHAT it
 // types (legends dark until pressed), then the letters on their own with the
 // legends dark, then real words with the next key lit only after a pause.
-// A miss is explained by the rule: "That's G. C is above T, right middle
-// finger." Figures are scripts/layout-stats.py's.
+// The home row ends on every one of its words before anything else (owner,
+// 14 Oct 2026). A miss is explained by the rule: "That's G. C is above T,
+// right middle finger." Figures are scripts/layout-stats.py's.
 import { KEYS, Key, KEY_BY_ID, SHIFT, SPACE, strokeFor, touchName, touchOf } from "./layout"
 import { TOP_WORDS } from "./words"
 
@@ -24,15 +26,31 @@ export type Drill = {
   // Milliseconds before the next key lights by itself (0: at once). A miss
   // lights it straight away.
   hint: number
+  // Words shown at a time, for a long list.
+  page?: number
+}
+
+// A guess before the rule: any answer goes on, and the reveal says why.
+export type Choice = {
+  options: string[]
+  answer: number
+  reveal: string
+  // Keys lit once answered (legends stay dark: finding them is next).
+  shows: string[]
 }
 
 export type Step = {
   title: string
+  // The rule, said outright.
   body: string
+  // What to do, shown over the play area.
+  act?: string
   // Made fresh each time the step starts, so a retry gets new words.
   drill?: () => Drill
-  // Keys lit on a step with no drill.
+  choice?: Choice
+  // Keys lit on a step with no drill, and the legends kept dark.
   lit?: string[]
+  blind?: string
   after?: string
 }
 
@@ -149,17 +167,21 @@ const which = (chars: string, lit: string): Drill => ({
   hint: 4000,
 })
 
-// Eight of the 1,000 commonest words, typeable with `known`, each using one
-// of `fresh`.
-const words = (known: string, fresh: string, extra = ""): Drill => ({
-  text: shuffle(TOP_WORDS.filter((w) => only(known)(w) && uses(fresh)(w)))
-    .slice(0, 8)
-    .join(" "),
-  show: "words",
-  lit: [...ids(known + extra), ...SPACES],
-  blind: known,
-  hint: 1500,
-})
+// `n` of the 1,000 commonest words (all of them when n is 0), typeable with
+// `known`, each using one of `fresh`.
+export const wordsFor = (known: string, fresh: string) =>
+  TOP_WORDS.filter((w) => only(known)(w) && uses(fresh)(w))
+const words = (known: string, fresh: string, n = 10): Drill => {
+  const all = shuffle(wordsFor(known, fresh))
+  return {
+    text: (n ? all.slice(0, n) : all).join(" "),
+    show: "words",
+    lit: [...ids(known), ...SPACES],
+    blind: known,
+    hint: 1500,
+    page: n ? undefined : 10,
+  }
+}
 
 // Every letter in one sentence, for the last lesson.
 export const PANGRAMS = [
@@ -178,35 +200,53 @@ export const LESSONS: Lesson[] = [
     title: "Home row",
     steps: [
       {
+        title: "Guess first",
+        body: "Your eight fingers rest on the middle row of letters, the home row, and your thumbs on the space bars. Dvorak put all five vowels under one hand there, and the commonest consonants under the other.",
+        act: "Which hand gets the vowels?",
+        lit: ids(HOME),
+        blind: HOME,
+        choice: {
+          options: ["The left hand", "The right hand"],
+          answer: 0,
+          reveal:
+            "The left. Nearly every syllable needs a vowel and a consonant, so with the two on different hands, your hands take turns: one types while the other gets ready.",
+          shows: ids("aoeui"),
+        },
+      },
+      {
         title: "Where your hands rest",
-        body: "Eight fingers rest on the middle row, the home row, and the thumbs on the space bars. Each finger only presses the keys in its own column, lit here in that finger's colour. Press each lit key, left pinky to right pinky, and see what they type.",
+        body: "Each finger only ever presses the keys in its own column, lit in that finger's colour. Find out what the eight home keys type.",
+        act: "Press each lit key, left pinky to right pinky",
         drill: () =>
           find(
             "aoeuhtns",
             ["Left pinky", "Left ring finger", "Left middle finger", "Left pointer", "Right pointer", "Right middle finger", "Right ring finger", "Right pinky"],
+            HOME,
             HOME
           ),
-        after:
-          "Under the left hand, A O E U: vowels. Under the right, H T N S: the commonest consonants. That split is the layout's big idea.",
+        after: "A O E U under the left hand: vowels. H T N S under the right: the commonest consonants.",
       },
       {
         title: "One key in",
-        body: "Each pointer finger also takes the key beside it, toward the middle. Reach in with the left pointer, then the right.",
+        body: "Each pointer finger also takes the key beside it, toward the middle.",
+        act: "Reach in with the left pointer, then the right",
         drill: () => find("id", ["Left pointer, one key in", "Right pointer, one key in"], HOME, "id"),
         after:
-          "I, the last vowel, joins the others on the left; D joins the right. Those ten keys type 71% of English letters, against 34% on QWERTY's home row.",
+          "I joins the vowels and D the consonants. These ten keys type 71% of English letters; QWERTY's home row types 34%.",
       },
       {
         title: "No labels",
-        body: "The labels are off. Vowels left, A O E U from the pinky in and I one reach further; consonants right, H T N S from the pointer out and D one reach in. Press each letter.",
+        body: "Vowels left: A O E U from the pinky in, and I one reach further. Consonants right: H T N S from the pointer out, and D one reach in.",
+        act: "The labels are off. Press each letter",
         drill: () => which(HOME, HOME),
       },
       {
-        title: "Your first words",
-        body: "Every word here uses only the home row. After each word, Space with the thumb of the hand that didn't type its last letter. The next key lights up if you pause.",
-        drill: () => words(HOME, HOME),
+        title: "Every home-row word",
+        body: "All 91 of the 1,000 commonest English words that need nothing but the home row. After each word, Space with the thumb of the hand that didn't type its last letter.",
+        act: "Type them. A key lights up if you pause",
+        drill: () => words(HOME, HOME, 0),
         after:
-          "Vowels on one side and consonants on the other make the hands take turns: 70% of letter pairs switch hands, against 52% on QWERTY. One hand types while the other gets ready.",
+          "That's the home row: on this layout 70% of letter pairs switch hands, on QWERTY 52%. Next, its levels build speed. There a wrong key stays typed, and Backspace takes it back.",
       },
     ],
   },
@@ -215,21 +255,37 @@ export const LESSONS: Lesson[] = [
     title: "Top row",
     steps: [
       {
+        title: "Guess first",
+        body: "The top row is the next easiest reach: each finger goes straight up its own column. Above the right hand's consonants sit more consonants, F G C R L.",
+        act: "What goes above the vowels, under the left hand?",
+        lit: ids(HOME + TOP),
+        blind: TOP,
+        choice: {
+          options: ["More vowels", "Punctuation", "The rarest letters"],
+          answer: 1,
+          reveal:
+            "Punctuation: the apostrophe, comma and period, which end words and sentences, then P and Y under the pointer.",
+          shows: ids("',.py"),
+        },
+      },
+      {
         title: "Straight up",
-        body: "Every finger reaches straight up its own column, so the home row already tells you which finger types each top key. Press the lit keys, left to right.",
+        body: "Same finger, one row up: the home key underneath tells you which finger.",
+        act: "Press each lit key, left to right",
         drill: () => find(TOP, places(TOP), HOME + TOP, TOP),
-        after:
-          "Over the consonants, more consonants: F G C R L. Over the vowels, the punctuation that ends a sentence, ' , . and then P and Y.",
+        after: "Left: ' , . P Y. Right: F G C R L.",
       },
       {
         title: "No labels",
         body: "Find each one by its column: which home key is it above?",
+        act: "Press each one",
         drill: () => which(TOP, HOME + TOP),
       },
       {
         title: "Words",
-        body: "Words from both rows now, so most of English is in reach.",
-        drill: () => words(HOME + TOP, "pyfgcrl'"),
+        body: "Both rows now: most of English is in reach.",
+        act: "Type them",
+        drill: () => words(HOME + TOP, "pyfgcrl'", 12),
       },
     ],
   },
@@ -238,36 +294,65 @@ export const LESSONS: Lesson[] = [
     title: "Bottom row",
     steps: [
       {
+        title: "Guess first",
+        body: "Curling a finger down to the bottom row is the hardest reach of all.",
+        act: "Which letters belong there?",
+        lit: ids(ALL),
+        blind: BOTTOM,
+        choice: {
+          options: ["The most used", "The least used"],
+          answer: 1,
+          reveal:
+            "The least used: together just 8.5% of typing, against 15% on QWERTY's bottom row. The five rarest letters, Q J K X and Z, are all down here.",
+          shows: ids(BOTTOM),
+        },
+      },
+      {
         title: "Down for the rest",
-        body: "Curling a finger down is the hardest reach, so the bottom row gets what is left: letters that make up 8.5% of typing, against 15% on QWERTY. Press the lit keys, left to right.",
+        body: "Same finger, one row down from its home key.",
+        act: "Press each lit key, left to right",
         drill: () => find(BOTTOM, places(BOTTOM), ALL, BOTTOM),
-        after:
-          "Right: B M W V Z. Left: the semicolon, then Q J K X. The five rarest letters, Q J K X and Z, are all down here.",
+        after: "Left: the semicolon, then Q J K X. Right: B M W V Z.",
       },
       {
         title: "No labels",
         body: "Which home key is each one under?",
+        act: "Press each one",
         drill: () => which(BOTTOM, ALL),
       },
       {
         title: "Words",
         body: "Every letter is in play now.",
-        drill: () => words(ALL, "qjkxbmwvz;"),
+        act: "Type them",
+        drill: () => words(ALL, "qjkxbmwvz;", 12),
       },
     ],
   },
   {
-    id: "learn-shift",
-    title: "Shift and the rest",
+    id: "learn-caps",
+    title: "Capitals",
     steps: [
       {
+        title: "Guess first",
+        body: "A capital is a letter with Shift held down, and each hand has a Shift under its pinky.",
+        act: "A is under your left pinky. Which hand holds Shift for a capital A?",
+        lit: [...ids(ALL), SHIFT.left, SHIFT.right],
+        choice: {
+          options: ["The left hand", "The right hand"],
+          answer: 1,
+          reveal:
+            "The right: always the hand that isn't typing the letter, so one hand holds while the other strikes.",
+          shows: [SHIFT.right, ...ids("a")],
+        },
+      },
+      {
         title: "Capitals",
-        body: "Hold Shift with the other hand's pinky: the right Shift for a letter on the left, the left Shift for one on the right. One hand holds while the other types.",
+        body: "The right Shift for a letter on the left, the left Shift for a letter on the right.",
+        act: "Type them",
         drill: () => {
-          const d = words(ALL, ALL)
+          const d = words(ALL, ALL, 6)
           d.text = d.text
             .split(" ")
-            .slice(0, 6)
             .map((w) => w[0].toUpperCase() + w.slice(1))
             .join(" ")
           d.lit.push(SHIFT.left, SHIFT.right)
@@ -275,19 +360,9 @@ export const LESSONS: Lesson[] = [
         },
       },
       {
-        title: "The rest of the board",
-        body: "Numbers run along the top in the usual order. KeBe's two middle columns hold symbols a standard keyboard leaves to the right pinky: / and \\ between the home rows for the pointers, [ ] above them, - = among the numbers. Tapped alone, a Shift types ( or ), a Ctrl [ or ], an Alt = or _. Held, Fn turns the right hand into a number pad. Backspace is under the left pinky, one key out from A; Enter under the right, one out from S.",
-        lit: ids("1234567890-=[]/\\").concat(SHIFT.left, SHIFT.right, "CH57", "CH68", "CH60", "CH65", "CH59", "CH66", "CH29", "CH42"),
-      },
-    ],
-  },
-  {
-    id: "learn-all",
-    title: "Every letter",
-    steps: [
-      {
-        title: "One sentence, every letter",
-        body: "A sentence with all 26 letters, and no labels at all. Find each key by its row and column; one lights up if you stop for three seconds.",
+        title: "Every letter",
+        body: "A sentence with all 26 letters and no labels at all. Find each key by its row and column.",
+        act: "Type it. A key lights up if you stop for three seconds",
         drill: () => ({
           text: PANGRAMS[rnd(PANGRAMS.length)],
           show: "words",
@@ -296,8 +371,41 @@ export const LESSONS: Lesson[] = [
           hint: 3000,
         }),
         after:
-          "You know where every letter is. Speed comes with practice: the levels add one key at a time, and the 10-word test times you.",
+          "You know where every letter is. Speed comes with practice: the levels build it one key at a time.",
+      },
+    ],
+  },
+  {
+    id: "learn-extras",
+    title: "KeBe's extras",
+    steps: [
+      {
+        title: "Guess first",
+        body: "On KeBe, a Shift tapped on its own, without a letter, types something.",
+        act: "What would be most useful?",
+        lit: [SHIFT.left, SHIFT.right, ...ids(ALL)],
+        choice: {
+          options: ["Nothing", "Brackets", "A space"],
+          answer: 1,
+          reveal:
+            "Brackets: ( from the left Shift, ) from the right. Tapped, the Ctrls type [ and ], and the Alts = and _. Held, each works as usual.",
+          shows: [SHIFT.left, SHIFT.right, "CH57", "CH68", "CH60", "CH65"],
+        },
+      },
+      {
+        title: "The rest of the board",
+        body: "Numbers run along the top in the usual order. The two middle columns hold symbols a standard keyboard leaves to the right pinky: / and \\ between the home rows, [ ] above them, - and = among the numbers. Held, Fn turns the right hand into a number pad. Backspace is one key out from A, under the left pinky; Enter one out from S.",
+        lit: ids("1234567890-=[]/\\").concat(SHIFT.left, SHIFT.right, "CH57", "CH68", "CH60", "CH65", "CH59", "CH66", "CH29", "CH42"),
+        after:
+          "The levels ahead teach each of these in turn. They need a KeBe: other keyboards don't have these keys.",
       },
     ],
   },
 ]
+
+// Each lesson's guess has an answer among its options, and the home row's
+// last step really is every home-row word (the owner's ask).
+for (const l of LESSONS)
+  for (const s of l.steps)
+    if (s.choice && !s.choice.options[s.choice.answer]) throw new Error(`${l.id}: no answer`)
+if (wordsFor(HOME, HOME).length !== 91) throw new Error("the home row's word count changed: fix the copy")

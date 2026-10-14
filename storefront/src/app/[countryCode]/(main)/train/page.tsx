@@ -3,6 +3,7 @@ import { Metadata } from "next"
 import { pageAlternates } from "@lib/data/seo"
 import { BRAND, socialMetadata } from "@lib/util/seo"
 import { getTrainerAccount } from "@lib/data/trainer"
+import { itemFrom } from "@lib/train/course"
 import { PRESALE_HANDLE } from "@lib/util/presale"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Trainer from "@modules/train/components/trainer"
@@ -46,23 +47,18 @@ export async function generateMetadata(props: {
 // just the game, with a line under it for anyone typing on another keyboard
 // and a way back to the board it teaches.
 export default async function TrainPage(props: {
-  searchParams: Promise<{ mode?: string }>
+  searchParams: Promise<{ mode?: string; at?: string }>
 }) {
-  const [{ mode }, account] = await Promise.all([
+  const [{ mode, at }, account] = await Promise.all([
     props.searchParams,
     getTrainerAccount().catch(() => null),
   ])
 
   return (
     <div className="bg-kebe-page text-kebe-text">
-      <div className="mx-auto max-w-[1100px] px-[6vw] pb-20 pt-4 small:px-[4vw] small:pt-6">
+      <div className="mx-auto max-w-[1320px] px-[6vw] pb-20 pt-4 small:px-[4vw] small:pt-6">
         <h1 className="sr-only">Learn KeBe&apos;s layout: a typing trainer</h1>
-        <Trainer
-          account={account}
-          initialMode={
-            mode === "test" || mode === "levels" || mode === "learn" ? mode : undefined
-          }
-        />
+        <Trainer account={account} initial={itemFrom(at, mode)} />
         <div className="mt-14 flex flex-col items-start justify-between gap-4 border-t border-kebe-line pt-8 text-sm text-kebe-muted small:flex-row small:items-center">
           <p className="max-w-xl leading-relaxed">
             The letters work on any keyboard: press the key in the same place

@@ -1,6 +1,13 @@
 import type { CSSProperties } from "react"
 
-import { Finger, KEYS, Stroke, Touch, touchOf } from "@lib/train/layout"
+import { Finger, KEYS, Stroke, Touch, touchName, touchOf } from "@lib/train/layout"
+
+// The board's width wherever it is drawn: as wide as the height left over by
+// the page around it allows (2.83 : 1), so the trainer fits one screen at
+// 1366 x 768, and never narrower than 520 px unless the screen is.
+export const BOARD_WIDTH: CSSProperties = {
+  width: "min(100%, max(520px, calc((100svh - 450px) * 2.83)))",
+}
 
 // KeBe drawn to scale and lit the way the board is: black caps on the 18 x
 // 17 mm grid, each carrying its engraved legends (public/train/caps.svg, the
@@ -170,10 +177,11 @@ export default function Board({ learned, adds, next, flash, blind, onPress, clas
     <svg
       viewBox={`${vb.x} ${vb.y} ${vb.width} ${vb.height}`}
       className={className}
-      style={style}
-      role="img"
+      role={onPress ? "group" : "img"}
+      style={{ ...style, touchAction: "manipulation" }}
       aria-label={
-        next
+        // A key whose legend is dark isn't named: finding out is the point.
+        next && !next.keys.some((id) => blind?.has(id))
           ? `KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each, with ${next.name} lit as the next key`
           : "KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each"
       }
@@ -353,6 +361,9 @@ export default function Board({ learned, adds, next, flash, blind, onPress, clas
             />
           )
         })}
+        {/* Tap or click a key. On release, so a scroll that starts on the
+            board presses nothing; a screen reader reaches each as a button,
+            named by its finger and row where its legend is dark. */}
         {onPress &&
           KEYS.map((k) => (
             <rect
@@ -360,10 +371,15 @@ export default function Board({ learned, adds, next, flash, blind, onPress, clas
               {...box(k, 0.75)}
               fill="transparent"
               className="cursor-pointer"
-              onPointerDown={(e) => {
-                e.preventDefault()
-                onPress(k.id)
-              }}
+              role="button"
+              tabIndex={-1}
+              aria-label={
+                blind?.has(k.id)
+                  ? `the ${touchName(touchOf(k))}'s key, ${["number", "top", "home", "bottom", "thumb"][k.row]} row`
+                  : k.name
+              }
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => onPress(k.id)}
             />
           ))}
       </g>

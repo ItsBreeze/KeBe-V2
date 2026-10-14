@@ -1,16 +1,10 @@
 "use client"
 
 import { clx } from "@medusajs/ui"
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from "react"
+import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react"
 
 import { saveTrainerProgress } from "@lib/data/trainer"
+import { atOf, CHAPTERS, chapterOf, Item, nextAfter, resume, same } from "@lib/train/course"
 import {
   BACKSPACE,
   KEY_BY_ID,
@@ -21,9 +15,9 @@ import {
   touchName,
   touchOf,
 } from "@lib/train/layout"
+import { typedChar } from "@lib/train/lessons"
 import {
   bare,
-  GROUPS,
   learnedBefore,
   starsFor,
   LEVELS,
@@ -41,29 +35,23 @@ import {
   sameProgress,
   STORAGE_KEY,
 } from "@lib/train/progress"
-import { LESSONS, typedChar } from "@lib/train/lessons"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
-import Board, { FingerKey } from "@modules/train/components/board"
-import Learn, { KebeToggle } from "@modules/train/components/learn"
+import Board, { BOARD_WIDTH } from "@modules/train/components/board"
+import CourseMap from "@modules/train/components/course-map"
+import Learn, { BoardFooter, NextButton } from "@modules/train/components/learn"
 
-// The typing trainer: levels that open one at a time at each one's target, and
-// a 10-word speed test over the 1,000 most common English words. Words are
-// judged one at a time: Space moves on, Backspace can step back into a word
-// that went wrong, and only correctly typed words count toward the speed.
+// The typing trainer as one course (lib/train/course.ts), the map of it
+// beside the stage: five chapters, each a lesson that teaches the rule
+// (components/learn) and then the levels that build speed on it, one key a
+// level, each opening at the target of the one before; and a 10-word speed
+// test over the 1,000 most common English words. In the levels and the test,
+// words are judged one at a time: Space moves on, Backspace can step back into
+// a word that went wrong, and only correctly typed words count toward the
+// speed.
 
-// Learn teaches the layout's rules (components/learn); levels drill speed a
-// key at a time; the test times all of it.
-export type Mode = "learn" | "levels" | "test"
-
-// Where Enter and the Results button go after a round: the next level once
-// it is open, and from the last level, once it is passed, on to the 10-word
-// test (owner, 6 Oct 2026).
-function onward(mode: Mode, levelN: number, p: Progress): "level" | "test" | null {
-  if (mode !== "levels") return null
-  if (levelN < LEVELS.length) return openCount(p) > levelN ? "level" : null
-  const last = LEVELS[LEVELS.length - 1]
-  return (p.best[last.id] ?? 0) >= last.pass ? "test" : null
-}
+type Mode = "learn" | "levels" | "test"
+const modeOf = (it: Item): Mode =>
+  it.kind === "lesson" ? "learn" : it.kind === "level" ? "levels" : "test"
 
 type Run = {
   id: number
@@ -293,25 +281,32 @@ const KEBE_PREF = "kebe-trainer-on-kebe"
 
 export default function Trainer({
   account,
-  initialMode,
+  initial,
 }: {
   account: { id: string; firstName: string | null; progress: Progress } | null
-  // Unset: Learn for a newcomer, the levels for anyone who has played one.
-  initialMode?: Mode
+  // Named in the URL; otherwise where the stored progress says this learner
+  // is, worked out on arrival.
+  initial: Item | null
 }) {
-  const [mode, setMode] = useState<Mode>(initialMode ?? "learn")
-  const [levelN, setLevelN] = useState(1)
+  const [item, setItem] = useState<Item>(initial ?? { kind: "lesson", i: 0 })
+  // Until the stored progress has placed the learner, the trainer stays
+  // faint rather than showing lesson 1 to someone on level 12.
+  const [ready, setReady] = useState(!!initial)
+  const [again, setAgain] = useState(0)
+  const mode = modeOf(item)
+  const levelN = item.kind === "level" ? item.n : 1
   const [progress, setProgress] = useState<Progress>(
     account?.progress ?? EMPTY_PROGRESS
   )
   const [run, dispatch] = useReducer(reducer, blank(0, []))
   const [result, setResult] = useState<Result | null>(null)
+  const [heard, setHeard] = useState("")
   const [now, setNow] = useState(0)
   const [focused, setFocused] = useState(false)
   const [flash, setFlash] = useState<{ keys: string[]; ok: boolean } | null>(null)
   const [save, setSave] = useState<"idle" | "saving" | "saved" | "failed">("idle")
   const [showBoard, setShowBoard] = useState(true)
-  const [coarse, setCoarse] = useState(false)
+  const [touchOnly, setTouchOnly] = useState(false)
   const [onKebe, setOnKebeState] = useState(false)
   const setOnKebe = useCallback((v: boolean) => {
     setOnKebeState(v)
@@ -321,15 +316,18 @@ export default function Trainer({
   }, [])
 
   const area = useRef<HTMLDivElement>(null)
-  const strip = useRef<HTMLOListElement>(null)
   const lastWords = useRef<Set<string>>(new Set())
   const flashTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const recorded = useRef(-1)
+  // The box takes the focus once the learner has done something, not on
+  // arrival: a screen reader starts at the top of the page.
+  const touched = useRef(false)
 
   const level = LEVELS[levelN - 1]
   const opts = mode === "levels" ? { fn: level.fn, taps: level.taps } : {}
   const open = openCount(progress)
-  const goLevel = useCallback((n: number) => setLevelN(n), [])
+  const chapter = CHAPTERS[chapterOf(item)]
+  const go = useCallback((it: Item) => setItem(it), [])
 
   // ---- progress: the browser's copy merged with the account's ------------
 
@@ -361,20 +359,32 @@ export default function Trainer({
     const local = account ? mergeProgress(mine, readSlot(null)) : mine
     const merged = mergeProgress(local, account?.progress ?? EMPTY_PROGRESS)
     setProgress(merged)
-    goLevel(openCount(merged))
-    const played = LEVELS.some((l) => merged.best[l.id])
-    if (!initialMode && played) setMode("levels")
+    if (!initial) setItem(resume(merged))
     writeSlot(owner, merged)
     if (account && !sameProgress(merged, account.progress)) persist(merged)
     try {
       setShowBoard(localStorage.getItem(BOARD_PREF) !== "hidden")
       const kebe = localStorage.getItem(KEBE_PREF)
-      setOnKebeState(kebe ? kebe === "1" : played)
+      setOnKebeState(kebe ? kebe === "1" : LEVELS.some((l) => merged.best[l.id]))
     } catch {}
-    setCoarse(window.matchMedia?.("(pointer: coarse)").matches ?? false)
+    // A phone or tablet with no mouse or trackpad, so probably no keyboard.
+    setTouchOnly(
+      !!window.matchMedia?.("(pointer: coarse)").matches &&
+        !window.matchMedia?.("(any-pointer: fine)").matches
+    )
+    setReady(true)
     // Once, on arrival: later changes go through persist().
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // The address follows the course, so a reload or a link lands here again.
+  useEffect(() => {
+    if (!ready) return
+    const url = new URL(window.location.href)
+    url.searchParams.delete("mode")
+    url.searchParams.set("at", atOf(item))
+    window.history.replaceState(null, "", url)
+  }, [item, ready])
 
   // Another tab's results, as they land.
   useEffect(() => {
@@ -386,38 +396,35 @@ export default function Trainer({
     return () => window.removeEventListener("storage", onStorage)
   }, [owner])
 
-  // ---- tests ---------------------------------------------------------------
+  // ---- rounds --------------------------------------------------------------
 
   const newWords = useCallback(() => {
     if (mode === "learn") return
     const avoid = lastWords.current
-    const words =
-      mode === "test" ? speedTest(avoid) : level.make(avoid)
+    const words = mode === "test" ? speedTest(avoid) : level.make(avoid)
     lastWords.current = new Set(words.map(bare))
     setResult(null)
+    setHeard(
+      mode === "test"
+        ? "The 10-word test. Type the words shown."
+        : `Level ${level.n}: ${level.title}. ${level.blurb}`
+    )
     dispatch({ type: "reset", words })
-    area.current?.focus({ preventScroll: true })
+    if (touched.current) area.current?.focus({ preventScroll: true })
   }, [mode, level])
 
   useEffect(() => {
     newWords()
-  }, [newWords])
+  }, [newWords, again])
 
-  // The level being played stays in view in the strip on narrow screens.
+  // Live speed while a round runs.
   useEffect(() => {
-    strip.current
-      ?.querySelector('[aria-current="step"]')
-      ?.scrollIntoView({ block: "nearest", inline: "nearest" })
-  }, [levelN, mode])
-
-  // Live speed while a test runs.
-  useEffect(() => {
-    if (run.start === null || run.end !== null) return
+    if (mode === "learn" || run.start === null || run.end !== null) return
     const t = setInterval(() => setNow(performance.now()), 200)
     return () => clearInterval(t)
-  }, [run.start, run.end])
+  }, [mode, run.start, run.end])
 
-  // A finished test: score it once, keep the best, open the next level.
+  // A finished round: score it once, keep the best, open the next level.
   useEffect(() => {
     if (run.end === null || recorded.current === run.id) return
     recorded.current = run.id
@@ -441,16 +448,31 @@ export default function Trainer({
     }
   }, [run, mode, level, progress, persist])
 
+  const lessonDone = (id: string, score: number) => {
+    const after = recordResult(progress, id, score)
+    if (sameProgress(after, progress)) return
+    setProgress(after)
+    persist(after)
+  }
+
+  // From the map: somewhere else, or this again from the start.
+  const pick = (it: Item) => {
+    touched.current = true
+    if (same(it, item)) setAgain((n) => n + 1)
+    else go(it)
+  }
+
   // ---- keys ----------------------------------------------------------------
 
-  const state = useRef({ run, result, levelN, progress, mode, opts, onKebe })
-  state.current = { run, result, levelN, progress, mode, opts, onKebe }
+  const ahead = result ? nextAfter(item, progress) : null
+  const state = useRef({ run, result, opts, onKebe, ahead })
+  state.current = { run, result, opts, onKebe, ahead }
 
   const handleKey = useCallback(
     (e: KeyLike) => {
-      const { run, result, levelN, progress, mode, opts, onKebe } = state.current
-      // Learn reads its own keys.
-      if (e.isComposing || mode === "learn") return
+      const { run, result, opts, onKebe, ahead } = state.current
+      if (e.isComposing) return
+      touched.current = true
       const el = e.target as HTMLElement | null
       if (
         (e.key === "Enter" || e.key === " ") &&
@@ -475,9 +497,7 @@ export default function Trainer({
       if (result || run.end !== null) {
         if (key === "Enter") {
           e.preventDefault()
-          const to = onward(mode, levelN, progress)
-          if (to === "level") goLevel(levelN + 1)
-          else if (to === "test") setMode("test")
+          if (ahead) go(ahead)
           else newWords()
         } else if (key.length === 1) {
           e.preventDefault()
@@ -513,19 +533,21 @@ export default function Trainer({
         flashTimer.current = setTimeout(() => setFlash(null), 160)
       }
     },
-    [newWords, goLevel]
+    [newWords, go]
   )
 
-  // Keys pressed outside the test (nothing focused, or after clicking a
-  // level) go to it, so nobody has to click the box before typing.
+  // Keys pressed outside the box (nothing focused, or after clicking in the
+  // map) go to it, so nobody has to click the box before typing. A lesson
+  // reads its own keys.
   useEffect(() => {
+    if (mode === "learn") return
     const onKey = (e: KeyboardEvent) => {
-      if (state.current.mode === "learn") return
       if (e.defaultPrevented || area.current?.contains(e.target as Node)) return
       const el = e.target as HTMLElement
       // Only from the page itself or the trainer's own controls: menus and
       // lists elsewhere (the side menu's country list) keep their keys.
       if (el !== document.body && !el.closest?.("[data-trainer]")) return
+      if (el.closest?.("input, select, textarea")) return
       // A button or link keeps Space and Enter; any other key types.
       if (el !== document.body && (e.key === " " || e.key === "Enter")) return
       const erase = e.key === "Backspace" || e.key === "Delete"
@@ -536,7 +558,7 @@ export default function Trainer({
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
-  }, [handleKey])
+  }, [handleKey, mode])
 
   // ---- what the board shows -----------------------------------------------
 
@@ -562,20 +584,16 @@ export default function Trainer({
     next && press
       ? expected === " "
         ? next.name
-        : `${next.name} · ${touchName(press)}${hold.length ? `, held by the ${touchName(hold[0])}` : ""}`
+        : `${next.name}, ${touchName(press)}${hold.length ? `, held by the ${touchName(hold[0])}` : ""}`
       : null
 
-  // Read the clock while a test runs (the interval re-renders every 200 ms).
+  // Read the clock while a round runs (the interval re-renders every 200 ms).
   const live =
     run.start !== null && run.end === null && now >= 0
       ? stats(run, performance.now())
       : null
   const best = progress.best[mode === "test" ? "test" : level.id]
 
-  const pickLevel = (n: number) => {
-    setMode("levels")
-    goLevel(n)
-  }
   const said = result
     ? verdict(result, {
         mode,
@@ -587,17 +605,17 @@ export default function Trainer({
         save,
       })
     : null
-  const ahead = result ? onward(mode, levelN, progress) : null
-  const passedCount = LEVELS.filter((l) => (progress.best[l.id] ?? 0) >= l.pass).length
-  const starCount = LEVELS.reduce((n, l) => n + starsFor(progress.best[l.id], l.pass), 0)
+  // Said once when a round ends, not again as the save goes through.
+  useEffect(() => {
+    if (!result || !said) return
+    setHeard(
+      `${said.label}. ${Math.round(result.wpm)} words a minute, ${Math.round(result.acc * 100)}% accuracy.${
+        said.stars !== null ? ` ${said.stars} of 3 stars.` : ""
+      } ${said.line} Enter for ${ahead ? nextName(ahead) : "ten new words"}, Escape for new words.`
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [result])
   const streak = streakOf(run)
-  const lessonsDone = LESSONS.filter((l) => progress.best[l.id]).length
-  const lessonDone = (id: string, score: number) => {
-    const after = recordResult(progress, id, score)
-    if (sameProgress(after, progress)) return
-    setProgress(after)
-    persist(after)
-  }
   const toggleBoard = () => {
     setShowBoard((v) => {
       try {
@@ -608,309 +626,238 @@ export default function Trainer({
   }
 
   return (
-    <div data-trainer>
-      {/* One screen, top to bottom: the bar (mode, progress), the level
-          strip, the level, the words, the speed line, the board coloured by
-          finger. Sized so it all fits without scrolling (owner, 5 Oct 2026). */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div
-          role="group"
-          aria-label="What to practise"
-          className="inline-flex rounded-xl border border-kebe-line p-1 font-mono text-xs uppercase tracking-[0.14em]"
-        >
-          {(
-            [
-              ["learn", "Learn"],
-              ["levels", "Levels"],
-              ["test", `${TEST_WORDS}-word test`],
-            ] as [Mode, string][]
-          ).map(([m, label]) => (
-            <button
-              key={m}
-              aria-pressed={mode === m}
-              onClick={() => setMode(m)}
-              className={clx(
-                "rounded-lg px-3 py-1.5 transition-colors",
-                mode === m
-                  ? "bg-kebe-text text-kebe-page"
-                  : "text-kebe-muted hover:text-kebe-text"
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-        <div className="flex min-w-[220px] flex-1 items-center gap-3 small:max-w-sm">
-          <div
-            aria-hidden
-            className="h-1.5 flex-1 overflow-hidden rounded-full bg-kebe-line"
-          >
-            <div
-              className="h-full rounded-full bg-[#3f9e77] transition-[width] duration-500"
-              style={{
-                width: `${
-                  mode === "learn"
-                    ? (lessonsDone / LESSONS.length) * 100
-                    : (passedCount / LEVELS.length) * 100
-                }%`,
-              }}
-            />
-          </div>
-          {mode === "learn" ? (
-            <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-              <span className="text-kebe-text">{lessonsDone}</span>/{LESSONS.length} lessons
-            </p>
-          ) : (
-            <p className="shrink-0 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted">
-              <span className="text-kebe-text">{passedCount}</span>/{LEVELS.length}{" "}
-              passed · <span className="text-[#e3b04b]">★</span>{" "}
-              <span className="text-kebe-text">{starCount}</span>
-            </p>
-          )}
-        </div>
-      </div>
-
-      {mode === "learn" ? (
-        <Learn
-          best={progress.best}
-          onScore={lessonDone}
-          onLevels={() => pickLevel(openCount(progress))}
-          onKebe={onKebe}
-          setOnKebe={setOnKebe}
-        />
-      ) : (
-      <>
-      {/* The level strip: every level in one row, grouped, filled for the
-          one being played, outlined green once passed, locked until the one
-          before it is passed. Scrolls sideways where the screen is narrow. */}
-      {mode === "levels" && (
-        <ol
-          ref={strip}
-          aria-label="Levels"
-          className="mt-4 flex items-center gap-[2px] overflow-x-auto pb-1 [scrollbar-width:thin]"
-        >
-          {LEVELS.map((l, i) => {
-            const locked = l.n > open
-            const b = progress.best[l.id]
-            const passed = (b ?? 0) >= l.pass
-            const current = l.n === levelN
-            const newGroup = i > 0 && LEVELS[i - 1].group !== l.group
-            return (
-              <li key={l.id} className={clx("shrink-0", newGroup && "ml-1")}>
-                <button
-                  disabled={locked}
-                  onClick={() => pickLevel(l.n)}
-                  aria-current={current ? "step" : undefined}
-                  aria-label={`Level ${l.n}, ${l.group}, ${l.title}${
-                    locked
-                      ? ", locked"
-                      : b
-                      ? `, best ${b} wpm, ${starsFor(b, l.pass)} of 3 stars`
-                      : ""
-                  }`}
-                  title={
-                    locked
-                      ? `${l.group} · ${l.title}: pass level ${l.n - 1} to open`
-                      : `${l.group} · ${l.title}${b ? ` · best ${b} wpm` : ""}`
-                  }
-                  className={clx(
-                    "flex h-5 w-5 items-center justify-center rounded border font-mono text-[8px] transition-colors",
-                    current
-                      ? "border-[#3f9e77] bg-[#3f9e77] text-kebe-page"
-                      : passed
-                      ? "border-[#3f9e77]/70 bg-[#3f9e77]/10 text-kebe-text hover:border-[#3f9e77]"
-                      : "border-kebe-line text-kebe-text hover:border-kebe-muted",
-                    locked &&
-                      "cursor-not-allowed border-transparent text-kebe-faint opacity-40 hover:border-transparent"
-                  )}
-                >
-                  {l.n}
-                </button>
-              </li>
-            )
-          })}
-        </ol>
+    <div
+      data-trainer
+      className={clx(
+        "transition-opacity duration-200 small:grid small:grid-cols-[minmax(200px,228px)_minmax(0,1fr)] small:gap-x-10",
+        ready ? "opacity-100" : "opacity-0"
       )}
+    >
+      <CourseMap item={item} progress={progress} onPick={pick} />
 
-      {/* The level being played, on one line: where it is, what it adds,
-          a one-line tip, its target and the best so far. */}
-      <div className="mt-4 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-        <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-          <h2 className="font-display text-2xl leading-tight">
-            {mode === "test" ? "The 10-word test" : level.title}
-          </h2>
-          <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-kebe-muted">
-            {mode === "test"
-              ? "Ten of the 1,000 most common words"
-              : `Level ${level.n}/${LEVELS.length} · ${level.group}`}
-          </p>
-        </div>
-        <dl className="flex shrink-0 items-baseline gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted">
-          {mode === "levels" && (
-            <div className="flex items-baseline gap-2">
-              <dt>Pass</dt>
-              <dd className="text-sm text-kebe-text">{level.pass}</dd>
+      <div className="mt-6 min-w-0 small:mt-0">
+        {mode === "learn" && item.kind === "lesson" ? (
+          <Learn
+            key={`${item.i}-${again}`}
+            li={item.i}
+            chapter={chapter.title}
+            onScore={lessonDone}
+            onNext={() => {
+              touched.current = true
+              go(nextAfter(item, progress) ?? resume(progress))
+            }}
+            onKebe={onKebe}
+            setOnKebe={setOnKebe}
+          />
+        ) : (
+          <>
+            {/* The level, or the test: where it is, what it adds, a tip, its
+                target and the best so far. */}
+            <p className="font-mono text-[11px] uppercase tracking-[0.16em] text-kebe-muted">
+              {mode === "test"
+                ? "Speed test · ten of the 1,000 commonest words"
+                : `${chapter.title} · level ${level.n} of ${LEVELS.length}`}
+            </p>
+            <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
+              <h2 className="font-display text-3xl leading-tight">
+                {mode === "test" ? "The 10-word test" : level.title}
+              </h2>
+              <dl className="flex shrink-0 items-baseline gap-5 font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted">
+                {mode === "levels" && (
+                  <div className="flex items-baseline gap-2">
+                    <dt>Pass</dt>
+                    <dd className="text-sm text-kebe-text">{level.pass} wpm</dd>
+                  </div>
+                )}
+                <div className="flex items-baseline gap-2">
+                  <dt>{mode === "test" ? "Top" : "Best"}</dt>
+                  <dd className="flex items-center gap-2 text-sm text-kebe-text">
+                    {best ?? "—"}
+                    {mode === "levels" && best ? (
+                      <span role="img" aria-label={`${starsFor(best, level.pass)} of 3 stars`}>
+                        <Stars n={starsFor(best, level.pass)} />
+                      </span>
+                    ) : null}
+                  </dd>
+                </div>
+              </dl>
             </div>
-          )}
-          <div className="flex items-baseline gap-2">
-            <dt>{mode === "test" ? "Top" : "Best"}</dt>
-            <dd className="flex items-center gap-2 text-sm text-kebe-text">
-              {best ?? "—"}
-              {mode === "levels" && best ? <Stars n={starsFor(best, level.pass)} /> : null}
-            </dd>
-          </div>
-        </dl>
-      </div>
-      {mode === "levels" && (
-        <p className="mt-1 text-sm leading-snug text-kebe-muted">{level.blurb}</p>
-      )}
-
-      {/* Announced when a round ends: a region that is always present, since
-          one inserted along with its text is not read out. */}
-      <p role="status" className="sr-only">
-        {said
-          ? `${said.label}. ${Math.round(result!.wpm)} words a minute, ${Math.round(
-              result!.acc * 100
-            )}% accuracy.${said.stars !== null ? ` ${said.stars} of 3 stars.` : ""} ${
-              said.line
-            } Enter for next, Escape for new words.`
-          : ""}
-      </p>
-
-      {/* The test */}
-      <div
-        ref={area}
-        tabIndex={0}
-        role="textbox"
-        aria-label="Typing test. Type the words shown; Escape for new words."
-        aria-readonly="false"
-        onKeyDown={(e) => handleKey(e)}
-        onFocus={() => setFocused(true)}
-        onBlur={() => setFocused(false)}
-        onMouseDown={() => area.current?.focus({ preventScroll: true })}
-        className="relative mt-3 flex min-h-[128px] cursor-text flex-col justify-center rounded-2xl border border-kebe-line bg-kebe-raised px-6 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
-      >
-        {result ? (
-          <Results
-            result={result}
-            said={said!}
-            next={ahead}
-            onNext={() => (ahead === "test" ? setMode("test") : goLevel(levelN + 1))}
-            onAgain={newWords}
-          />
-        ) : (
-          <Words run={run} />
-        )}
-        {!focused && !result && run.words.length > 0 && (
-          <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-kebe-raised/80 backdrop-blur-[2px]">
-            <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-text">
-              Click here, or start typing
+            <p className="mt-1 max-w-3xl text-[15px] leading-snug text-kebe-text/75">
+              {mode === "levels"
+                ? level.blurb
+                : "Every key in play. Only words typed right count toward the speed."}
             </p>
-          </div>
-        )}
-      </div>
 
-      {/* Speed, and the next key with its finger */}
-      <div className="mt-2 flex flex-col gap-1 font-mono text-xs uppercase tracking-[0.14em] text-kebe-muted small:flex-row small:items-center small:justify-between">
-        <p aria-live="off">
-          {live && !result ? (
+            {/* Announced as a round starts and once as it ends: a region that
+                is always present, since one inserted along with its text is
+                not read out. */}
+            <p role="status" className="sr-only">
+              {heard}
+            </p>
+            <p id="trainer-words" className="sr-only">
+              {run.words.join(" ")}
+            </p>
+
+            {result ? (
+              <div
+                data-play
+                tabIndex={-1}
+                className="mt-4 flex min-h-[148px] flex-col justify-center rounded-2xl border border-kebe-line bg-kebe-raised px-5 py-5 outline-none small:px-8"
+              >
+                <Results
+                  result={result}
+                  said={said!}
+                  next={ahead ? nextName(ahead) : null}
+                  onNext={() => ahead && go(ahead)}
+                  onAgain={newWords}
+                />
+              </div>
+            ) : (
+              <div
+                ref={area}
+                data-play
+                tabIndex={0}
+                role="textbox"
+                aria-label="Type the words shown. Escape for new words."
+                aria-describedby="trainer-words"
+                aria-readonly="false"
+                onKeyDown={(e) => handleKey(e)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                onMouseDown={() => {
+                  touched.current = true
+                  area.current?.focus({ preventScroll: true })
+                }}
+                className="relative mt-4 flex min-h-[148px] cursor-text flex-col justify-center rounded-2xl border border-kebe-line bg-kebe-raised px-5 py-5 outline-none focus-visible:border-kebe-muted small:px-8"
+              >
+                <Words run={run} />
+                {touchOnly ? (
+                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 rounded-2xl bg-kebe-raised/90 p-4 text-center backdrop-blur-[2px]">
+                    <p className="max-w-xs text-sm text-kebe-text">
+                      The levels need a keyboard. The lessons work by tapping the board.
+                    </p>
+                    <button
+                      onClick={() => go(chapter.items[0])}
+                      className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page"
+                    >
+                      Go to the {chapter.title.toLowerCase()} lesson
+                    </button>
+                  </div>
+                ) : (
+                  !focused &&
+                  run.words.length > 0 && (
+                    <div className="absolute inset-0 flex items-center justify-center rounded-2xl bg-kebe-raised/80 backdrop-blur-[2px]">
+                      <p className="font-mono text-xs uppercase tracking-[0.2em] text-kebe-text">
+                        Click here, or start typing
+                      </p>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+
+            {/* Speed, and the next key with its finger */}
+            <div className="mt-2 flex min-h-[1.5rem] flex-col gap-1 text-[13px] text-kebe-muted small:flex-row small:items-center small:justify-between">
+              <p aria-live="off">
+                {live && !result ? (
+                  <>
+                    <span className="text-kebe-text">
+                      {live.secs >= 1 ? Math.round(live.wpm) : "—"}
+                    </span>{" "}
+                    wpm · {live.secs.toFixed(1)} s · word {Math.min(run.idx + 1, run.words.length)} of{" "}
+                    {run.words.length}
+                    {streak >= 2 && (
+                      <>
+                        {" · "}
+                        <span className="text-[#3f9e77]">streak ×{streak}</span>
+                      </>
+                    )}
+                    {fixedCount(run) > 0 && (
+                      <>
+                        {" · "}
+                        <span className="text-[#e3b04b]">
+                          autocorrected {fixedCount(run)}, not counted
+                        </span>
+                      </>
+                    )}
+                  </>
+                ) : result ? (
+                  `Enter: ${ahead ? nextName(ahead).toLowerCase() : "ten new words"} · Esc: new words`
+                ) : (
+                  "A wrong letter stays typed: Backspace takes it back · Esc: new words"
+                )}
+              </p>
+              {hint && !result && (
+                <p>
+                  Next: <span className="text-kebe-text">{hint}</span>
+                </p>
+              )}
+            </div>
+
+            {/* The board, every key in its finger's colour. */}
+            <div className="mt-3">
+              {showBoard && (
+                <Board
+                  learned={learned}
+                  adds={adds}
+                  next={result ? null : next}
+                  flash={flash}
+                  className="mx-auto block"
+                  style={BOARD_WIDTH}
+                />
+              )}
+              <BoardFooter
+                press={result || !showBoard ? null : press}
+                onKebe={onKebe}
+                setOnKebe={setOnKebe}
+                extra={
+                  <button
+                    onClick={toggleBoard}
+                    className="min-h-[32px] font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
+                  >
+                    {showBoard ? "Hide the board" : "Show the board"}
+                  </button>
+                }
+              />
+            </div>
+          </>
+        )}
+
+        <p className="mt-10 max-w-2xl text-sm leading-relaxed text-kebe-muted">
+          {account ? (
             <>
-              <span className="text-kebe-text">
-                {live.secs >= 1 ? Math.round(live.wpm) : "—"}
-              </span>{" "}
-              wpm
-              {" · "}
-              {live.secs.toFixed(1)} s{" · "}word {Math.min(run.idx + 1, run.words.length)}/
-              {run.words.length}
-              {streak >= 2 && (
-                <>
-                  {" · "}
-                  <span className="text-[#3f9e77]">streak ×{streak}</span>
-                </>
-              )}
-              {fixedCount(run) > 0 && (
-                <>
-                  {" · "}
-                  <span className="text-[#e3b04b]">
-                    autocorrected {fixedCount(run)}, not counted
-                  </span>
-                </>
-              )}
+              Signed in{account.firstName ? ` as ${account.firstName}` : ""}: your
+              lessons, open levels and top scores are saved to your account
+              {save === "saving"
+                ? " (saving…)"
+                : save === "failed"
+                ? ", but the last save didn't go through; this browser still has it"
+                : ""}
+              .
             </>
-          ) : result ? (
-            "Enter: next · Esc: new words"
           ) : (
-            "Esc: new words · Backspace: fix a word"
+            <>
+              Your progress is kept in this browser.{" "}
+              <LocalizedClientLink
+                href="/account"
+                className="text-kebe-text underline underline-offset-4"
+              >
+                Sign in
+              </LocalizedClientLink>{" "}
+              to save it to your account.
+            </>
           )}
         </p>
-        {hint && !result && (
-          <p>
-            Next: <span className="text-kebe-text normal-case">{hint}</span>
-          </p>
-        )}
       </div>
-
-      {/* The board, every key in its finger's colour, as large as the
-          screen's height leaves room for. */}
-      <div className="mt-3">
-        {showBoard && (
-          <Board
-            learned={learned}
-            adds={adds}
-            next={result ? null : next}
-            flash={flash}
-            className="mx-auto block"
-            style={{ width: "min(100%, max(520px, calc((100svh - 496px) * 2.83)))" }}
-          />
-        )}
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-x-6 gap-y-2">
-          {showBoard ? <FingerKey press={result ? null : press} /> : <span />}
-          <KebeToggle on={onKebe} set={setOnKebe} />
-          <button
-            onClick={toggleBoard}
-            className="font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
-          >
-            {showBoard ? "Hide the board" : "Show the board"}
-          </button>
-        </div>
-      </div>
-      </>
-      )}
-
-      {coarse && mode !== "learn" && (
-        <p className="mt-6 text-sm text-kebe-muted">
-          The trainer needs a physical keyboard: plug one in, or come back on a
-          computer.
-        </p>
-      )}
-
-      <p className="mt-10 max-w-2xl text-sm leading-relaxed text-kebe-muted">
-        {account ? (
-          <>
-            Signed in{account.firstName ? ` as ${account.firstName}` : ""}: your
-            open levels and top scores are saved to your account
-            {save === "saving"
-              ? " (saving…)"
-              : save === "failed"
-              ? ", but the last save didn't go through; this browser still has it"
-              : ""}
-            .
-          </>
-        ) : (
-          <>
-            Your progress is kept in this browser.{" "}
-            <LocalizedClientLink
-              href="/account"
-              className="text-kebe-text underline underline-offset-4"
-            >
-              Sign in
-            </LocalizedClientLink>{" "}
-            to save your top scores to your account.
-          </>
-        )}
-      </p>
     </div>
   )
+}
+
+// The Next button's words for what comes after a round.
+function nextName(it: Item) {
+  if (it.kind === "level") return "Next level"
+  if (it.kind === "test") return `The ${TEST_WORDS}-word test`
+  return `Next: the ${CHAPTERS[chapterOf(it)].title.toLowerCase()} lesson`
 }
 
 function Words({ run }: { run: Run }) {
@@ -930,7 +877,7 @@ function Words({ run }: { run: Run }) {
             className={clx(
               "relative whitespace-pre",
               wrong &&
-                "underline decoration-[#e0705f]/70 decoration-2 underline-offset-[6px]",
+                "underline decoration-[#e0705f] decoration-2 underline-offset-[6px]",
               fixed &&
                 "underline decoration-[#e3b04b] decoration-dotted decoration-2 underline-offset-[6px]"
             )}
@@ -940,9 +887,9 @@ function Words({ run }: { run: Run }) {
               const ch = j < word.length ? word[j] : t[j]
               const cls =
                 j >= t.length
-                  ? "text-kebe-text/55"
+                  ? "text-kebe-text/60"
                   : j >= word.length
-                  ? "text-[#e0705f]/70"
+                  ? "text-[#e0705f]"
                   : t[j] === word[j]
                   ? "text-kebe-text"
                   : "text-[#e0705f]"
@@ -1017,7 +964,7 @@ function verdict(
     label = passed ? "Passed" : passedBefore ? `Below ${o.pass}` : "Not yet"
     if (over) line = ""
     else if (passed && last)
-      line = `That's every level: every letter, symbol and number, and the Fn layer. Next, the ${TEST_WORDS}-word test.`
+      line = `That's the whole course: every letter, symbol and number, and the Fn layer.`
     else if (passed)
       line = r.opened
         ? `Level ${r.opened}, ${LEVELS[r.opened - 1].title}, is open.`
@@ -1049,7 +996,7 @@ function Results({
 }: {
   result: Result
   said: Said
-  next: "level" | "test" | null
+  next: string | null
   onNext: () => void
   onAgain: () => void
 }) {
@@ -1088,7 +1035,7 @@ function Results({
             onClick={onNext}
             className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-white"
           >
-            {next === "test" ? `${TEST_WORDS}-word test` : "Next level"}{" "}
+            {next}{" "}
             <span className="ml-1 font-mono text-[11px] opacity-60">Enter</span>
           </button>
         )}
@@ -1126,7 +1073,7 @@ function Stars({ n, dim, big }: { n: number; dim?: boolean; big?: boolean }) {
                 : "text-[#e3b04b]"
               : dim
               ? "text-kebe-page/30"
-              : "text-kebe-line"
+              : "text-kebe-faint"
           }
         >
           ★
