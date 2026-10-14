@@ -4,7 +4,7 @@ import { clx } from "@medusajs/ui"
 import { Fragment, useEffect, useRef, useState } from "react"
 
 import { KEY_BY_ID, SPACE, spaceAfter, strokeFor, touchName, touchOf } from "@lib/train/layout"
-import { coach, Drill, keyOf, label, LESSONS, place, typedChar } from "@lib/train/lessons"
+import { coach, Drill, keepsKeys, keyOf, label, LESSONS, place, TEXT_FIELD, typedChar } from "@lib/train/lessons"
 import Board, { BOARD_WIDTH, FingerKey } from "@modules/train/components/board"
 
 // A lesson on the stage (lib/train/lessons.ts): a guess, then the rule, then
@@ -186,8 +186,8 @@ export default function Learn({
       if (e.defaultPrevented || e.isComposing) return
       const el = e.target as HTMLElement
       if (el !== document.body && !el.closest?.("[data-trainer]")) return
-      if (el.closest?.("input, select, textarea")) return
-      const onControl = el !== document.body && !!el.closest?.("button, a")
+      if (el.closest?.(TEXT_FIELD)) return
+      const onControl = keepsKeys(el)
       const c = state.current
       if (e.key === "Escape") {
         e.preventDefault()
@@ -198,9 +198,13 @@ export default function Learn({
       if (c.done) {
         // Only Enter moves on: Space after a last word is a habit.
         if (e.key === " ") e.preventDefault()
-        if (e.key === "Enter" && performance.now() - doneAt.current > SETTLE) {
+        // An Enter inside the pause after the last key waits it out rather
+        // than being dropped, which read as Enter not working (14 Oct 2026).
+        if (e.key === "Enter" && !e.repeat) {
           e.preventDefault()
-          c.next()
+          const wait = SETTLE - (performance.now() - doneAt.current)
+          if (wait > 0) setTimeout(() => state.current.done && state.current.next(), wait)
+          else c.next()
         }
         return
       }

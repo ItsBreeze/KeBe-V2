@@ -15,7 +15,7 @@ import {
   touchName,
   touchOf,
 } from "@lib/train/layout"
-import { typedChar } from "@lib/train/lessons"
+import { keepsKeys, TEXT_FIELD, typedChar } from "@lib/train/lessons"
 import {
   bare,
   learnedBefore,
@@ -475,12 +475,7 @@ export default function Trainer({
       if (e.isComposing) return
       touched.current = true
       const el = e.target as HTMLElement | null
-      if (
-        (e.key === "Enter" || e.key === " ") &&
-        el !== area.current &&
-        el?.closest?.("button, a")
-      )
-        return
+      if ((e.key === "Enter" || e.key === " ") && el !== area.current && keepsKeys(el)) return
       // With Fn held on the Fn levels, Backspace's key sends Delete and
       // Esc's sends `: read them as Backspace and Escape there.
       const key = opts.fn
@@ -498,6 +493,9 @@ export default function Trainer({
       if (result || run.end !== null) {
         if (key === "Enter") {
           e.preventDefault()
+          // The frame between the last word and its score: no next yet, so
+          // an Enter here would start the same level over.
+          if (!result) return
           if (ahead) go(ahead)
           else newWords()
         } else if (key.length === 1) {
@@ -548,9 +546,12 @@ export default function Trainer({
       // Only from the page itself or the trainer's own controls: menus and
       // lists elsewhere (the side menu's country list) keep their keys.
       if (el !== document.body && !el.closest?.("[data-trainer]")) return
-      if (el.closest?.("input, select, textarea")) return
-      // A button or link keeps Space and Enter; any other key types.
-      if (el !== document.body && (e.key === " " || e.key === "Enter")) return
+      if (el.closest?.(TEXT_FIELD)) return
+      // A control reached by keyboard keeps Space and Enter; anything else,
+      // the results card and a button just clicked among them, hands them
+      // to the game (14 Oct 2026: Space scrolled and Enter did nothing on the
+      // results card, which kept the typing box's focus).
+      if ((e.key === " " || e.key === "Enter") && keepsKeys(el)) return
       const erase = e.key === "Backspace" || e.key === "Delete"
       if ((e.ctrlKey || e.metaKey || e.altKey) && !erase) return
       if (e.key.length !== 1 && !erase && !["Escape", "Enter"].includes(e.key)) return

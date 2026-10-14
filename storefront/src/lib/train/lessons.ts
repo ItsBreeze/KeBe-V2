@@ -126,6 +126,22 @@ const BY_CODE: Record<string, string> = Object.fromEntries(
   CODES.flatMap((row, r) => row.split(" ").map((code, i) => [code, [TOP, HOME, BOTTOM][r][i]]))
 )
 
+// A field typed into keeps every key. The trainer's one input is a
+// checkbox, which doesn't: a click on it must not stop the typing.
+export const TEXT_FIELD = "select, textarea, input:not([type=checkbox])"
+
+// Whether a focused control keeps Space and Enter for itself: only one
+// reached by keyboard, its focus ring showing. One just clicked, or the
+// results card, hands them to the game (14 Oct 2026).
+export function keepsKeys(el: Element | null) {
+  if (!el?.closest?.("button, a, input")) return false
+  try {
+    return el.matches(":focus-visible")
+  } catch {
+    return true // a browser without :focus-visible: the old rule
+  }
+}
+
 export function typedChar(e: { key: string; code: string; shiftKey: boolean }, onKebe: boolean) {
   const base = onKebe ? undefined : BY_CODE[e.code]
   if (!base) return e.key
