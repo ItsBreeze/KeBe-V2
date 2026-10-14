@@ -1,4 +1,5 @@
 import { placeOrder } from "@lib/data/cart"
+import { getBaseURL } from "@lib/util/env"
 import { unstable_rethrow } from "next/navigation"
 import { NextRequest, NextResponse } from "next/server"
 
@@ -27,7 +28,9 @@ export async function GET(req: NextRequest) {
 
   // Not paid: back to Payment to try again. Paid but not placed: Payment
   // says not to pay twice, and the Stripe webhook still completes the cart.
-  const step = new URL(`/${countryCode}/checkout`, req.url)
+  // The site's own address: on Railway req.url is the server's internal
+  // https://localhost:8000.
+  const step = new URL(`/${countryCode}/checkout`, getBaseURL())
   step.searchParams.set("step", "payment")
   step.searchParams.set(paid ? "paid" : "payment_failed", "1")
 
