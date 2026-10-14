@@ -1068,15 +1068,18 @@ function Stars({ n, dim, big }: { n: number; dim?: boolean; big?: boolean }) {
       {[0, 1, 2].map((i) => (
         <span
           key={i}
-          className={
+          // A round's stars land one by one, as a level's end should (14 Oct 2026).
+          style={big && i < n ? { animationDelay: `${150 + i * 180}ms` } : undefined}
+          className={clx(
             i < n
               ? dim
                 ? "text-kebe-page"
                 : "text-[#e3b04b]"
               : dim
               ? "text-kebe-page/30"
-              : "text-kebe-faint"
-          }
+              : "text-kebe-faint",
+            big && i < n && "inline-block animate-[star-pop_420ms_cubic-bezier(.2,1.5,.4,1)_both] motion-reduce:animate-none"
+          )}
         >
           ★
         </span>
