@@ -100,6 +100,20 @@ export const subdivisionCode = (
   province: string | null | undefined
 ): string | undefined => province?.split("-")[1]?.toUpperCase()
 
+// A wallet's state or province, "ON" or "Ontario", as the cart stores it,
+// "ca-on". "" when it is none of the country's.
+export const subdivisionValue = (
+  countryCode: string,
+  state: string | null | undefined
+): string => {
+  const s = (state ?? "").trim().toLowerCase()
+  return (
+    SUBDIVISIONS[countryCode.toLowerCase()]?.find(
+      (d) => d.value.split("-")[1] === s || d.label.toLowerCase() === s
+    )?.value ?? ""
+  )
+}
+
 // The address form's words for this country: Province and Postal code in
 // Canada, State and ZIP code in the United States.
 export const addressLabels = (countryCode: string | null | undefined) =>

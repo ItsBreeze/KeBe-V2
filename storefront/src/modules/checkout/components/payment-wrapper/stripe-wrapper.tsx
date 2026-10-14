@@ -18,7 +18,7 @@ export const StripeContext = createContext(false)
 // has to be passed in: bone text on the field colour, as the other fields.
 // 16px text, as the other fields too: iOS zooms in on a smaller field when it
 // is focused, and stays zoomed.
-const appearance: StripeElementsOptions["appearance"] = {
+export const appearance: StripeElementsOptions["appearance"] = {
   theme: "night",
   variables: {
     fontFamily: "Inter, sans-serif",

@@ -11,7 +11,11 @@ import {
   presalePaymentLabel,
 } from "@lib/util/presale"
 import medusaError from "@lib/util/medusa-error"
-import { POSTAL_CODES, postalCode } from "@lib/util/subdivisions"
+import {
+  POSTAL_CODES,
+  postalCode,
+  subdivisionValue,
+} from "@lib/util/subdivisions"
 import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { cookies as nextCookies } from "next/headers"
@@ -568,6 +572,96 @@ export async function initiatePaymentSession(
   } catch (error) {
     console.error("Starting the payment session failed:", error)
     return { error: errorText(error) }
+  }
+}
+
+// The express buttons' one step for what Addresses, Delivery and Payment do:
+// the wallet's contact, address and delivery onto the cart, then the Stripe
+// session. Returns the PaymentIntent's client secret and amount in cents, for
+// the button to check against what the wallet showed before it charges.
+export async function expressCheckout(input: {
+  email: string
+  phone: string | null
+  name: string
+  address: {
+    line1: string
+    line2: string | null
+    city: string
+    state: string
+    postal_code: string
+    country: string
+  }
+  shippingOptionId: string
+}): Promise<{ clientSecret: string; amount: number } | { error: string }> {
+  try {
+    const cartId = await getCartId()
+    if (!cartId) {
+      return { error: "Your cart was not found. Reload the page." }
+    }
+
+    const country = input.address.country.toLowerCase()
+    const postal = postalCode(country, input.address.postal_code)
+    if (postal === null) {
+      return { error: POSTAL_CODES[country].title }
+    }
+
+    // The wallet gives one name; the order keeps a first and a last.
+    const [firstName, ...rest] = input.name.trim().split(/\s+/)
+    const address = {
+      first_name: firstName ?? "",
+      last_name: rest.join(" "),
+      address_1: input.address.line1,
+      address_2: input.address.line2 ?? "",
+      city: input.address.city,
+      province: subdivisionValue(country, input.address.state),
+      postal_code: postal,
+      country_code: country,
+      phone: input.phone ?? "",
+    }
+
+    await updateCart({
+      email: input.email,
+      shipping_address: address,
+      billing_address: address,
+    })
+
+    const shipping = await setShippingMethod({
+      cartId,
+      shippingMethodId: input.shippingOptionId,
+    })
+    if (shipping?.error) {
+      return shipping
+    }
+
+    // For its lines and payment collection only: Medusa works the session's
+    // amount out from the cart as it now is, delivery included.
+    const cart = await retrieveCart(
+      cartId,
+      "*items, *items.product, *payment_collection"
+    )
+    if (!cart) {
+      return { error: "Your cart was not found. Reload the page." }
+    }
+
+    const res = await initiatePaymentSession(cart, {
+      provider_id: "pp_stripe_stripe",
+    })
+    if ("error" in res) {
+      return res
+    }
+
+    const session = res.payment_collection.payment_sessions?.find(
+      (s) => s.provider_id === "pp_stripe_stripe" && s.status === "pending"
+    )
+    const clientSecret = session?.data?.client_secret as string | undefined
+    if (!session || !clientSecret) {
+      return { error: "The payment could not be started. Try again." }
+    }
+
+    return { clientSecret, amount: Math.round(session.amount * 100) }
+  } catch (e) {
+    console.error("Express checkout failed:", e)
+    return { error: errorText(e) }
   }
 }
 
