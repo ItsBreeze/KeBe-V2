@@ -214,8 +214,10 @@ function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice: string
   ]
   return (
     <div className="text-left">
+      {/* Not "Mechanical or membrane": with the Lite not for sale that
+          offered a choice nobody can make (owner, 14 Oct 2026). */}
       <h2 className="text-center font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-        Mechanical or membrane
+        KeBe v2 and the planned Lite
       </h2>
       <div className="mt-10 grid gap-6 small:grid-cols-2">
         {boards.map((b) => (
