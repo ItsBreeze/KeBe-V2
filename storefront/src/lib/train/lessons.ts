@@ -183,14 +183,16 @@ const which = (chars: string, lit: string): Drill => ({
   hint: 4000,
 })
 
-// `n` of the 1,000 commonest words (all of them when n is 0), typeable with
-// `known`, each using one of `fresh`.
+// The `n` commonest of the 1,000 commonest words (all of them when n is 0),
+// typeable with `known`, each using one of `fresh`, in a random order. The
+// commonest, not a random n: they are the ones worth learning first (owner,
+// 14 Oct 2026).
 export const wordsFor = (known: string, fresh: string) =>
   TOP_WORDS.filter((w) => only(known)(w) && uses(fresh)(w))
 const words = (known: string, fresh: string, n = 10): Drill => {
-  const all = shuffle(wordsFor(known, fresh))
+  const all = wordsFor(known, fresh)
   return {
-    text: (n ? all.slice(0, n) : all).join(" "),
+    text: shuffle(n ? all.slice(0, n) : all).join(" "),
     show: "words",
     lit: [...ids(known), ...SPACES],
     blind: known,
@@ -257,10 +259,13 @@ export const LESSONS: Lesson[] = [
         drill: () => which(HOME, HOME),
       },
       {
-        title: "Every home-row word",
-        body: "All 91 of the 1,000 commonest English words that need nothing but the home row. After each word, Space with the thumb of the hand that didn't type its last letter.",
+        // Not all 91 home-row words at once, which read as a 90-word test
+        // at the start (owner, 14 Oct 2026): the ten commonest, and the
+        // levels take the rest a few at a time.
+        title: "The commonest home-row words",
+        body: "Ten of the most common English words, all on the home row. After each word, Space with the thumb of the hand that didn't type its last letter.",
         act: "Type them. A key lights up if you pause",
-        drill: () => words(HOME, HOME, 0),
+        drill: () => words(HOME, HOME, 10),
         after:
           "That's the home row: on this layout 70% of letter pairs switch hands, on QWERTY 52%. Next, its levels build speed. There a wrong key stays typed, and Backspace takes it back.",
       },
@@ -419,9 +424,7 @@ export const LESSONS: Lesson[] = [
   },
 ]
 
-// Each lesson's guess has an answer among its options, and the home row's
-// last step really is every home-row word (the owner's ask).
+// Each lesson's guess has an answer among its options.
 for (const l of LESSONS)
   for (const s of l.steps)
     if (s.choice && !s.choice.options[s.choice.answer]) throw new Error(`${l.id}: no answer`)
-if (wordsFor(HOME, HOME).length !== 91) throw new Error("the home row's word count changed: fix the copy")
