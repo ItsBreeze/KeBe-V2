@@ -278,8 +278,8 @@ export default async function Home(props: {
   ])
   // The store's return policy is given for each of these (structured-data.ts).
   const countries = await storefrontCountries()
-  // The reel's end card names the price and where it ships: US$249 · US on
-  // the US route, CA$349 · Canada everywhere else (the shop's two regions).
+  // The reel's end card names KeBe v2's pre-order price and the market: US$249 · US on
+  // the US route, CA$349 · Canada everywhere else (the shop's two regions). No ship date.
   const market = countryCode.toLowerCase() === "us" ? "us" : "ca"
   // The boards the hero offers, and whether /us must give the FCC notice for
   // any of them (none on /ca: lib/util/fcc.ts). Not KeBe Lite, on hold: it is
@@ -580,11 +580,14 @@ export default async function Home(props: {
           {/* The reel (marketing/instagram/kebe-reel-levers.mp4, owner's
               voice, captions burnt in) makes the whole case in 48 seconds,
               drawn in KeBe's own keys; the text below it goes further. The
-              end card names the price, the ship line and the market, so each
-              market gets its own cut, and whoever changes the presale price
-              or ships_by must re-render the end card for both markets
-              (build.mjs --from=<end0>, then --market=us) and re-copy all four
-              files here. No autoplay: it has a voice. */}
+              end card names KeBe v2's pre-order price and the market, so each
+              market gets its own cut (r2, 14 Oct 2026: "Pre-order price /
+              CA$349 + shipping / Pre-order now · Canada", US$249 on /us, no
+              ship date, since KeBe Lite is on hold; src-levers/build-v2end.mjs
+              --market=cav2|usv2 --from=42.9, audio remuxed from the approved
+              cut). Whoever changes the presale price must re-render both
+              markets and copy all four files here under NEW names: /products/*
+              is cached for days. No autoplay: it has a voice. */}
           <div className="mt-10 grid gap-8 small:grid-cols-[minmax(0,360px)_1fr] small:items-center">
             <div className="relative mx-auto aspect-[9/16] w-full max-w-[360px] overflow-hidden rounded-2xl border border-kebe-line bg-black small:mx-0">
               <video
@@ -595,8 +598,8 @@ export default async function Home(props: {
                 aria-label="Why KeBe is laid out the way it is, in 48 seconds"
                 className="h-full w-full object-cover"
               >
-                <source src={`/products/kebe-v2-reel-${market}.webm`} type="video/webm" />
-                <source src={`/products/kebe-v2-reel-${market}.mp4`} type="video/mp4" />
+                <source src={`/products/kebe-v2-reel-r2-${market}.webm`} type="video/webm" />
+                <source src={`/products/kebe-v2-reel-r2-${market}.mp4`} type="video/mp4" />
               </video>
             </div>
             <div className="max-w-xl">

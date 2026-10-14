@@ -102,6 +102,12 @@ export default async function startLite({ container, args }: ExecArgs) {
   const salesChannelModuleService = container.resolve(Modules.SALES_CHANNEL);
   const fulfillmentModuleService = container.resolve(Modules.FULFILLMENT);
   const publish = (args ?? []).includes("publish");
+  // KeBe Lite is ON HOLD since 14 Oct 2026 (owner: the keypad moulds don't pay off at low volume). Its page is a
+  // free waitlist and the storefront refuses checkout for it. Re-running this script would re-open its pre-order
+  // price list and ships_by, so it refuses to run unless KEBE_LITE_REOPEN=1 is set on purpose.
+  if (process.env.KEBE_LITE_REOPEN !== "1") {
+    throw new Error("KeBe Lite is on hold (14 Oct 2026): set KEBE_LITE_REOPEN=1 only if the owner reopens it.");
+  }
   const status = publish ? ProductStatus.PUBLISHED : ProductStatus.DRAFT;
 
   const key = process.env.STRIPE_SECRET_KEY || process.env.STRIPE_API_KEY || "";
