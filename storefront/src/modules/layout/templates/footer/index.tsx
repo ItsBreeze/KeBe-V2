@@ -57,6 +57,13 @@ export default async function Footer() {
             >
               Typing trainer
             </LocalizedClientLink>
+            {/* KeBe's free autocorrect app; its site links back here */}
+            <a
+              href="https://unslip.grounders.app"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Unslip autocorrect
+            </a>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
               className="txt-compact-small hover:text-ui-fg-base"
