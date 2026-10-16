@@ -4,6 +4,16 @@ import { CONTACT_EMAIL } from "@lib/constants"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Bear from "@modules/common/icons/bear"
 
+// The owner's Instagram accounts, same order on every site
+const INSTAGRAM_HANDLES = [
+  "kebe_keyboards",
+  "unslip.app",
+  "offhand.app",
+  "grounders.app",
+  "itsradio.app",
+  "hub.ai.app",
+]
+
 export default async function Footer() {
   return (
     <footer className="w-full">
@@ -19,7 +29,7 @@ export default async function Footer() {
             </LocalizedClientLink>
           </div>
         </div>
-        <div className="flex w-full flex-col gap-y-2 mb-16 small:flex-row small:justify-between text-ui-fg-muted">
+        <div className="flex w-full flex-col gap-y-2 mb-2 small:flex-row small:justify-between text-ui-fg-muted">
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <Text className="txt-compact-small">
               © {new Date().getFullYear()} KeBe. All rights reserved.
@@ -74,6 +84,18 @@ export default async function Footer() {
           <Text className="txt-compact-small">
             Designed and Assembled in Canada
           </Text>
+        </div>
+        <div className="flex flex-wrap gap-x-4 gap-y-1 mb-16 text-ui-fg-muted">
+          <Text className="txt-compact-small">Instagram</Text>
+          {INSTAGRAM_HANDLES.map((handle) => (
+            <a
+              key={handle}
+              href={`https://www.instagram.com/${handle}/`}
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              @{handle}
+            </a>
+          ))}
         </div>
       </div>
     </footer>
