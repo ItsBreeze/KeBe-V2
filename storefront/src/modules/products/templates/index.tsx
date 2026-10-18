@@ -9,6 +9,7 @@ import ProductTabs from "@modules/products/components/product-tabs"
 import ProductQuestions from "@modules/products/components/product-questions"
 import BeforeYouPreorder from "@modules/products/components/before-you-preorder"
 import LiteWaitlist from "@modules/products/components/lite-waitlist"
+import WaitlistForm from "@modules/home/components/waitlist-form"
 import RelatedProducts from "@modules/products/components/related-products"
 import ProductInfo from "@modules/products/templates/product-info"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
@@ -208,6 +209,18 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                   <ProductActionsWrapper id={product.id} region={region} />
                 </Suspense>
               </BuyBoxBoundary>
+            )}
+            {/* The notify-me form under the Pre-order button and its note,
+                for the visitor who is not ready to pay in full (business
+                audit, 11 Oct 2026). The Lite's waitlist is its buy box. */}
+            {shipsBy && !onHold && (
+              <div className="flex flex-col gap-3">
+                <p className="text-base leading-relaxed text-ui-fg-subtle">
+                  Not ready to pre-order? One email when real photos and boards
+                  exist. No newsletter.
+                </p>
+                <WaitlistForm source="v2" />
+              </div>
             )}
             {soldOutToV2 && (
               <Suspense fallback={null}>

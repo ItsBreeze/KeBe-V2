@@ -344,6 +344,20 @@ export default async function Home(props: {
               )}
             </p>
           )}
+          {/* The notify-me form under the buttons while v2 can be pre-ordered,
+              for the visitor who is not ready to pay in full (business audit,
+              11 Oct 2026: until then it showed only once pre-orders had
+              closed, so an open presale hid it). Twice on the page, wide and
+              phone, as the offer is; the form's ids are its own. */}
+          {presale.state === "open" && (
+            <div className="mt-6 flex w-full max-w-md flex-col items-center gap-3">
+              <p className="text-base text-kebe-text/80">
+                Not ready to pre-order? One email when real photos and boards
+                exist. No newsletter.
+              </p>
+              <WaitlistForm source="v2" />
+            </div>
+          )}
         </>
       )}
       {presale.state !== "open" && (
