@@ -80,19 +80,14 @@ export const noDivisionCurrencies = [
 export const CONTACT_EMAIL = "support@grounders.app"
 
 // Who sells KeBe, as the pre-order terms and the contact page name it (owner,
-// 6 Oct 2026): the business, its province and its phone. KeBe is the brand.
-// No street address and no personal name are published. Alberta's Internet
-// Sales Contract Regulation s.4(1)(a)(i)-(iii) lists the seller's name (and
-// trade name, if different), business address (and mailing address, if
-// different) and telephone number (and email) among what a buyer is told
-// before ordering. So the name and phone stay, and the address is still open:
-// a province is not an address. It is the owner's choice, for example a PO box
-// or mailbox address that is not their home. If KEBERDS is a sole
-// proprietor's trade name rather than a company, s.4(1)(a)(i) also asks for
-// the owner's legal name, which conflicts with "no personal name"; also the
-// owner's call. (Not legal advice.)
+// 6 Oct 2026; province corrected 18 Oct 2026: "It can say bc but Vancouver
+// and the address no"). KEBERDS is a BC sole proprietorship (FM1049069). No
+// city, street address or personal name is published; BC's distance-sales
+// rules (BPCPA s.46) list the seller's name, address and phone among what a
+// buyer is told before ordering, so the address stays the owner's open
+// decision. (Not legal advice.)
 export const SELLER_NAME = "KEBERDS"
-export const SELLER_PLACE = "Alberta, Canada"
+export const SELLER_PLACE = "British Columbia, Canada"
 export const CONTACT_PHONE = "780-901-1304"
 // The same number for a tel: link.
 export const CONTACT_PHONE_TEL = "+17809011304"
