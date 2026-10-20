@@ -9,7 +9,7 @@
 //
 // A dry run is the default: without --send nothing leaves the machine but a
 // GET of the sitemap. --site <url> is the public site the URLs belong to
-// (default INDEXNOW_SITE, else https://kebe.grounders.app); --sitemap <url>
+// (default INDEXNOW_SITE, else https://kebe.brisebois.xyz); --sitemap <url>
 // reads the URLs from another sitemap, such as a local build's, while the
 // host and keyLocation stay the public site's. Send after a deploy that
 // changed pages, not on a timer: IndexNow answers 429 to a site that
@@ -49,7 +49,7 @@ const option = (name) => {
 };
 
 const site = new URL(
-  option("--site") ?? process.env.INDEXNOW_SITE ?? "https://kebe.grounders.app"
+  option("--site") ?? process.env.INDEXNOW_SITE ?? "https://kebe.brisebois.xyz"
 );
 const sitemapUrl =
   option("--sitemap") ?? new URL("/sitemap.xml", site).toString();

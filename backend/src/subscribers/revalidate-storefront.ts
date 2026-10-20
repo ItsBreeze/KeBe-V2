@@ -6,7 +6,7 @@ import type { SubscriberArgs, SubscriberConfig } from "@medusajs/framework";
 // order giving its board back -- appears without a redeploy.
 //
 // Needs two variables on this service:
-//   STOREFRONT_URL     e.g. https://kebe.grounders.app
+//   STOREFRONT_URL     e.g. https://kebe.brisebois.xyz
 //   REVALIDATE_SECRET  the same value set on the storefront service
 //
 // Both missing is the normal state in local development; the subscriber then

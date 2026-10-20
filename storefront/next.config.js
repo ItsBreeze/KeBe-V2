@@ -93,6 +93,16 @@ const nextConfig = {
   // sent to /<country>/refunds by the middleware and then lands here.
   async redirects() {
     return [
+      // The store's address is kebe.brisebois.xyz since 19 Oct 2026 (owner).
+      // Every address on the old name, ads and Instagram links included, goes
+      // to the same path there; the query string (utm_*, fbclid) rides along,
+      // and 308 keeps a POST a POST.
+      {
+        source: "/:path*",
+        has: [{ type: "host", value: "kebe.grounders.app" }],
+        destination: "https://kebe.brisebois.xyz/:path*",
+        permanent: true,
+      },
       {
         source: "/:cc(ca|us)/:page(refunds|returns|shipping|faq)",
         destination: "/:cc/terms",
