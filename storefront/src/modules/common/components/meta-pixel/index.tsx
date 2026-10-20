@@ -7,7 +7,8 @@ export const PIXEL_ON = process.env.NODE_ENV === "production"
 // too: on 6 Oct 2026 a local one sent its PageViews to the owner's pixel and
 // Meta's gateway, and its test checkouts would have sent Purchases. Anywhere
 // else fbq is never defined, so every event the store tracks is a no-op.
-export const PIXEL_HOST = "kebe.grounders.app"
+// Both names serve the live store while it moves to brisebois.xyz (19 Oct 2026).
+export const PIXEL_HOSTS = ["kebe.brisebois.xyz", "kebe.grounders.app"]
 
 // The base code from Events Manager, run inline in <head> so fbq exists before
 // anything on the page tracks an event. It counts the landing page view;
@@ -18,7 +19,7 @@ export function MetaPixelScript() {
   return (
     <script
       dangerouslySetInnerHTML={{
-        __html: `if(location.hostname==='${PIXEL_HOST}'){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq.disablePushState=true;fbq('init','${META_PIXEL_ID}');fbq('track','PageView')}`,
+        __html: `if(${JSON.stringify(PIXEL_HOSTS)}.includes(location.hostname)){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq.disablePushState=true;fbq('init','${META_PIXEL_ID}');fbq('track','PageView')}`,
       }}
     />
   )

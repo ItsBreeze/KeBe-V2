@@ -69,7 +69,7 @@ export default async function Footer() {
             </LocalizedClientLink>
             {/* KeBe's free autocorrect app; its site links back here */}
             <a
-              href="https://unslip.grounders.app"
+              href="https://unslip.brisebois.xyz"
               className="txt-compact-small hover:text-ui-fg-base"
             >
               Unslip autocorrect
