@@ -72,7 +72,7 @@ export default function CourseMap({
               <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-kebe-muted">{name}</dt>
               <dd className="font-mono text-[15px] text-kebe-text">
                 {name === "Stars" && (
-                  <span aria-hidden className="mr-1 text-[#e3b04b]">
+                  <span aria-hidden className="mr-1 text-kebe-warn">
                     ★
                   </span>
                 )}
@@ -183,7 +183,7 @@ function Row({
         className={clx(
           "flex min-h-[32px] w-full items-center gap-2.5 rounded-md px-2 text-left text-sm transition-colors",
           current
-            ? "bg-[#3f9e77]/15 text-kebe-text ring-1 ring-[#3f9e77]"
+            ? "bg-kebe-good/15 text-kebe-text ring-1 ring-kebe-good"
             : open
             ? "text-kebe-text/85 hover:bg-kebe-raised hover:text-kebe-text"
             : // Muted, not faint: a locked level's name still has to be read (4.5:1).
@@ -191,7 +191,7 @@ function Row({
         )}
       >
         <span aria-hidden className="w-4 shrink-0 text-center text-xs">
-          {!open ? "🔒︎" : done ? <span className="text-[#3f9e77]">✓</span> : current ? "▸" : "·"}
+          {!open ? "🔒︎" : done ? <span className="text-kebe-good">✓</span> : current ? "▸" : "·"}
         </span>
         <span className={clx("min-w-0 flex-1 truncate", it.kind === "level" && "font-mono text-[13px]")}>
           {name}
@@ -199,7 +199,7 @@ function Row({
         {level && best ? (
           <span aria-hidden className="shrink-0 text-[10px] tracking-[0.06em]">
             {[0, 1, 2].map((i) => (
-              <span key={i} className={i < stars ? "text-[#e3b04b]" : "text-kebe-faint"}>
+              <span key={i} className={i < stars ? "text-kebe-warn" : "text-kebe-faint"}>
                 ★
               </span>
             ))}
@@ -221,13 +221,13 @@ function Ring({ done, of, n, current }: { done: number; of: number; n: number; c
   return (
     <span aria-hidden className="relative inline-flex h-7 w-7 shrink-0 items-center justify-center">
       <svg viewBox="0 0 28 28" className="absolute inset-0 -rotate-90">
-        <circle cx="14" cy="14" r={r} fill="none" stroke="#2E2B26" strokeWidth="2.5" />
+        <circle cx="14" cy="14" r={r} fill="none" className="stroke-kebe-line" strokeWidth="2.5" />
         <circle
           cx="14"
           cy="14"
           r={r}
           fill="none"
-          stroke="#3f9e77"
+          className="stroke-kebe-good"
           strokeWidth="2.5"
           strokeLinecap="round"
           strokeDasharray={`${(done / of) * c} ${c}`}

@@ -162,7 +162,7 @@ function PriceButton({
   return (
     <LocalizedClientLink
       href={`/products/${handle}`}
-      className="flex flex-1 flex-col items-center rounded-xl bg-kebe-text px-6 py-3 text-kebe-page transition-colors hover:bg-white small:max-w-[20rem]"
+      className="flex flex-1 flex-col items-center rounded-xl bg-kebe-text px-6 py-3 text-kebe-page transition-colors hover:bg-kebe-bright small:max-w-[20rem]"
     >
       <span className="text-base font-medium">
         {name}
@@ -337,7 +337,7 @@ export default async function Home(props: {
               {countryCode === "us" && usNotice && (
                 <a
                   href="#fcc-notice"
-                  className="underline underline-offset-4 hover:text-white"
+                  className="underline underline-offset-4 hover:text-kebe-bright"
                 >
                   US orders: FCC notice
                 </a>
@@ -379,7 +379,7 @@ export default async function Home(props: {
           angle="-25deg 62deg"
           fill={0.72}
           stageClassName="inset-x-0 bottom-14 top-[44%] small:bottom-0 small:top-[30%]"
-          className="h-[clamp(420px,58svh,540px)] small:h-[calc(100svh-4rem)] small:min-h-[640px] small:max-h-[1000px] bg-[radial-gradient(ellipse_at_50%_68%,#2c2821_0%,#1c1a17_38%,#12110f_72%)]"
+          className="h-[clamp(420px,58svh,540px)] small:h-[calc(100svh-4rem)] small:min-h-[640px] small:max-h-[1000px] bg-[image:var(--kebe-stage)]"
         >
           <div className="mx-auto flex max-w-[1200px] flex-col items-center px-[6vw] pt-12 text-center small:px-[4vw] small:pt-16">
             {/* With both boards on offer the hero names neither alone: the
@@ -689,7 +689,7 @@ export default async function Home(props: {
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <LocalizedClientLink
               href="/train"
-              className="rounded-xl bg-kebe-text px-6 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white"
+              className="rounded-xl bg-kebe-text px-6 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-kebe-bright"
             >
               Start learning the layout
             </LocalizedClientLink>

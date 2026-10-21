@@ -11,7 +11,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="shrink-0 rounded-xl bg-kebe-text px-7 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-white disabled:opacity-50"
+      className="shrink-0 rounded-xl bg-kebe-text px-7 py-3 text-base font-medium text-kebe-page transition-colors hover:bg-kebe-bright disabled:opacity-50"
     >
       {pending ? "Adding…" : "Notify me"}
     </button>

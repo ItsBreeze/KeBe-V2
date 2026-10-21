@@ -55,7 +55,7 @@ async function V2OnPreorder({ regionId }: { regionId: string }) {
       v1 is sold out. KeBe v2 is on pre-order.{" "}
       <LocalizedClientLink
         href={`/products/${PRESALE_HANDLE}`}
-        className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
+        className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
       >
         See KeBe v2
       </LocalizedClientLink>
@@ -245,7 +245,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                         country and leave the page for the homepage. */}
                     <a
                       href="#specifications"
-                      className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-white"
+                      className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
                     >
                       Full specifications
                     </a>
@@ -272,7 +272,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
                 New to Dvorak?{" "}
                 <LocalizedClientLink
                   href="/train"
-                  className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                  className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
                 >
                   Learn the layout
                 </LocalizedClientLink>{" "}
@@ -293,23 +293,23 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
               scenes (7 Oct 2026). Body size since the design audit (14 Oct
               2026): a disclosure has to be read. */}
           {product.handle === LITE_HANDLE && (
-            <p className="mb-4 max-w-3xl text-base leading-relaxed text-white/80">
+            <p className="mb-4 max-w-3xl text-base leading-relaxed text-kebe-text/80">
               None of the KeBe Lite pictures here are photographs: they and
               the 3D model are renders of the Lite&apos;s design files. For a
               built KeBe, see{" "}
-              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-white">
+              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-kebe-bright">
                 KeBe v1&apos;s photographs
               </LocalizedClientLink>
               .
             </p>
           )}
           {shipsBy && product.handle !== LITE_HANDLE && (
-            <p className="mb-4 max-w-3xl text-base leading-relaxed text-white/80">
+            <p className="mb-4 max-w-3xl text-base leading-relaxed text-kebe-text/80">
               None of the v2 pictures here are photographs: the plain renders
               and the 3D model come straight from v2&apos;s CAD, and the desk,
               studio and night pictures and the clip set that CAD model in
               AI-generated scenes. For a built KeBe, see{" "}
-              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-white">
+              <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-kebe-bright">
                 KeBe v1&apos;s photographs
               </LocalizedClientLink>
               .

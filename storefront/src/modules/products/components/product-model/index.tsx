@@ -199,7 +199,7 @@ export default function ProductModel({
       className={clx(
         "relative w-full overflow-hidden",
         framed &&
-          "rounded-2xl border bg-[radial-gradient(ellipse_at_50%_55%,#2a2620_0%,#1c1a17_45%,#12110f_100%)] transition-colors",
+          "rounded-2xl border bg-[image:var(--kebe-frame)] transition-colors",
         // No outline at rest (design audit, 14 Oct 2026); one shows while the model has the pointer.
         framed && (active ? "border-kebe-muted" : "border-transparent"),
         className

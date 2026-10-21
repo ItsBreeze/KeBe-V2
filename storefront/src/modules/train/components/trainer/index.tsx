@@ -771,13 +771,13 @@ export default function Trainer({
                     {streak >= 2 && (
                       <>
                         {" · "}
-                        <span className="text-[#3f9e77]">streak ×{streak}</span>
+                        <span className="text-kebe-good">streak ×{streak}</span>
                       </>
                     )}
                     {fixedCount(run) > 0 && (
                       <>
                         {" · "}
-                        <span className="text-[#e3b04b]">
+                        <span className="text-kebe-warn">
                           autocorrected {fixedCount(run)}, not counted
                         </span>
                       </>
@@ -879,9 +879,9 @@ function Words({ run }: { run: Run }) {
             className={clx(
               "relative whitespace-pre",
               wrong &&
-                "underline decoration-[#e0705f] decoration-2 underline-offset-[6px]",
+                "underline decoration-kebe-miss decoration-2 underline-offset-[6px]",
               fixed &&
-                "underline decoration-[#e3b04b] decoration-dotted decoration-2 underline-offset-[6px]"
+                "underline decoration-kebe-warn decoration-dotted decoration-2 underline-offset-[6px]"
             )}
             title={fixed ? "Fixed by KeBe's autocorrect: it doesn't count" : undefined}
           >
@@ -891,10 +891,10 @@ function Words({ run }: { run: Run }) {
                 j >= t.length
                   ? "text-kebe-text/60"
                   : j >= word.length
-                  ? "text-[#e0705f]"
+                  ? "text-kebe-miss"
                   : t[j] === word[j]
                   ? "text-kebe-text"
-                  : "text-[#e0705f]"
+                  : "text-kebe-miss"
               return (
                 <span key={j} className={clx("relative", cls)}>
                   {current && j === t.length && <Caret />}
@@ -918,7 +918,7 @@ function Caret() {
   return (
     <span
       aria-hidden
-      className="absolute -left-[1px] top-[0.2em] h-[1.1em] w-[2px] rounded bg-[#3f9e77] motion-safe:animate-pulse"
+      className="absolute -left-[1px] top-[0.2em] h-[1.1em] w-[2px] rounded bg-kebe-good motion-safe:animate-pulse"
     />
   )
 }
@@ -1035,7 +1035,7 @@ function Results({
         {next && (
           <button
             onClick={onNext}
-            className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-white"
+            className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-kebe-bright"
           >
             {next}{" "}
             <span className="ml-1 font-mono text-[11px] opacity-60">Enter</span>
@@ -1047,7 +1047,7 @@ function Results({
             "rounded-xl px-4 py-2 text-sm transition-colors",
             next
               ? "border border-kebe-line hover:border-kebe-muted"
-              : "bg-kebe-text font-medium text-kebe-page hover:bg-white"
+              : "bg-kebe-text font-medium text-kebe-page hover:bg-kebe-bright"
           )}
         >
           Ten new words{" "}
@@ -1074,7 +1074,7 @@ function Stars({ n, dim, big }: { n: number; dim?: boolean; big?: boolean }) {
             i < n
               ? dim
                 ? "text-kebe-page"
-                : "text-[#e3b04b]"
+                : "text-kebe-warn"
               : dim
               ? "text-kebe-page/30"
               : "text-kebe-faint",

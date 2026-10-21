@@ -42,14 +42,14 @@ const ProductQuestions = ({ product }: { product: HttpTypes.StoreProduct }) => {
                   {isExternalLink(f.link) ? (
                     <a
                       href={f.link.href}
-                      className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                      className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
                     >
                       {f.link.label}
                     </a>
                   ) : (
                     <LocalizedClientLink
                       href={f.link.href}
-                      className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+                      className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
                     >
                       {f.link.label}
                     </LocalizedClientLink>

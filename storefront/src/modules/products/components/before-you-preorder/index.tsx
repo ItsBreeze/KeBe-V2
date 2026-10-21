@@ -54,7 +54,7 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
           <p className="mt-3">
             <LocalizedClientLink
               href="/train"
-              className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+              className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
             >
               Open the typing trainer
             </LocalizedClientLink>
@@ -86,7 +86,7 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
           <p className="mt-3">
             <LocalizedClientLink
               href="/terms"
-              className="text-ui-fg-base underline underline-offset-4 hover:text-white"
+              className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
             >
               Pre-order terms
             </LocalizedClientLink>

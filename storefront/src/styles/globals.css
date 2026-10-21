@@ -111,42 +111,83 @@
   }
 }
 
-/* The whole store is dark (html.dark, app/layout.tsx), in the suite's night
-   register (Grounders, ItsRadio, Offhand): page #12110F, raised #1C1A17,
-   alt #242119, hairline #2E2B26, text #F5F1EA, muted #9B948A, faint #6E675D.
-   These override Medusa UI's own dark tokens, which are zinc greys, a blue
-   accent and a grey primary button. */
-.dark {
-  --bg-base: #12110f;
-  --bg-base-hover: #1c1a17;
-  --bg-base-pressed: #242119;
-  --bg-subtle: #1c1a17;
-  --bg-subtle-hover: #242119;
-  --bg-component: #242119;
-  --bg-component-hover: rgba(245, 241, 234, 0.1);
-  --bg-component-pressed: rgba(245, 241, 234, 0.16);
-  --bg-field: #1c1a17;
-  --bg-field-hover: #242119;
-  --bg-field-component: #1c1a17;
-  --bg-disabled: #1c1a17;
-  --bg-overlay: rgba(10, 9, 8, 0.72);
-  --fg-base: #f5f1ea;
-  --fg-subtle: #c9c3b9;
-  --fg-muted: #9b948a;
-  --fg-disabled: #6e675d;
-  --border-base: #2e2b26;
-  --border-strong: #3d3932;
-  --border-menu-top: #1c1a17;
-  --contrast-border-top: #1c1a17;
-  /* Links and primary buttons: the page's own text colour, ink labels. */
-  --fg-interactive: #f5f1ea;
-  --fg-interactive-hover: #ffffff;
-  --button-inverted: #f5f1ea;
-  --button-inverted-hover: #ffffff;
-  --button-inverted-pressed: #ddd8cf;
-  --contrast-fg-primary: #12110f;
-  --button-neutral: rgba(245, 241, 234, 0.06);
-  --button-neutral-hover: rgba(245, 241, 234, 0.1);
+/* The store follows the system's light or dark setting, as the suite's other
+   apps do (20 Oct 2026). Light is Unslip's DESIGN.md day palette (keycap
+   cream page, warm-black ink); dark is the suite's night register
+   (Grounders, ItsRadio, Offhand), unchanged. The kebe-* colours
+   (tailwind.config.js) are these channels, and Medusa UI's tokens below are
+   set from them, replacing its zinc greys, blue accent and grey button. */
+:root {
+  color-scheme: light dark;
+  --kebe-page: 240 239 236; /* #F0EFEC */
+  --kebe-raised: 230 227 220; /* #E6E3DC */
+  --kebe-alt: 217 210 197; /* #D9D2C5 */
+  --kebe-line: 207 199 184; /* #CFC7B8 */
+  --kebe-text: 28 26 23; /* #1C1A17 */
+  --kebe-muted: 95 88 78; /* #5F584E */
+  --kebe-faint: 122 114 102; /* #7A7266 */
+  --kebe-bright: 0 0 0;
+  --kebe-good: 45 117 88; /* #2D7558 */
+  --kebe-warn: 138 98 18; /* #8A6212 */
+  --kebe-miss: 169 60 42; /* #A93C2A */
+  /* The light round the 3D model: the home hero's stage, a product page's frame. */
+  --kebe-stage: radial-gradient(ellipse at 50% 68%, #ffffff 0%, #f6f5f2 38%, #f0efec 72%);
+  --kebe-frame: radial-gradient(ellipse at 50% 55%, #ffffff 0%, #f3f2ef 45%, #e6e3dc 100%);
+  --fg-subtle: #3d3832;
+  --border-strong: #b9b0a0;
+  --button-inverted-pressed: #34302a;
+  --bg-overlay: rgba(28, 26, 23, 0.4);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kebe-page: 18 17 15; /* #12110F */
+    --kebe-raised: 28 26 23; /* #1C1A17 */
+    --kebe-alt: 36 33 25; /* #242119 */
+    --kebe-line: 46 43 38; /* #2E2B26 */
+    --kebe-text: 245 241 234; /* #F5F1EA */
+    --kebe-muted: 155 148 138; /* #9B948A */
+    --kebe-faint: 110 103 93; /* #6E675D */
+    --kebe-bright: 255 255 255;
+    --kebe-good: 63 158 119; /* #3F9E77 */
+    --kebe-warn: 227 176 75; /* #E3B04B */
+    --kebe-miss: 224 112 95; /* #E0705F */
+    --kebe-stage: radial-gradient(ellipse at 50% 68%, #2c2821 0%, #1c1a17 38%, #12110f 72%);
+    --kebe-frame: radial-gradient(ellipse at 50% 55%, #2a2620 0%, #1c1a17 45%, #12110f 100%);
+    --fg-subtle: #c9c3b9;
+    --border-strong: #3d3932;
+    --button-inverted-pressed: #ddd8cf;
+    --bg-overlay: rgba(10, 9, 8, 0.72);
+  }
+}
+
+:root {
+  --bg-base: rgb(var(--kebe-page));
+  --bg-base-hover: rgb(var(--kebe-raised));
+  --bg-base-pressed: rgb(var(--kebe-alt));
+  --bg-subtle: rgb(var(--kebe-raised));
+  --bg-subtle-hover: rgb(var(--kebe-alt));
+  --bg-component: rgb(var(--kebe-alt));
+  --bg-component-hover: rgb(var(--kebe-text) / 0.1);
+  --bg-component-pressed: rgb(var(--kebe-text) / 0.16);
+  --bg-field: rgb(var(--kebe-raised));
+  --bg-field-hover: rgb(var(--kebe-alt));
+  --bg-field-component: rgb(var(--kebe-raised));
+  --bg-disabled: rgb(var(--kebe-raised));
+  --fg-base: rgb(var(--kebe-text));
+  --fg-muted: rgb(var(--kebe-muted));
+  --fg-disabled: rgb(var(--kebe-faint));
+  --border-base: rgb(var(--kebe-line));
+  --border-menu-top: rgb(var(--kebe-raised));
+  --contrast-border-top: rgb(var(--kebe-raised));
+  /* Links and primary buttons: the page's own text colour, page-coloured labels. */
+  --fg-interactive: rgb(var(--kebe-text));
+  --fg-interactive-hover: rgb(var(--kebe-bright));
+  --button-inverted: rgb(var(--kebe-text));
+  --button-inverted-hover: rgb(var(--kebe-bright));
+  --contrast-fg-primary: rgb(var(--kebe-page));
+  --button-neutral: rgb(var(--kebe-text) / 0.06);
+  --button-neutral-hover: rgb(var(--kebe-text) / 0.1);
   /* No shadow on a button at rest (design audit, 14 Oct 2026); focus keeps its ring. */
   --buttons-inverted: none;
   --buttons-neutral: none;
@@ -164,7 +205,7 @@
 /* A visible ring on whatever the keyboard reaches (design audit, 14 Oct
    2026). Elements with their own focus style set outline-none. */
 :focus-visible {
-  outline: 2px solid #f5f1ea;
+  outline: 2px solid rgb(var(--kebe-text));
   outline-offset: 2px;
 }
 
@@ -180,10 +221,19 @@
   }
 }
 
-/* The suite's one roundness: 12 on buttons and fields. */
-.dark button,
-.dark input,
-.dark select,
-.dark textarea {
+/* The suite's one roundness: 12 on buttons and fields (:root keeps the
+   weight .dark gave it over a rounded-* class). */
+:root button,
+:root input,
+:root select,
+:root textarea {
   border-radius: 12px;
+}
+
+/* By day model-viewer's loading bar, 40% black, read as a rule across the
+   stage while the model loaded. */
+@media (prefers-color-scheme: light) {
+  model-viewer {
+    --progress-bar-color: rgb(28 26 23 / 0.12);
+  }
 }

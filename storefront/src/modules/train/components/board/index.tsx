@@ -401,7 +401,7 @@ export function FingerKey({ press }: { press: Touch | null }) {
             className="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm align-[-1px]"
             style={{
               background: FINGER_COLOUR[f],
-              boxShadow: press?.finger === f ? "0 0 0 2px #f5f1ea" : undefined,
+              boxShadow: press?.finger === f ? "0 0 0 2px rgb(var(--kebe-text))" : undefined,
             }}
           />
           {f}

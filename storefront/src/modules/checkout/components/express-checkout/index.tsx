@@ -9,7 +9,7 @@ import { Text } from "@medusajs/ui"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { paidButNotPlaced } from "@modules/checkout/components/payment-button"
 import { stripePromise } from "@modules/checkout/components/payment-wrapper"
-import { appearance } from "@modules/checkout/components/payment-wrapper/stripe-wrapper"
+import { useAppearance } from "@modules/checkout/components/payment-wrapper/stripe-wrapper"
 import FccNotice from "@modules/common/components/fcc-notice"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import {
@@ -51,6 +51,7 @@ const ExpressCheckout = ({
     )
     .sort((a, b) => a.amount - b.amount)
     .map((o) => ({ id: o.id, displayName: o.name, amount: cents(o.amount) }))
+  const appearance = useAppearance()
 
   if (!stripePromise || !rates.length || holdsOnHoldBoard(cart.items)) {
     return null

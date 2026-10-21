@@ -298,7 +298,7 @@ export default function Learn({
               aria-hidden
               className={clx(
                 "h-1.5 rounded-full transition-all",
-                i === s.si ? "w-5 bg-kebe-text" : i < s.si ? "w-1.5 bg-[#3f9e77]" : "w-1.5 bg-kebe-line"
+                i === s.si ? "w-5 bg-kebe-text" : i < s.si ? "w-1.5 bg-kebe-good" : "w-1.5 bg-kebe-line"
               )}
             />
           ))}
@@ -371,7 +371,7 @@ export default function Learn({
                   className={clx(
                     "font-display leading-none",
                     d!.show === "which" ? "text-6xl" : "text-3xl",
-                    s.missed && "text-[#e0705f]"
+                    s.missed && "text-kebe-miss"
                   )}
                 >
                   {d!.show === "which" ? want : d!.say?.[s.pos]}
@@ -387,7 +387,7 @@ export default function Learn({
       </div>
 
       <div className="mt-2 flex min-h-[1.5rem] flex-col gap-1 text-[13px] text-kebe-muted small:flex-row small:items-center small:justify-between">
-        <p className={clx(s.msg && "text-[#e3b04b]")}>
+        <p className={clx(s.msg && "text-kebe-warn")}>
           {s.msg ??
             (done
               ? "Enter: next · Esc: again"
@@ -441,7 +441,7 @@ export function NextButton({ onClick, children }: { onClick: () => void; childre
   return (
     <button
       onClick={onClick}
-      className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-white"
+      className="rounded-xl bg-kebe-text px-4 py-2 text-sm font-medium text-kebe-page transition-colors hover:bg-kebe-bright"
     >
       {children} <kbd className="ml-1 font-mono text-[11px] opacity-60">Enter</kbd>
     </button>
@@ -484,9 +484,9 @@ function ChoiceCard({
               className={clx(
                 "flex min-h-[44px] items-center gap-3 rounded-xl border px-4 text-left text-[15px] transition-colors",
                 right
-                  ? "border-[#3f9e77] bg-[#3f9e77]/15 text-kebe-text"
+                  ? "border-kebe-good bg-kebe-good/15 text-kebe-text"
                   : wrong
-                  ? "border-[#e0705f] bg-[#e0705f]/10 text-kebe-text"
+                  ? "border-kebe-miss bg-kebe-miss/10 text-kebe-text"
                   : picked !== null
                   ? "border-kebe-line text-kebe-muted"
                   : "border-kebe-line text-kebe-text hover:border-kebe-muted hover:bg-kebe-alt"
@@ -505,7 +505,7 @@ function ChoiceCard({
       {picked !== null && (
         <div className="mt-4 flex flex-col gap-3 small:flex-row small:items-end small:justify-between">
           <p className="max-w-2xl text-[15px] leading-snug text-kebe-text">
-            <span className={picked === answer ? "text-[#3f9e77]" : "text-[#e3b04b]"}>
+            <span className={picked === answer ? "text-kebe-good" : "text-kebe-warn"}>
               {picked === answer ? "Right. " : "Not quite. "}
             </span>
             {reveal}
@@ -532,15 +532,15 @@ function Slots({ text, pos, marks, reveal }: { text: string; pos: number; marks:
             i === pos
               ? "border-kebe-text text-kebe-text"
               : marks[i] === "ok"
-              ? "border-[#3f9e77] bg-[#3f9e77]/15 text-kebe-text"
+              ? "border-kebe-good bg-kebe-good/15 text-kebe-text"
               : marks[i] === "miss"
-              ? "border-[#e3b04b] bg-[#e3b04b]/10 text-kebe-text"
+              ? "border-kebe-warn bg-kebe-warn/10 text-kebe-text"
               : "border-kebe-line text-kebe-muted"
           )}
         >
           {i < pos ? (reveal ? c : marks[i] === "ok" ? "✓" : "•") : reveal ? "?" : ""}
           {reveal && marks[i] === "miss" && (
-            <span className="absolute -right-0.5 -top-1 text-[9px] text-[#e3b04b]">•</span>
+            <span className="absolute -right-0.5 -top-1 text-[9px] text-kebe-warn">•</span>
           )}
         </li>
       ))}
@@ -587,7 +587,7 @@ export function KebeToggle({ on, set }: { on: boolean; set: (v: boolean) => void
           // Typing goes back to the trainer, not the box.
           document.querySelector<HTMLElement>("[data-play]")?.focus({ preventScroll: true })
         }}
-        className="accent-[#3f9e77]"
+        className="accent-kebe-good"
       />
       Typing on a KeBe
     </label>
@@ -617,7 +617,7 @@ function Text({ text, pos, missed, page }: { text: string; pos: number; missed: 
                 j === pos &&
                   clx(
                     "rounded-sm underline decoration-2 underline-offset-[6px]",
-                    missed ? "text-[#e0705f] decoration-[#e0705f]" : "text-kebe-text decoration-[#3f9e77]"
+                    missed ? "text-kebe-miss decoration-kebe-miss" : "text-kebe-text decoration-kebe-good"
                   )
               )}
             >

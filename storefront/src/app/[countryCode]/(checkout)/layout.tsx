@@ -32,7 +32,7 @@ export default function CheckoutLayout({
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-white"
+            className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
             data-testid="store-link"
           >
             KeBe

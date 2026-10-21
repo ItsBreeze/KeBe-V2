@@ -6,7 +6,7 @@ import {
 } from "@modules/common/components/meta-pixel"
 import PixelPageViews from "@modules/common/components/meta-pixel/page-views"
 import { BRAND, SOCIAL_IMAGE } from "@lib/util/seo"
-import { Metadata } from "next"
+import { Metadata, Viewport } from "next"
 import { DM_Serif_Display, IBM_Plex_Mono, Inter } from "next/font/google"
 import "styles/globals.css"
 
@@ -66,16 +66,21 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", images: [SOCIAL_IMAGE] },
 }
 
+// The browser bar takes the page colour of whichever scheme is showing.
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#F0EFEC" },
+    { media: "(prefers-color-scheme: dark)", color: "#12110F" },
+  ],
+}
+
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
-    // One dark theme for the whole store, the suite's night register: the
-    // `dark` class switches Medusa UI to its dark tokens, which
-    // styles/globals.css sets to the suite's neutrals.
+    // Light or dark as the system is set, by CSS alone (styles/globals.css),
+    // so there is nothing to flash or hydrate.
     <html
       lang="en"
-      data-mode="dark"
-      className={`dark ${display.variable} ${body.variable} ${mono.variable}`}
-      style={{ colorScheme: "dark" }}
+      className={`${display.variable} ${body.variable} ${mono.variable}`}
     >
       <head>
         {/* Dark Reader repaints any page it doesn't take for dark; here it

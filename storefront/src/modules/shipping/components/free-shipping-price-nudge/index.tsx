@@ -176,7 +176,7 @@ function FreeShippingInline({
             className={clx(
               "bg-zinc-500 h-1 rounded-full max-w-full duration-500 ease-in-out",
               {
-                "bg-[#3f9e77]": price.target_reached,
+                "bg-kebe-good": price.target_reached,
               }
             )}
             style={{ width: `${price.remaining_percentage}%` }}
@@ -252,7 +252,7 @@ function FreeShippingPopup({
                 className={clx(
                   "bg-zinc-500 h-1.5 rounded-full max-w-full duration-500 ease-in-out",
                   {
-                    "bg-[#3f9e77]": price.target_reached,
+                    "bg-kebe-good": price.target_reached,
                   }
                 )}
                 style={{ width: `${price.remaining_percentage}%` }}
