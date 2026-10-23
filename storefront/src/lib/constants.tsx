@@ -74,10 +74,10 @@ export const noDivisionCurrencies = [
   "xau",
 ]
 
-// Where buyers and the privacy notice send people. Cloudflare Email Routing
-// forwards it to the owner's inbox. (support@keberds.ca is dead: the .ca
-// domain lapsed.)
-export const CONTACT_EMAIL = "support@grounders.app"
+// Where buyers and the privacy notice send people. Porkbun email forwarding
+// delivers it to the owner's inbox (22 Oct 2026; the old support@grounders.app
+// still forwards too). (support@keberds.ca is dead: the .ca domain lapsed.)
+export const CONTACT_EMAIL = "support@brisebois.xyz"
 
 // Who sells KeBe, as the pre-order terms and the contact page name it (owner,
 // 6 Oct 2026; province corrected 18 Oct 2026: "It can say bc but Vancouver
