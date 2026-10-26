@@ -593,8 +593,8 @@ export default async function Home(props: {
                 aria-label="Why KeBe is laid out the way it is, in 48 seconds"
                 className="h-full w-full object-cover"
               >
-                <source src={`/products/kebe-v2-reel-r2-${market}.webm`} type="video/webm" />
-                <source src={`/products/kebe-v2-reel-r2-${market}.mp4`} type="video/mp4" />
+                <source src={`/products/kebe-hero-for-sale-now${market === "us" ? "-us" : ""}.webm`} type="video/webm" />
+                <source src={`/products/kebe-hero-for-sale-now${market === "us" ? "-us" : ""}.mp4`} type="video/mp4" />
               </video>
             </div>
             <div className="max-w-xl">
