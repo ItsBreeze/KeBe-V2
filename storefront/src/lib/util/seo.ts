@@ -176,7 +176,7 @@ export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
   const varies = new Set(prices.map((p) => p.amount)).size > 1
   const price = `${varies ? "from " : ""}${priceForCopy(lowest)}`
   return presaleShipsBy(product)
-    ? `Pre-order ${price} plus shipping.`
+    ? `For sale now, ${price} plus shipping, built and shipped in the order received.`
     : `${price.charAt(0).toUpperCase()}${price.slice(1)} plus shipping.`
 }
 
