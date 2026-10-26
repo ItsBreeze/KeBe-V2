@@ -32,7 +32,7 @@ export default function CheckoutLayout({
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
+            className="whitespace-nowrap font-display text-base uppercase tracking-[0.12em] small:text-2xl small:tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
             data-testid="store-link"
           >
             Brisebois&apos; Boards
