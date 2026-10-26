@@ -283,7 +283,7 @@ const withCapitals = (known: string) =>
     : known
 const capital = (w: string) => w[0].toUpperCase() + w.slice(1)
 const PROPER = [
-  "KeBe", "Dvorak", "QMK", "USB", "Canada", "English", "Monday", "Friday", "July",
+  "Breeze", "Dvorak", "QMK", "USB", "Canada", "English", "Monday", "Friday", "July",
   "Toronto", "Ottawa", "I", "I'm", "I'll", "OK", "TV",
 ]
 // Tapped, the Shifts type ( and ), the Ctrls [ and ], the left Alt = and

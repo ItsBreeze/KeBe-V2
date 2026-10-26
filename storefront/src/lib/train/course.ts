@@ -24,7 +24,7 @@ export const CHAPTERS: Chapter[] = [
   },
   { title: "Capitals", items: [lesson("learn-caps"), ...levelsIn("Capitals"), { kind: "test" }] },
   {
-    title: "KeBe's extras",
+    title: "The Breeze Board's extras",
     items: [lesson("learn-extras"), ...levelsIn("Symbols", "Number row", "Fn layer")],
   },
 ]
