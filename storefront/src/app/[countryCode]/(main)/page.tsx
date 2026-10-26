@@ -328,7 +328,7 @@ export default async function Home(props: {
                   2026). /ca says nothing of it: the CA region ships
                   to Canada only, so it makes no US offer (owner, 7 Oct
                   2026; lib/util/fcc.ts). */}
-              {lite ? "KeBe v2 pre-order" : "Pre-order"}, plus shipping
+              {lite ? "KeBe v2 is on sale now" : "On sale now"}, built and shipped in order received, plus shipping
               {countryCode === "us"
                 ? usNotice
                   ? ". "

@@ -241,6 +241,6 @@ export async function middleware(request: NextRequest) {
 // name here too (6 Oct 2026).
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|ec7df96eba8c58b47c1befa4913baa92.txt|feeds/|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|ec7df96eba8c58b47c1befa4913baa92.txt|feeds/|waitlist|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
   ],
 }
