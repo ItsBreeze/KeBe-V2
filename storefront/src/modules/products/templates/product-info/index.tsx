@@ -2,7 +2,6 @@ import { HttpTypes } from "@medusajs/types"
 import {
   LITE_HANDLE,
   isOnHold,
-  presaleShipLine,
   presaleShipsBy,
 } from "@lib/util/presale"
 import { BUYBOX_TAGLINE, BUYBOX_TAGLINE_LITE } from "@lib/util/kebe-copy"
@@ -21,7 +20,6 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   const [name, ...rest] = (product.title ?? "").split(" — ")
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
-  const shipLine = presaleShipLine(product, countryCode)
   // KeBe Lite, planned, keeps its tagline, under "Planned, with a free waitlist."
   const onHold = isOnHold(product.handle)
   // On the presale board the line under the name continues the reel's
@@ -63,7 +61,7 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
       ) : (
         shipsBy && (
           <p className="text-base text-ui-fg-muted">
-            {shipLine ? `For sale now. ${shipLine}.` : "For sale now."}
+            For sale now.
           </p>
         )
       )}

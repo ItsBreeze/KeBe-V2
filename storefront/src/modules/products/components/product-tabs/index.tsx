@@ -60,7 +60,7 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
               <p>
                 For sale now, charged in full at checkout and shipped to{" "}
                 {caPending ? "Canada" : "Canada and the United States"}.
-                {shipLine && ` ${shipLine}.`}
+                {shipLine && " Built and shipped in the order received."}
               </p>
               <p>
                 Shipping goes by Canada Post. You choose the service at

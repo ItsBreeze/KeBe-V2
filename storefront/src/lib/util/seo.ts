@@ -185,8 +185,7 @@ const shipSentence = (
   product: HttpTypes.StoreProduct,
   countryCode?: string
 ) => {
-  const line = presaleShipLine(product, countryCode)
-  return line ? `${line}.` : null
+  return presaleShipLine(product, countryCode) ? "Built and shipped in the order received." : null
 }
 
 // A product page's <title>: its listing copy, else its Medusa title, which

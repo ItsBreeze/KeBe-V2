@@ -21,7 +21,7 @@ const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&
 
 /** opts: { base (asset prefix), action (form URL), storeUrl, state: ''|'error'|'success', msg, email } */
 export function renderPage(opts) {
-  const C = CONFIG, o = { base: '', action: '/api/waitlist', storeUrl: '/', state: '', msg: '', email: '', ...opts };
+  const C = CONFIG, o = { base: '', heroSrc: '/products/kebe-lite-hero.jpg', action: '/api/waitlist', storeUrl: '/', state: '', msg: '', email: '', ...opts };
   const cls = o.state ? `form is-${o.state}` : 'form';
   const err = o.state === 'error';
   return `<!doctype html>
@@ -55,7 +55,7 @@ export function renderPage(opts) {
    </form>
   </section>
   <figure class="media">
-   <div class="photo"><img src="${o.base}assets/kebe-v2-hero.jpg" alt="KeBe keyboard, render"></div>
+   <div class="photo"><img src="${o.heroSrc}" alt="KeBe Lite keyboard, render"></div>
    <figcaption class="cap">Render from its CAD.</figcaption>
   </figure>
  </main>

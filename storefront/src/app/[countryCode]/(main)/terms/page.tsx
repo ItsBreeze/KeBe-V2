@@ -136,8 +136,7 @@ export default async function TermsPage(props: {
                 shown date is not a deadline here, and "If it is late" is the
                 only commitment about it (owner, 6 Oct 2026). */}
             <p className="mt-3">
-              Your board is built and shipped in the order received. Before you
-              order, the site shows the date your board ships.
+              Your board is built and shipped in the order received.
               Shipping goes by Canada Post. US orders go by Canada Post with
               the US duties already paid, so there is nothing more to pay on
               delivery.

@@ -49,7 +49,7 @@ export default async function OrderCompletedTemplate({
               shipping. */}
           {shipLine && (
             <Text data-testid="order-ship-line">
-              {shipLine}. Your card has been charged{" "}
+              Built and shipped in the order received. Your card has been charged{" "}
               {convertToLocale({
                 amount: order.total,
                 currency_code: order.currency_code,

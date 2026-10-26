@@ -375,13 +375,13 @@ export default function ProductActions({
                 2026; lib/util/fcc.ts). /us gives its own date when that is
                 later. */}
             {countryCode !== "us" && fccPending(product.handle) ? (
-              shipLine ? `${shipLine}, to Canada.` : "Ships to Canada."
+              "Ships to Canada."
             ) : !shipLine ? (
               "Ships to Canada and the US."
             ) : countryCode === "us" && usShipsLater(product) ? (
-              `${shipLine}, to US addresses.`
+              "Ships to US addresses."
             ) : (
-              `${shipLine}, to Canada and the US.`
+              "Ships to Canada and the US."
             )}{" "}
             <LocalizedClientLink
               href="/terms"
