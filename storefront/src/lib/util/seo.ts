@@ -17,7 +17,7 @@ import {
 // 2026): never a count of boards, so no inventory figure leaves this file;
 // a price is the region's calculated price, never the later one.
 
-export const BRAND = "KeBe"
+export const BRAND = "Brisebois' Boards"
 export const INSTAGRAM_URL = "https://www.instagram.com/kebe_keyboards/"
 
 // Absolute, on the public base URL: crawlers and feeds resolve nothing.
