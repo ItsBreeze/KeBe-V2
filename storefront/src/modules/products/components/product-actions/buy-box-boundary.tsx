@@ -96,7 +96,7 @@ function BuyBoxFailed({
         {addErrorText(
           sent
             ? "We couldn't start your pre-order."
-            : `The ${preorder ? "Pre-order" : "Add to cart"} button didn't load.`
+            : `The ${preorder ? "Buy now" : "Add to cart"} button didn't load.`
         )}
       </p>
       <Button
