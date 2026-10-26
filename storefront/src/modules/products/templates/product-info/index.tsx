@@ -63,7 +63,7 @@ const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
       ) : (
         shipsBy && (
           <p className="text-base text-ui-fg-muted">
-            {shipLine ? `Pre-order. ${shipLine}.` : "Pre-order."}
+            {shipLine ? `For sale now. ${shipLine}.` : "For sale now."}
           </p>
         )
       )}

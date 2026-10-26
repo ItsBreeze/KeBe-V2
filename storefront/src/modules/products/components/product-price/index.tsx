@@ -40,7 +40,7 @@ export default function ProductPrice({
       </span>
       {isPreorderPrice(product, selectedPrice) ? (
         <p className="mt-2 text-ui-fg-subtle" data-testid="preorder-price-note">
-          Pre-order price, plus shipping.
+          Plus shipping.
         </p>
       ) : (
         <p className="mt-2 text-ui-fg-subtle" data-testid="shipping-price-note">

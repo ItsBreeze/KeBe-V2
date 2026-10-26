@@ -7,7 +7,6 @@ import {
 } from "@lib/data/seo"
 import {
   isOnHold,
-  isPreorderPrice,
   litePlannedPrice,
   presaleAvailability,
   presaleShipDate,
@@ -76,7 +75,7 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
   // A board still waiting on its FCC authorization carries the notice, as
   // every US listing does (review, 7 Oct 2026).
   const name = fccBoardName(product.handle)
-  return `Status: pre-order, charged in full at checkout.${
+  return `Status: for sale now, charged in full at checkout.${
     line ? ` ${line}${iso ? ` (${iso})` : ""}${us ? " to Canada" : ""}.` : ""
   }${
     us?.line
@@ -98,16 +97,9 @@ const productSection = (
     const url = productUrl(cc, priced.handle ?? "")
     const where = names[cc] ?? cc.toUpperCase()
     const range = open ? priceRange(priced) : null
-    const preorder = (priced.variants ?? []).some((v) =>
-      isPreorderPrice(priced, {
-        price_type: v.calculated_price?.calculated_price?.price_list_type,
-      })
-    )
     lines.push(
       range
-        ? `- [${where}](${url}): ${range} plus shipping${
-            preorder ? " (the pre-order price)" : ""
-          }`
+        ? `- [${where}](${url}): ${range} plus shipping`
         : isOnHold(priced.handle)
         ? `- [${where}](${url}): planned price ${litePlannedPrice(cc)} plus shipping`
         : `- [${where}](${url})`
@@ -205,9 +197,9 @@ export async function GET() {
     `- [Privacy](${absoluteUrl(
       `/${home}/privacy`
     )}): what the site collects, why, where it is stored and how to have it deleted`,
-    `- [Pre-order terms](${absoluteUrl(
+    `- [Order terms](${absoluteUrl(
       `/${home}/terms`
-    )}): a pre-order can be cancelled for a full refund until it ships, defects are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
+    )}): an order can be cancelled for a full refund until it ships, defects are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
     `- [Instagram @kebe_keyboards](${INSTAGRAM_URL})`,
     `- Questions about an order: ${CONTACT_EMAIL}`,
     "",

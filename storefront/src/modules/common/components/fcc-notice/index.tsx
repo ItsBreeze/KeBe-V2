@@ -64,7 +64,7 @@ export default function FccNotice({
             href="/terms"
             className="underline underline-offset-4 hover:text-ui-fg-base"
           >
-            pre-order terms
+            order terms
           </LocalizedClientLink>
           )
         </>

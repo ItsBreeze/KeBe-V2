@@ -58,7 +58,7 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
           ) : shipsBy ? (
             <>
               <p>
-                A pre-order, charged in full at checkout and shipped to{" "}
+                For sale now, charged in full at checkout and shipped to{" "}
                 {caPending ? "Canada" : "Canada and the United States"}.
                 {shipLine && ` ${shipLine}.`}
               </p>

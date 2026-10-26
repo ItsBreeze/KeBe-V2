@@ -41,7 +41,7 @@ const TITLE = "KeBe: Mechanical Ortholinear Dvorak Keyboard with USB Hub"
 // -- so that claim is gone and not coming back. The Lite is named on hold
 // before v2, so the price sentence after it reads as v2's (14 Oct 2026).
 const LEAD =
-  "Ortholinear Dvorak keyboards with a USB hub. KeBe Lite, slim membrane, is planned. KeBe v2 has mechanical Choc switches."
+  "Ortholinear Dvorak keyboards with a USB hub. KeBe Lite, slim membrane, is planned. KeBe v2 has Choc switches."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -350,7 +350,7 @@ export default async function Home(props: {
         <div className={lite ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
           {lite && (
             <p className="mb-3 text-base text-kebe-text/80">
-              Hear when pre-orders open for KeBe v2, the mechanical one:
+              Hear when KeBe v2, the mechanical one, is back on sale:
             </p>
           )}
           <WaitlistForm source="v2" />
@@ -424,9 +424,9 @@ export default async function Home(props: {
         )}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-kebe-text/80">
           {presale.state === "sold-out"
-            ? "KeBe v2 pre-orders are closed for now — leave an address and you'll hear when they open again."
+            ? "KeBe v2 is not on sale right now — leave an address and you'll hear when it is again."
             : presale.state === "none"
-            ? "Leave an address and you'll hear when KeBe v2 pre-orders open."
+            ? "Leave an address and you'll hear when KeBe v2 goes on sale."
             : lite
             ? "KeBe v2's shipping is calculated at checkout, where the board is charged in full."
             : "Shipping is calculated at checkout, and each keyboard is charged in full there."}

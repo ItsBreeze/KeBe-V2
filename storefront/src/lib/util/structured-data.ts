@@ -27,7 +27,7 @@ import { productSpecs } from "@lib/util/specs"
 // gives shipping rates only for a cart, and the pages name no amount.
 
 const SCHEMA_AVAILABILITY: Record<Availability, string> = {
-  preorder: "https://schema.org/PreOrder",
+  preorder: "https://schema.org/InStock",
   backorder: "https://schema.org/BackOrder",
   in_stock: "https://schema.org/InStock",
   out_of_stock: "https://schema.org/OutOfStock",
@@ -125,7 +125,7 @@ const offerFor = (
   if (!price || isOnHold(product.handle)) return null
   const availability = variantAvailability(product, variant)
   const startsAt =
-    availability === "preorder" || availability === "backorder"
+    availability === "backorder"
       ? presaleShipDate(product, countryCode)
       : null
   return {

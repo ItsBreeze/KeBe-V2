@@ -108,7 +108,7 @@ const MobileActions: React.FC<MobileActionsProps> = ({
               </span>
               {selectedPrice && (
                 <>
-                  {preorder && "pre-order price "}
+                  {preorder && "for sale now · "}
                   <span className="text-ui-fg-base">
                     {selectedPrice.calculated_price}
                   </span>{" "}

@@ -110,7 +110,7 @@ type ListingCopy = {
 const LISTING_COPY: Record<string, ListingCopy> = {
   [PRESALE_HANDLE]: {
     title: "KeBe v2: Mechanical Low-Profile Ortholinear Keyboard",
-    lead: "Mechanical Kailh Choc hot-swap switches, Matrix-Dvorak layout, per-key RGB and a USB 2.0 hub, assembled by hand in Canada.",
+    lead: "Mechanical Kailh Choc hot-swap switches, Matrix-Dvorak layout, per-key RGB, a USB 2.0 hub, assembled by hand in Canada.",
     feedTitle:
       "KeBe v2 68-Key Wired Mechanical Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
   },
@@ -176,7 +176,7 @@ export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
   const varies = new Set(prices.map((p) => p.amount)).size > 1
   const price = `${varies ? "from " : ""}${priceForCopy(lowest)}`
   return presaleShipsBy(product)
-    ? `For sale now, ${price} plus shipping, built and shipped in the order received.`
+    ? `For sale now, ${price} plus shipping.`
     : `${price.charAt(0).toUpperCase()}${price.slice(1)} plus shipping.`
 }
 
