@@ -83,7 +83,7 @@ export const formatOrder = (order: any) => {
 
   const count = items.reduce((s, i) => s + num(i.quantity), 0);
   const subject =
-    `New KeBe order #${order.display_id}: ${count} × ${items[0]?.product_title ?? items[0]?.title ?? "item"}, ${money(total)}` +
+    `New Brisebois' Boards order #${order.display_id}: ${count} × ${items[0]?.product_title ?? items[0]?.title ?? "item"}, ${money(total)}` +
     (m.utm_source ? ` (${m.utm_source})` : "");
 
   const admin = process.env.MEDUSA_BACKEND_URL
