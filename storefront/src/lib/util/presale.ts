@@ -2,14 +2,14 @@ import { HttpTypes } from "@medusajs/types"
 import { usShipFloor } from "@lib/util/fcc"
 
 export const PRESALE_HANDLE = "kebe-v2-keyboard"
-// KeBe Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite): on pre-order from 6 Oct 2026, on hold since 14 Oct.
+// Breeze Board Lite, the rubber-dome KeBe (the kebe repo's PCBs/lite): on pre-order from 6 Oct 2026, on hold since 14 Oct.
 export const LITE_HANDLE = "kebe-lite"
 // Every board sold on pre-order. The pre-order terms' cancel promise, the cart's ship line, the Stripe
 // description and the order page's help cover each one; PRESALE_HANDLE stays the flagship the homepage and the
 // other pages' links lead to.
 export const PRESALE_HANDLES: readonly string[] = [PRESALE_HANDLE]
 
-// KeBe Lite is on hold (owner, 14 Oct 2026): its keypad needs about US$4,500 of moulds before the first board, which
+// Breeze Board Lite is on hold (owner, 14 Oct 2026): its keypad needs about US$4,500 of moulds before the first board, which
 // does not pay at low volume. Its page is a free waitlist and nothing on the site sells it, whatever its Medusa
 // metadata and pre-order price list still say: it has no presale (presaleShipsBy) and nothing open to buy
 // (presaleAvailability), so no ship line, ship date, feed item or offer.
@@ -199,14 +199,14 @@ export const holdsPresaleBoard = (
 ) =>
   !!items?.some((i) => isPresaleHandle(lineHandle(i)))
 
-// A cart from before 14 Oct 2026 can still hold KeBe Lite. Checkout refuses it before any card is charged
+// A cart from before 14 Oct 2026 can still hold Breeze Board Lite. Checkout refuses it before any card is charged
 // (cart.ts initiatePaymentSession, the Review step), with this line.
 export const holdsOnHoldBoard = (items: LineLike[] | null | undefined) =>
   !!items?.some((i) => isOnHold(lineHandle(i)))
 export const ON_HOLD_CHECKOUT =
-  "KeBe Lite is planned, not made yet, and can't be ordered. Remove it from your cart to check out."
+  "Breeze Board Lite is planned, not made yet, and can't be ordered. Remove it from your cart to check out."
 
-// What a payment is for, on Stripe's record of it: "KeBe v2 pre-order", from the first
+// What a payment is for, on Stripe's record of it: "Breeze Board pre-order", from the first
 // pre-order line's title (the name before " — "); null for a cart without one.
 export const presalePaymentLabel = (
   items:
@@ -216,11 +216,11 @@ export const presalePaymentLabel = (
 ): string | null => {
   const line = presaleLineOf(items)
   if (!line) return null
-  return `${(line.product_title ?? line.title ?? "KeBe").split(" — ")[0] || "KeBe"}`
+  return `${(line.product_title ?? line.title ?? "Breeze Board").split(" — ")[0] || "Breeze Board"}`
 }
 
 // What a cart holds, in a few words, for checkout's order lines: the name
-// before the " — " in the title ("KeBe v2"), as the product page's sticky
+// before the " — " in the title ("Breeze Board"), as the product page's sticky
 // bar shows it, and "pre-order" for the presale board; "3 items" for more
 // than one line. The phone's order bar and the Review step both say it.
 export const cartItemsLabel = (

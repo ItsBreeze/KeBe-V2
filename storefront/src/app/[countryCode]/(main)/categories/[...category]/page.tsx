@@ -54,7 +54,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       title: productCategory.name,
       description:
         productCategory.description ||
-        `${productCategory.name} from KeBe, a one-person keyboard workshop in Canada.`,
+        `${productCategory.name} from Brisebois' Boards, a one-person keyboard workshop in Canada.`,
       alternates: await pageAlternates(
         params.countryCode,
         `/categories/${params.category.join("/")}`

@@ -21,10 +21,10 @@ const Register = ({ setCurrentView }: Props) => {
       data-testid="register-page"
     >
       <h1 className="text-large-semi uppercase mb-6">
-        Become a KeBe Member
+        Become a Brisebois&apos; Boards Member
       </h1>
       <p className="text-center text-base-regular text-ui-fg-base mb-4">
-        Create your KeBe Member profile, and get access to an enhanced
+        Create your Brisebois&apos; Boards Member profile, and get access to an enhanced
         shopping experience.
       </p>
       <form className="w-full flex flex-col" action={formAction}>

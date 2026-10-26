@@ -33,7 +33,7 @@ export default async function Nav() {
               data-testid="nav-store-link"
             >
               <Bear height={22} />
-              KeBe
+              Brisebois&apos; Boards
             </LocalizedClientLink>
           </div>
 

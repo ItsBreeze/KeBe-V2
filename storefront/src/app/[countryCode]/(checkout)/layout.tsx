@@ -35,7 +35,7 @@ export default function CheckoutLayout({
             className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
             data-testid="store-link"
           >
-            KeBe
+            Brisebois&apos; Boards
           </LocalizedClientLink>
           <div className="flex-1 basis-0" />
         </nav>

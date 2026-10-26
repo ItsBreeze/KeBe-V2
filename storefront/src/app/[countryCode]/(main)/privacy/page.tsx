@@ -5,7 +5,7 @@ import { BRAND, socialMetadata } from "@lib/util/seo"
 
 // "KeBe keyboard store": the brand alone is easily read as "keeb" or Keebio.
 const DESCRIPTION =
-  "What the KeBe keyboard store collects, why, where it is stored, and how to have it deleted."
+  "What the Brisebois' Boards keyboard store collects, why, where it is stored, and how to have it deleted."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -43,7 +43,7 @@ export default function PrivacyPage() {
 
         <div className="mt-10 flex flex-col gap-8 text-base leading-relaxed text-kebe-text/80">
           <p>
-            KeBe is a one-person keyboard workshop in Canada. This page describes
+            Brisebois' Boards is a one-person keyboard workshop in Canada. This page describes
             everything the site collects, which is what it takes to join a
             waitlist or buy a keyboard plus what Meta&apos;s pixel records to
             measure our ads, and what happens to it.

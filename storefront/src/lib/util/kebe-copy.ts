@@ -15,12 +15,12 @@ export const HABITS = [
     // The offsets are a standard ANSI board's: its rows start 1, 1.5, 1.75
     // and 2.25 keys from the left edge (` / Tab / Caps / Shift). KeBe's grid
     // is 18 x 17 mm (Keycaps/print/kebe-legend-list.csv).
-    body: "On a typewriter every key sat on a lever that ran straight back under the keys behind it, so each row was shifted sideways to let the levers pass. A keyboard has no levers, yet the offset stayed. Half a key between the number row and the row with Q on it, a quarter of a key more to the home row, and half a key again to the bottom row: every finger still reaches off at an angle for the keys above and below its home. KeBe's keys sit in straight columns on an 18 by 17 mm grid, so each finger moves straight up and down its own.",
+    body: "On a typewriter every key sat on a lever that ran straight back under the keys behind it, so each row was shifted sideways to let the levers pass. A keyboard has no levers, yet the offset stayed. Half a key between the number row and the row with Q on it, a quarter of a key more to the home row, and half a key again to the bottom row: every finger still reaches off at an angle for the keys above and below its home. The Breeze Board's keys sit in straight columns on an 18 by 17 mm grid, so each finger moves straight up and down its own.",
   },
   {
     label: "The letter order",
     title: "Letters kept apart",
-    body: "Every typebar struck the same spot on the page. Hit two keys too close together and their bars could meet on the way up and jam, so QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. August Dvorak started from the hands instead, in the 1930s: the vowels under the left hand's resting fingers, the most-used consonants under the right's, and the rarest letters down on the bottom row. KeBe's letters are his.",
+    body: "Every typebar struck the same spot on the page. Hit two keys too close together and their bars could meet on the way up and jam, so QWERTY was laid out to keep common letter pairs apart: an order for the machine, not for your fingers. August Dvorak started from the hands instead, in the 1930s: the vowels under the left hand's resting fingers, the most-used consonants under the right's, and the rarest letters down on the bottom row. The Breeze Board's letters are his.",
   },
 ] as const
 
@@ -56,7 +56,7 @@ export const DVORAK = [
     // home row, 0.1% against 2.2%. ED and DE are QWERTY's left middle finger,
     // CE its middle finger and UN its right pointer, bottom row to top.
     title: "One finger, one key at a time",
-    body: "Two different keys under the same finger, one straight after the other, are the slowest kind of pair to type, and worse still when the finger has to hurdle the home row between top and bottom. QWERTY asks for it in ED and DE, and makes you hurdle in CE and UN. Dvorak kept common pairs off a single finger: on KeBe that happens in about 1 pair in 40, against 1 in 15 on QWERTY.",
+    body: "Two different keys under the same finger, one straight after the other, are the slowest kind of pair to type, and worse still when the finger has to hurdle the home row between top and bottom. QWERTY asks for it in ED and DE, and makes you hurdle in CE and UN. Dvorak kept common pairs off a single finger: on the Breeze Board that happens in about 1 pair in 40, against 1 in 15 on QWERTY.",
   },
   {
     // 8.5% vs 14.6% of letters on the bottom row. N is English's sixth most
@@ -84,7 +84,7 @@ export const WHY = [
     // keys U and H are 90 mm apart on the caps; a standard board's F-J is
     // 3 x 19.05 mm.
     title: "Symbols in the middle",
-    body: "The - = [ ] / \\ keys a standard board leaves to your right pinky sit in the two middle columns, where your pointer fingers take them: far stronger fingers than your pinkies. They also set your hands further apart. KeBe's pointer-finger home keys are 9 cm apart, against 5.7 cm on a standard keyboard, so your wrists bend less.",
+    body: "The - = [ ] / \\ keys a standard board leaves to your right pinky sit in the two middle columns, where your pointer fingers take them: far stronger fingers than your pinkies. They also set your hands further apart. The Breeze Board's pointer-finger home keys are 9 cm apart, against 5.7 cm on a standard keyboard, so your wrists bend less.",
   },
   {
     title: "Both thumbs, both sides",

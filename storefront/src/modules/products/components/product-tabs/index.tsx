@@ -52,7 +52,7 @@ const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
         <div className="mt-4 flex flex-col gap-3 text-base leading-relaxed text-ui-fg-subtle">
           {isOnHold(product.handle) ? (
             <p>
-              KeBe Lite is planned, not made yet, so it can&apos;t be ordered and has no
+              Breeze Board Lite is planned, not made yet, so it can&apos;t be ordered and has no
               ship date.
             </p>
           ) : shipsBy ? (

@@ -56,8 +56,8 @@ export const metadata: Metadata = {
   verification: siteVerification(),
   // Every page's title ends with the brand; the home page sets its own whole.
   title: {
-    default: "KeBe",
-    template: "%s | KeBe",
+    default: BRAND,
+    template: `%s | ${BRAND}`,
   },
   // The link preview of any page without its own: v2's CAD render. Until 6
   // Oct 2026 the Medusa starter's opengraph-image.jpg and twitter-image.jpg,

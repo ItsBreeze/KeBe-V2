@@ -25,14 +25,14 @@ export default async function Footer() {
               className="flex items-center gap-x-3 font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-subtle hover:text-ui-fg-base"
             >
               <Bear height={22} />
-              KeBe
+              Brisebois&apos; Boards
             </LocalizedClientLink>
           </div>
         </div>
         <div className="flex w-full flex-col gap-y-2 mb-2 small:flex-row small:justify-between text-ui-fg-muted">
           <div className="flex flex-wrap gap-x-4 gap-y-1">
             <Text className="txt-compact-small">
-              © {new Date().getFullYear()} KeBe. All rights reserved.
+              © {new Date().getFullYear()} Brisebois&apos; Boards. All rights reserved.
             </Text>
             {/* The one shop link: the starter's Categories and Collections
                 columns listed "Keyboards" under a heading (design audit,

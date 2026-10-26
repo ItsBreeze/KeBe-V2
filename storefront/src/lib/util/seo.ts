@@ -109,17 +109,17 @@ type ListingCopy = {
 
 const LISTING_COPY: Record<string, ListingCopy> = {
   [PRESALE_HANDLE]: {
-    title: "KeBe v2: Mechanical Low-Profile Ortholinear Keyboard",
+    title: "Breeze Board: Mechanical Low-Profile Ortholinear Keyboard",
     lead: "Mechanical Kailh Choc hot-swap switches, Matrix-Dvorak layout, per-key RGB, a USB 2.0 hub, assembled by hand in Canada.",
     feedTitle:
-      "KeBe v2 68-Key Wired Mechanical Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
+      "Breeze Board 68-Key Wired Mechanical Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Kailh Choc Low-Profile Hot-Swap, Per-Key RGB",
   },
   [LITE_HANDLE]: {
     // "Planned": a search result must not read as one on sale (14 Oct 2026).
-    title: "KeBe Lite (Planned): Slim Membrane Ortholinear Keyboard",
+    title: "Breeze Board Lite (Planned): Slim Membrane Ortholinear Keyboard",
     lead: "Slim membrane keyboard: rubber-dome keys with shine-through legends, Matrix-Dvorak layout, per-key RGB and a USB hub.",
     feedTitle:
-      "KeBe Lite 68-Key Wired Slim Membrane Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Rubber-Dome Keys, Shine-Through Legends",
+      "Breeze Board Lite 68-Key Wired Slim Membrane Ortholinear Keyboard with USB Hub, Matrix-Dvorak Layout, Rubber-Dome Keys, Shine-Through Legends",
   },
 }
 
@@ -162,7 +162,7 @@ export const priceForCopy = (price: { amount: string; currency: string }) => {
 // shipping." after it, "from" when variants differ. A price in copy always
 // says "plus shipping" (owner, 1 Oct 2026), and it is the region's
 // calculated price, never the later one. Null when nothing can be bought.
-// KeBe Lite on hold has no price to offer, only its waitlist (14 Oct 2026).
+// Breeze Board Lite on hold has no price to offer, only its waitlist (14 Oct 2026).
 export const productOfferSentence = (product: HttpTypes.StoreProduct) => {
   if (isOnHold(product.handle)) return "Planned, not for sale yet: join the free waitlist."
   const prices = (product.variants ?? [])
@@ -189,7 +189,7 @@ const shipSentence = (
 }
 
 // A product page's <title>: its listing copy, else its Medusa title, which
-// starts with the brand ("KeBe v1: 68-Key Ortholinear Keyboard"), else that
+// starts with the brand ("Breeze Board V1: 68-Key Ortholinear Keyboard"), else that
 // title and the brand.
 export const productSeoTitle = (product: HttpTypes.StoreProduct) => {
   const own = product.handle ? LISTING_COPY[product.handle]?.title : undefined
@@ -236,7 +236,7 @@ export const SOCIAL_IMAGE = {
   url: "/products/kebe-v2-social.jpg",
   width: 1200,
   height: 630,
-  alt: "KeBe v2, rendered from its CAD: a 68-key ortholinear keyboard, black keycaps with white legends on a low black case.",
+  alt: "Breeze Board, rendered from its CAD: a 68-key ortholinear keyboard, black keycaps with white legends on a low black case.",
 }
 
 type SocialImage = {
@@ -296,7 +296,7 @@ export const listInSentence = (names: string[]) =>
     ? `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`
     : names[0] ?? ""
 
-// A product's name before the " — " in its title: "KeBe v2".
+// A product's name before the " — " in its title: "Breeze Board".
 export const productName = (product: HttpTypes.StoreProduct) =>
   (product.title ?? "").split(" — ")[0]
 
@@ -355,7 +355,7 @@ export type Availability =
 // out is the Pre-order button's own rule (presale.ts variantOpen), never a
 // number.
 //
-// A presale board built to order (no inventory-managed variant, as KeBe Lite
+// A presale board built to order (no inventory-managed variant, as Breeze Board Lite
 // was before it went on hold) has no counted boards to run out of: it is a pre-order of a product not yet
 // released for as long as its presale runs, never a backorder (7 Oct 2026).
 export const variantAvailability = (

@@ -1,4 +1,4 @@
-// /waitlist: the KeBe Lite waitlist landing page (25 Oct 2026, approved by Lute for Josh).
+// /waitlist: the Breeze Board Lite waitlist landing page (25 Oct 2026, approved by Lute for Josh).
 // A standalone HTML page outside the store's layout; the form posts to the
 // Cloudflare Worker, which stores the email in D1. Without JS, the Worker
 // redirects back here with ?ok=1 or ?err=invalid|server. Revert: delete this

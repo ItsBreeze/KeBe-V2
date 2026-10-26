@@ -49,7 +49,7 @@ export default async function RelatedProducts({
   return (
     <div className="product-page-constraint">
       <h2 className="mb-10 font-display text-[clamp(1.75rem,4vw,2.5rem)] text-ui-fg-base">
-        Also from KeBe
+        Also from Brisebois&apos; Boards
       </h2>
 
       <ul className="grid grid-cols-2 small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-8">

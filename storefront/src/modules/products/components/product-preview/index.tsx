@@ -33,7 +33,7 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({
     product,
   })
-  // "KeBe v2 — Mechanical 68-Key …": the name large, the kind under it and
+  // "Breeze Board — Mechanical 68-Key …": the name large, the kind under it and
   // the price under that, as the product page sets them; side by side, the
   // title wrapped to three lines beside the price (design audit, 14 Oct 2026).
   const [name, ...rest] = (product.title ?? "").split(" — ")
@@ -65,7 +65,7 @@ export default async function ProductPreview({
           {rest.length > 0 && (
             <p className="text-ui-fg-subtle">{rest.join(" — ")}</p>
           )}
-          {/* KeBe Lite, planned: its planned price, never one that reads as buyable. A board
+          {/* Breeze Board Lite, planned: its planned price, never one that reads as buyable. A board
               nobody can buy says so, as its page does (v1, 14 Oct 2026): the
               card showed its old price as if it were on sale. */}
           {isOnHold(product.handle) ? (

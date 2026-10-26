@@ -7,7 +7,7 @@ import { LITE_HANDLE, PRESALE_HANDLE } from "@lib/util/presale"
 // the kebe repo's committed source states, and the comment above it names
 // where (6 Oct 2026). "kebe repo" is ItsBreeze/KeBe at efeb2156ac on
 // kebe-v2, the firmware the boards ship with; its "v3" is the board sold as
-// KeBe v2, and its own "v2" is the wireless design, which is not for sale.
+// Breeze Board, and its own "v2" is the wireless design, which is not for sale.
 // Plain text on the page, never FAQPage markup: Google shows FAQ results only
 // for government and health sites.
 //
@@ -35,11 +35,11 @@ const V2: Faq[] = [
   {
     // The two kinds (owner, 7 Oct 2026): v2 mechanical, the Lite slim and membrane. The same electronics: the
     // circuit, controller, hub and LEDs (Compliance/lite.md; the Lite's PCB layout is derived, not identical).
-    question: "How is KeBe v2 different from KeBe Lite?",
+    question: "How is Breeze Board different from Breeze Board Lite?",
     answer: [
-      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. KeBe v2 is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. KeBe Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, at a lower planned price. KeBe Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one, so it has a free waitlist and is not for sale yet.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are the same. The keys are not. Breeze Board is mechanical: Kailh Choc low-profile switches in hot-swap sockets, under separate keycaps, so you can change a switch without solder. Breeze Board Lite is the slim, membrane one: hard plastic key tops on rubber domes, all 68 one moulded keypad, 10.95 mm to the key tops, at a lower planned price. Breeze Board Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one, so it has a free waitlist and is not for sale yet.",
     ],
-    link: { href: "/products/kebe-lite", label: "See KeBe Lite" },
+    link: { href: "/products/kebe-lite", label: "See Breeze Board Lite" },
   },
   {
     // The product page's subtitle, "68 keys in straight columns, with
@@ -49,7 +49,7 @@ const V2: Faq[] = [
     // on the home row and - = [ ] / \ in the two middle columns.
     question: "What is Matrix-Dvorak?",
     answer: [
-      "KeBe's layout: 68 keys in straight columns, with August Dvorak's letter order. The row your fingers rest on reads A O E U I under the left hand and D H T N S under the right, and the - = [ ] / \\ keys sit in the two middle columns, where your pointer fingers take them. The free typing trainer on this site teaches it one letter at a time.",
+      "The Breeze Board's layout: 68 keys in straight columns, with August Dvorak's letter order. The row your fingers rest on reads A O E U I under the left hand and D H T N S under the right, and the - = [ ] / \\ keys sit in the two middle columns, where your pointer fingers take them. The free typing trainer on this site teaches it one letter at a time.",
     ],
     link: { href: "/train", label: "Open the typing trainer" },
   },
@@ -61,7 +61,7 @@ const V2: Faq[] = [
     // page's "plug it in by USB-C and it types, with nothing to install".
     question: "Do I set my computer to Dvorak?",
     answer: [
-      "No. Set it to, or leave it on, US English (QWERTY): KeBe makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
+      "No. Set it to, or leave it on, US English (QWERTY): the Breeze Board makes the Dvorak letters itself, so a computer set to Dvorak would move them a second time. There is nothing to install: plug it in by USB-C and it types.",
     ],
   },
   {
@@ -99,7 +99,7 @@ const V2: Faq[] = [
     ],
     link: {
       href: "https://github.com/ItsBreeze/kebe-qmk",
-      label: "KeBe's firmware source and build guide",
+      label: "The Breeze Board's firmware source and build guide",
     },
   },
   {
@@ -125,7 +125,7 @@ const V2: Faq[] = [
   },
 ]
 
-// The same board and firmware as KeBe v2, so these of v2's answers are the Lite's too: the layout, the computer's
+// The same board and firmware as Breeze Board, so these of v2's answers are the Lite's too: the layout, the computer's
 // setting, the keymap and the hub ports. Not the switch and keycap answers: the Lite has neither. Not the pre-order
 // terms either while it is on hold (14 Oct 2026): it has a waitlist answer of its own.
 const shared = (q: string): Faq => {
@@ -139,11 +139,11 @@ const LITE: Faq[] = [
     // The kebe repo's PCBs/lite/README.md (rev 3): "the same v3 board, matrix, MCU, hub, RGB and unchanged firmware";
     // "the 68 Choc switches, hot-swap sockets, keycaps ... are replaced by one P+R keypad": silicone rubber domes, a
     // hard plastic cap bonded on each, each dome's carbon pill closing a gold contact; the backend's start-lite.ts.
-    question: "How is KeBe Lite different from KeBe v2?",
+    question: "How is Breeze Board Lite different from Breeze Board?",
     answer: [
-      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are KeBe v2's. The keys are not. KeBe v2 is mechanical, with Kailh Choc switches in hot-swap sockets under separate keycaps. KeBe Lite is the slim, membrane one: each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, 10.95 mm to the key tops, so there are no switches or keycaps to change, and its planned price is lower.",
+      "The controller, the USB hub and its four USB-C ports, the per-key lights and the firmware are Breeze Board's. The keys are not. Breeze Board is mechanical, with Kailh Choc switches in hot-swap sockets under separate keycaps. Breeze Board Lite is the slim, membrane one: each key is a hard plastic key top on a rubber dome. Pressing it collapses the dome, and a carbon contact under it closes gold pads on the board. All 68 keys are one moulded part, 10.95 mm to the key tops, so there are no switches or keycaps to change, and its planned price is lower.",
     ],
-    link: { href: "/products/kebe-v2-keyboard", label: "See KeBe v2" },
+    link: { href: "/products/kebe-v2-keyboard", label: "See Breeze Board" },
   },
   {
     // PCBs/lite/README.md and keypad/RFQ.md (rev 3): translucent PC caps sprayed black, legends laser-etched through
@@ -168,9 +168,9 @@ const LITE: Faq[] = [
   shared("What do the three extra USB-C ports do?"),
   {
     // Owner, 14 Oct 2026: on hold, a free waitlist in place of pre-orders, no ship date.
-    question: "Can I order KeBe Lite?",
+    question: "Can I order Breeze Board Lite?",
     answer: [
-      "Not yet. KeBe Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one. Join its waitlist: no payment, and we'll email you once if it goes ahead.",
+      "Not yet. Breeze Board Lite is planned, not made yet: its keypad needs moulds that don't pay off until enough people want one. Join its waitlist: no payment, and we'll email you once if it goes ahead.",
     ],
   },
 ]

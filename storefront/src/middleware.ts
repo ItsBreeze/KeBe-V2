@@ -141,7 +141,7 @@ async function getCountryCode(
  */
 export async function middleware(request: NextRequest) {
   // The live reel ads were built to land on the shop (categories/keyboards, the
-  // ads' actual URL, 8 Oct 2026) or KeBe v2's product page; the owner
+  // ads' actual URL, 8 Oct 2026) or Breeze Board's product page; the owner
   // wants them on the home page, where both boards are offered side by side
   // (7 Oct 2026). Until the ads' own URLs are changed in Ads Manager, their
   // clicks are sent home here, tags and all, so attribution still works. The

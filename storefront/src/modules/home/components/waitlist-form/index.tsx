@@ -43,7 +43,7 @@ export default function WaitlistForm({
       <p className="text-lg text-kebe-text" role="status">
         {state.message}{" "}
         {source === "lite"
-          ? "We'll email you once if KeBe Lite goes ahead."
+          ? "We'll email you once if Breeze Board Lite goes ahead."
           : "We'll write once, when there's something to see."}
       </p>
     )

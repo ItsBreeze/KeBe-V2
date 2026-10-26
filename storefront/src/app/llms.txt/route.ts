@@ -57,7 +57,7 @@ const priceRange = (product: HttpTypes.StoreProduct) => {
 }
 
 const statusLine = (product: HttpTypes.StoreProduct) => {
-  // KeBe Lite (owner, 14 Oct 2026): no ship date, nothing to buy.
+  // Breeze Board Lite (owner, 14 Oct 2026): no ship date, nothing to buy.
   if (isOnHold(product.handle))
     return "Status: planned, not made yet, not for sale. Its keypad needs moulds that don't pay off until enough people want one. Its page has a free waitlist: an email address, no payment, and one email if it goes ahead."
   if (!presaleAvailability(product).open) return "Status: sold out."
@@ -176,14 +176,14 @@ export async function GET() {
       shipsTo ? `, which ships to ${shipsTo}` : ""
     }.`,
     "",
-    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is chosen at checkout. KeBe's keyboards are wired.",
+    "Everything below is read from the store's live product data. Prices are per country and do not include shipping, which is chosen at checkout. Every Brisebois' Boards keyboard is wired.",
     "",
     ...handles.map((h) => productSection(byHandle[h], names, home) + "\n"),
     "## Learn the layout",
     "",
     `- [Typing trainer](${absoluteUrl(
       `/${home}/train`
-    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the symbols, numbers and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on a KeBe or on any keyboard with the computer set to Dvorak.`,
+    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the symbols, numbers and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on a Breeze Board or on any keyboard with the computer set to Dvorak.`,
     "",
     "## More",
     "",
