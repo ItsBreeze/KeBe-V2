@@ -374,7 +374,9 @@ export default function ProductActions({
                 ships to Canada only, so it makes no US offer (owner, 7 Oct
                 2026; lib/util/fcc.ts). /us gives its own date when that is
                 later. */}
-            {countryCode !== "us" && fccPending(product.handle) ? (
+            {countryCode === "us" ? (
+              "Ships to US addresses."
+            ) : fccPending(product.handle) ? (
               "Ships to Canada."
             ) : !shipLine ? (
               "Ships to Canada and the US."
