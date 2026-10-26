@@ -174,3 +174,18 @@ orders right after it.
   product revalidates it. An invalid `ships_by` takes the board off pre-order
   altogether; an invalid `ships_by_next` only hides the date once the counted
   boards are sold.
+
+## KeBe Lite (6 Oct 2026)
+
+The rubber-dome KeBe (the kebe repo's `PCBs/lite`), on pre-order at US$89.99 / C$129.99 plus shipping, shipping
+January 2027. `backend/src/scripts/start-lite.ts` creates `kebe-lite` (a "KeBe Lite pre-order" sale price list over
+a later price of CA$143.99 / US$99.99 that the site never shows), built to order with no counted stock, so the site
+says "Ships January 31" from `ships_by_next`. Run it as a draft first, deploy a storefront that knows the Lite
+(`PRESALE_HANDLES` in `lib/util/presale.ts`), then publish:
+
+```
+railway ssh --service medusa-backend -- sh -c "cd /app && ./node_modules/.bin/medusa exec ./src/scripts/start-lite.ts"
+railway ssh --service medusa-backend -- sh -c "cd /app && ./node_modules/.bin/medusa exec ./src/scripts/start-lite.ts publish"
+```
+
+Its pictures and 3D model come from `storefront/scripts/render-lite` (straight renders of the design files).

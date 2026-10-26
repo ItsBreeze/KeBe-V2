@@ -71,12 +71,16 @@ export const getCartId = async () => {
   return cookies.get("_medusa_cart_id")?.value
 }
 
+// The cart cookie is "lax" (6 Oct 2026). Browsers left a "strict" one off
+// every arrival from another site, such as a second tap on an Instagram ad
+// or a link in an email, so that page showed no cart. A "lax" cookie is
+// still not sent with another site's POSTs or embedded requests.
 export const setCartId = async (cartId: string) => {
   const cookies = await nextCookies()
   cookies.set("_medusa_cart_id", cartId, {
     maxAge: 60 * 60 * 24 * 7,
     httpOnly: true,
-    sameSite: "strict",
+    sameSite: "lax",
     secure: process.env.NODE_ENV === "production",
   })
 }

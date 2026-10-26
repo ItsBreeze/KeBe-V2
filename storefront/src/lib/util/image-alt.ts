@@ -1,0 +1,86 @@
+import { HttpTypes } from "@medusajs/types"
+
+// What each product picture shows, by its path, for screen readers and image
+// search; "KeBe v2, picture 3" told neither anything. Written from the
+// pictures themselves (5 Oct 2026), and v2's say they are renders, as its
+// page does. Medusa's images carry no alt text of their own, so an alt set
+// in Admin as the image's metadata.alt wins, and a picture missing here
+// falls back to the product's name and its number.
+const BY_PATH: Record<string, string> = {
+  "/products/kebe-v2-hero.jpg":
+    "KeBe v2, rendered from its CAD: black keycaps with white legends on a low black case.",
+  "/products/kebe-v2-top.jpg":
+    "KeBe v2 from above, rendered from its CAD: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides.",
+  "/products/kebe-v2-ports.jpg":
+    "The back edge of KeBe v2, rendered from its CAD: four USB-C ports, one to the computer and three for its USB 2.0 hub.",
+  "/products/kebe-v2-night.jpg":
+    "KeBe v2 CAD model on a desk at night, its legends lit in a rainbow by the per-key RGB, in an AI-generated scene.",
+  "/products/kebe-v2-studio.jpg":
+    "KeBe v2 CAD model on a slab of dark stone, in an AI-generated scene.",
+  "/products/kebe-v2-desk.jpg":
+    "KeBe v2 CAD model on a wooden desk beside a laptop and a cup of coffee, in an AI-generated scene.",
+  "/products/kebe-lite-r3c-hero.jpg":
+    "KeBe Lite, rendered from its design files: black key tops with white laser-etched legends in a black nylon case.",
+  "/products/kebe-lite-r3c-top.jpg":
+    "KeBe Lite from above, rendered from its design files: 68 keys in straight columns, the Dvorak letters in the middle.",
+  "/products/kebe-lite-r3c-glow.jpg":
+    "KeBe Lite, rendered from its design files with its per-key lighting on: each key's legend lit in a rainbow.",
+  "/products/kebe-lite-r3c-ports.jpg":
+    "The back edge of KeBe Lite, rendered from its design files: four USB-C ports, one to the computer and three for its USB 2.0 hub.",
+  "/products/kebe-v1-hero.jpg":
+    "KeBe v1 in white, its shine-through legends lit in a rainbow.",
+  "/products/kebe-v1-angle.jpg":
+    "KeBe v1 from a low angle at one end, the RGB glowing through its switches.",
+  "/products/kebe-v1-port.jpg":
+    "KeBe v1 lit in a rainbow, a white USB-C cable plugged into its back edge.",
+  "/products/kebe-v1-front.jpg":
+    "KeBe v1 on a pale desk with its cable plugged in, the legends lit in blue and violet.",
+  "/products/kebe-v1-case.jpg":
+    "A corner of KeBe v1 up close: white keycaps on clear low-profile switches over its grey case.",
+  "/products/kebe-v1-rgb.jpg":
+    "KeBe v1 in white from above, 68 keys in straight columns lit from underneath.",
+}
+
+const pathOf = (url: string) => {
+  try {
+    return new URL(url, "http://kebe.local").pathname
+  } catch {
+    return url
+  }
+}
+
+export const productImageAlt = (
+  image: Pick<HttpTypes.StoreProductImage, "url" | "metadata">,
+  productTitle: string,
+  index: number
+) => {
+  const own = image.metadata?.alt
+  if (typeof own === "string" && own.trim()) return own.trim()
+  const known = image.url ? BY_PATH[pathOf(image.url)] : undefined
+  const name = productTitle.split(" — ")[0] || "KeBe"
+  return known ?? `${name}, picture ${index + 1}`
+}
+
+// v2's scene pictures: the CAD model set in AI-generated surroundings, as
+// its page says. Google Merchant Center wants AI-made pictures tagged as such
+// (IPTC DigitalSourceType) and none of these is, and the research of 5 Oct
+// 2026 keeps them out of every feed, structured data and link preview until
+// a real photograph exists: those show the plain CAD renders. An image whose
+// Admin metadata says ai_generated: true counts too, so a new scene needs no
+// deploy to stay out.
+const AI_SCENES = new Set([
+  "/products/kebe-v2-night.jpg",
+  "/products/kebe-v2-studio.jpg",
+  "/products/kebe-v2-desk.jpg",
+  "/products/kebe-v2-og.jpg",
+  "/products/kebe-v2-desk-clip.jpg",
+  "/products/kebe-v2-night-clip.jpg",
+])
+
+export const isAiGeneratedImage = (image: {
+  url?: string | null
+  metadata?: Record<string, unknown> | null
+}) =>
+  image.metadata?.ai_generated === true ||
+  image.metadata?.ai_generated === "true" ||
+  (!!image.url && AI_SCENES.has(pathOf(image.url)))

@@ -1,16 +1,34 @@
 import { Metadata } from "next"
 import { CONTACT_EMAIL } from "@lib/constants"
+import { pageAlternates } from "@lib/data/seo"
+import { BRAND, socialMetadata } from "@lib/util/seo"
 
-export const metadata: Metadata = {
-  title: "Privacy",
-  description:
-    "What KeBe collects, why, where it is stored, and how to have it deleted.",
+// "KeBe keyboard store": the brand alone is easily read as "keeb" or Keebio.
+const DESCRIPTION =
+  "What the KeBe keyboard store collects, why, where it is stored, and how to have it deleted."
+
+export async function generateMetadata(props: {
+  params: Promise<{ countryCode: string }>
+}): Promise<Metadata> {
+  const { countryCode } = await props.params
+  return {
+    // The root layout's template adds " | KeBe".
+    title: "Privacy",
+    description: DESCRIPTION,
+    alternates: await pageAlternates(countryCode, "/privacy"),
+    ...socialMetadata({
+      title: `Privacy | ${BRAND}`,
+      description: DESCRIPTION,
+      path: "/privacy",
+      countryCode,
+    }),
+  }
 }
 
 
 
 // Last substantive change to this notice. Update it whenever the content changes.
-const LAST_UPDATED = "5 October 2026"
+const LAST_UPDATED = "6 October 2026"
 
 export default function PrivacyPage() {
   return (
@@ -50,9 +68,9 @@ export default function PrivacyPage() {
             </p>
             <p className="mt-3">
               <strong className="font-normal text-ui-fg-base">Payment.</strong>{" "}
-              Your card is taken by Stripe, in a field Stripe runs on this
-              page. The card number goes to Stripe, not to us, and we never see
-              or store it. Stripe tells us whether the payment went through.
+              Your card, Apple Pay, Google Pay or Link payment is taken by
+              Stripe, in a field Stripe runs on this page. The card number
+              goes to Stripe, not to us, and we never see or store it. Stripe tells us whether the payment went through.
               Stripe handles what it receives under its own privacy policy.
             </p>
             <p className="mt-3">
@@ -67,14 +85,24 @@ export default function PrivacyPage() {
               </strong>{" "}
               We advertise on Instagram and Facebook, and this site runs Meta&apos;s
               pixel, a script from Meta. It tells Meta which pages you view and
-              when you add a keyboard to your cart, start a checkout, place an
-              order or join the waitlist, with the product and the amount, but
-              not your name, shipping address or card. Meta links that to your
+              when you tap Buy now (and if the order could not start), add
+              a keyboard to your cart, start a checkout, place an order or join
+              the waitlist, with the product and the amount, but not your name,
+              shipping address or card. Meta links that to your
               Facebook or Instagram account if it can, so it can tell us how
               many orders our ads led to and show our ads to people like the
               ones who bought. The pixel can also send Meta a scrambled (hashed)
               copy of an email address you type here, to make that match. Meta
               handles what it receives under its own privacy policy.
+            </p>
+            <p className="mt-3">
+              <strong className="font-normal text-ui-fg-base">
+                The typing trainer.
+              </strong>{" "}
+              The levels you have opened and your best speeds are kept in your
+              browser&apos;s local storage, which stays on your device. If you
+              are signed in, they are also saved to your account so they follow
+              you. What you type in it is not sent anywhere.
             </p>
           </section>
 

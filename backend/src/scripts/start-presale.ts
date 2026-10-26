@@ -39,6 +39,9 @@ import {
 // title, colour option, variant and SKU are set once, at creation.
 
 const HANDLE = "kebe-v2-keyboard";
+// Set at creation; set-v2-copy.ts renamed the live product (owner, 7 Oct 2026: v2 "mechanical"). The name before
+// " — " stays, so the buy box's heading, the cart and the FCC notice still say "KeBe v2".
+export const TITLE = "KeBe v2 — Mechanical 68-Key Ortholinear Keyboard with USB Hub";
 // The regular price, charged once pre-orders close. While they are open,
 // preorder-sale.ts puts a CA$349 sale price list over it.
 const PRICE_CAD = 386.89; // plus shipping, calculated at checkout
@@ -58,19 +61,20 @@ const VIDEO = "/products/kebe-v2-desk-clip";
 // Also written by ship-dates.ts. No quantity: the site never says how many
 // boards there are.
 export const DESCRIPTION =
-  "KeBe v2 is v1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
+  "KeBe v2 is the mechanical KeBe: v1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
   "Four USB-C ports sit on the back edge: one goes to your computer, and the " +
   "other three are a USB 2.0 hub for a mouse receiver, a flash drive or " +
   "anything else that draws little power.\n\n" +
   "The case is one piece of black-dyed nylon, 8.65 mm tall against v1's 9.45, " +
   "and it holds the board, switches and plate with snap-fit catches instead of " +
-  "screws. Kailh Choc low-profile switches sit in hot-swap sockets, sixty-eight " +
-  "SK6812MINI-E LEDs light the keys one by one, and the STM32F072 runs QMK, so " +
-  "a v1 keymap carries straight over.\n\n" +
-  "It is all black. The plate is FR4 with black soldermask, and the keycaps " +
-  "are black with shine-through legends, so each key's LED lights its " +
-  "legend. Where a key has an Fn-layer legend, it sits below the main one.\n\n" +
-  "Each board is assembled by hand in Canada. None of the " +
+  "screws. Kailh Choc low-profile mechanical switches sit in hot-swap sockets, so " +
+  "a switch changes without solder; sixty-eight SK6812MINI-E LEDs light the keys " +
+  "one by one, and the STM32F072 runs QMK, so a v1 keymap carries straight over.\n\n" +
+  "Everything you see is black. The plate is FR4 with black soldermask, and the " +
+  "keycaps are black-coated, with the legends laser-engraved through the coating, " +
+  "so each LED lights its key's legend; the two 2U thumb keys are plain. Where a " +
+  "key has an Fn-layer legend, it sits below the main one.\n\n" +
+  "Each keyboard is assembled by hand in Canada. None of the " +
   "pictures or the clip are photographs: the plain renders and the 3D model " +
   "come straight from v2's CAD, and the desk, studio and night pictures and " +
   "the clip set that CAD model in AI-generated scenes.";
@@ -254,7 +258,7 @@ export default async function startPresale({ container }: ExecArgs) {
     input: {
       products: [
         {
-          title: "KeBe v2 — 68-Key Ortholinear Keyboard with USB Hub",
+          title: TITLE,
           handle: HANDLE,
           category_ids: categories.length ? [categories[0].id] : [],
           description: DESCRIPTION,

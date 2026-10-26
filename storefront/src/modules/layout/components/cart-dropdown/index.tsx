@@ -35,7 +35,9 @@ const CartDropdown = ({
       return acc + item.quantity
     }, 0) || 0
 
-  const subtotal = cartState?.subtotal ?? 0
+  // The items alone, as the cart's own totals show them (6 Oct 2026): the
+  // cart's subtotal takes in shipping once a delivery is chosen.
+  const subtotal = cartState?.item_subtotal ?? 0
   const itemRef = useRef<number>(totalItems || 0)
 
   const timedOpen = () => {
@@ -178,7 +180,9 @@ const CartDropdown = ({
                   <div className="flex items-center justify-between">
                     <span className="text-ui-fg-base font-semibold">
                       Subtotal{" "}
-                      <span className="font-normal">(excl. taxes)</span>
+                      <span className="font-normal">
+                        (excl. shipping and taxes)
+                      </span>
                     </span>
                     <span
                       className="text-large-semi"

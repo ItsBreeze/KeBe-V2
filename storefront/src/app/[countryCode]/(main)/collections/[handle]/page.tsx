@@ -3,6 +3,7 @@ import { notFound } from "next/navigation"
 
 import { getCollectionByHandle, listCollections } from "@lib/data/collections"
 import { listRegions } from "@lib/data/regions"
+import { pageAlternates } from "@lib/data/seo"
 import { StoreCollection, StoreRegion } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -58,12 +59,15 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
-  const metadata = {
-    title: `${collection.title} | KeBe`,
-    description: `${collection.title} collection`,
-  } as Metadata
-
-  return metadata
+  return {
+    // The root layout's template adds " | KeBe".
+    title: collection.title,
+    description: `${collection.title} from KeBe, a one-person keyboard workshop in Canada.`,
+    alternates: await pageAlternates(
+      params.countryCode,
+      `/collections/${params.handle}`
+    ),
+  }
 }
 
 export default async function CollectionPage(props: Props) {

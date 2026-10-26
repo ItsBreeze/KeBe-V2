@@ -1,25 +1,36 @@
 import { HttpTypes } from "@medusajs/types"
-import { presaleShipLine, presaleShipsBy } from "@lib/util/presale"
+import { isOnHold, presaleShipLine, presaleShipsBy } from "@lib/util/presale"
 import { productSpecs } from "@lib/util/specs"
+import { fccPending } from "@lib/util/fcc"
 import { CONTACT_EMAIL } from "@lib/constants"
 
 type ProductTabsProps = {
   product: HttpTypes.StoreProduct
+  // a US buyer sees the FCC date (presale.ts)
+  countryCode?: string
 }
 
 // The specification and shipping, set out in full rather than folded into
 // the starter's accordions. Its shipping tab promised 3-5 day delivery, free
 // exchanges and no-questions refunds, none of which KeBe offers: only what is
-// true of the order is said here.
-const ProductTabs = ({ product }: ProductTabsProps) => {
+// true of the order is said here. Shipping is a set price for each Canada
+// Post service, chosen at checkout, so it no longer says the cost is
+// calculated from the address (6 Oct 2026).
+const ProductTabs = ({ product, countryCode }: ProductTabsProps) => {
   const specs = productSpecs(product)
   const shipsBy = presaleShipsBy(product)
-  const shipLine = presaleShipLine(product)
+  const shipLine = presaleShipLine(product, countryCode)
+  // While a board's FCC authorization is pending, /ca offers it to Canada
+  // only and says nothing of the FCC or of US orders: the CA region ships to
+  // Canada only (owner, 7 Oct 2026; lib/util/fcc.ts).
+  const caPending = countryCode !== "us" && fccPending(product.handle)
 
   return (
     <div className="flex flex-col gap-12">
+      {/* The presale buy box's "Full specifications" link lands here;
+          scroll-mt keeps the heading clear of the sticky nav (6 Oct 2026). */}
       {specs.length > 0 && (
-        <div>
+        <div id="specifications" className="scroll-mt-20">
           <h2 className="font-display text-2xl text-ui-fg-base">
             Specifications
           </h2>
@@ -39,25 +50,33 @@ const ProductTabs = ({ product }: ProductTabsProps) => {
       <div>
         <h2 className="font-display text-2xl text-ui-fg-base">Shipping</h2>
         <div className="mt-4 flex flex-col gap-3 text-base leading-relaxed text-ui-fg-subtle">
-          {shipsBy ? (
+          {isOnHold(product.handle) ? (
+            <p>
+              KeBe Lite is planned, not made yet, so it can&apos;t be ordered and has no
+              ship date.
+            </p>
+          ) : shipsBy ? (
             <>
               <p>
-                A pre-order, charged in full at checkout and shipped to
-                Canada and the United States.{shipLine && ` ${shipLine}.`}
+                For sale now, charged in full at checkout and shipped to{" "}
+                {caPending ? "Canada" : "Canada and the United States"}.
+                {shipLine && " Built and shipped in the order received."}
               </p>
               <p>
-                Shipping is calculated at checkout from your address and added
-                to the price.
+                Shipping goes by Canada Post. You choose the service at
+                checkout, and it is added to the price.
               </p>
-              <p>
-                US orders go by Canada Post with the US duties already paid,
-                so there is nothing more to pay on delivery.
-              </p>
+              {!caPending && (
+                <p>
+                  US orders go by Canada Post with the US duties already paid,
+                  so there is nothing more to pay on delivery.
+                </p>
+              )}
             </>
           ) : (
             <p>
-              Ships to Canada and the United States. Shipping is calculated at
-              checkout from your address.
+              Ships to Canada and the United States by Canada Post. You choose
+              the service at checkout.
             </p>
           )}
           <p>

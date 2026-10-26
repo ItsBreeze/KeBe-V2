@@ -5,9 +5,13 @@ import medusaError from "@lib/util/medusa-error"
 import { HttpTypes } from "@medusajs/types"
 import { getCacheOptions } from "./cookies"
 
-export const listRegions = async () => {
+// revalidate: seconds before a cached answer is fetched again. Without it the
+// answer is kept until the backend's revalidate call; the robots, sitemap,
+// feed and llms.txt routes pass an hour so they never wait on that alone.
+export const listRegions = async (options?: { revalidate?: number }) => {
   const next = {
     ...(await getCacheOptions("regions")),
+    ...(options?.revalidate ? { revalidate: options.revalidate } : {}),
   }
 
   return sdk.client

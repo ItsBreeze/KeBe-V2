@@ -1,7 +1,9 @@
 const path = require("path")
 
 module.exports = {
-  darkMode: "class",
+  // The store follows the system's light or dark setting, like the suite's
+  // other apps (20 Oct 2026): Medusa UI's tokens switch by media query.
+  darkMode: "media",
   presets: [require("@medusajs/ui-preset")],
   content: [
     "./src/app/**/*.{js,ts,jsx,tsx}",
@@ -21,19 +23,16 @@ module.exports = {
         padding: "padding-top padding-right padding-bottom padding-left",
       },
       colors: {
-        // The suite's night neutrals (Grounders, ItsRadio, Offhand):
-        // page #12110F, raised #1C1A17, alt #242119, hairline #2E2B26,
-        // text #F5F1EA, muted #9B948A, faint #6E675D. KeBe's old greens
-        // (#151915, #12261E) are gone.
-        kebe: {
-          page: "#12110F",
-          raised: "#1C1A17",
-          alt: "#242119",
-          line: "#2E2B26",
-          text: "#F5F1EA",
-          muted: "#9B948A",
-          faint: "#6E675D",
-        },
+        // The suite's neutrals, light and dark (styles/globals.css holds the
+        // values): page, raised, alt, hairline, text, muted, faint; bright is
+        // the hover past text (white at night, black by day); good, warn and
+        // miss are the trainer's pine, amber and red.
+        kebe: Object.fromEntries(
+          [
+            "page", "raised", "alt", "line", "text", "muted", "faint",
+            "bright", "good", "warn", "miss",
+          ].map((k) => [k, `rgb(var(--kebe-${k}) / <alpha-value>)`])
+        ),
         grey: {
           0: "#FFFFFF",
           5: "#F9FAFB",

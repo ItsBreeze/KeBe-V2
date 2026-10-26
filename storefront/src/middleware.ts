@@ -140,6 +140,29 @@ async function getCountryCode(
  * Middleware to handle region selection and onboarding status.
  */
 export async function middleware(request: NextRequest) {
+  // The live reel ads were built to land on the shop (categories/keyboards, the
+  // ads' actual URL, 8 Oct 2026) or KeBe v2's product page; the owner
+  // wants them on the home page, where both boards are offered side by side
+  // (7 Oct 2026). Until the ads' own URLs are changed in Ads Manager, their
+  // clicks are sent home here, tags and all, so attribution still works. The
+  // ads' URL tags (marketing/instagram/meta-campaign.md): utm_content=ca or us,
+  // the first Canada ad also utm_campaign=levers-oct26. Nothing else is
+  // redirected: a shared product link carries neither.
+  const adLanding = request.nextUrl.pathname.match(
+    /^\/(ca|us)\/(?:products\/kebe-v2-keyboard|store|categories\/keyboards)\/?$/
+  )
+  const params = request.nextUrl.searchParams
+  if (
+    adLanding &&
+    (params.get("utm_campaign") === "levers-oct26" ||
+      ["ca", "us"].includes(params.get("utm_content") ?? ""))
+  ) {
+    return NextResponse.redirect(
+      `${request.nextUrl.origin}/${adLanding[1]}${request.nextUrl.search}`,
+      307
+    )
+  }
+
   let redirectUrl = request.nextUrl.href
 
   let response = NextResponse.redirect(redirectUrl, 307)
@@ -152,8 +175,11 @@ export async function middleware(request: NextRequest) {
 
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
+  // The whole first segment, not a substring of it: with "ca" the default,
+  // /cart counted as already carrying a country code, skipped the redirect to
+  // /ca/cart and rendered the home page as a store called "cart" (5 Oct 2026).
   const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
+    countryCode && request.nextUrl.pathname.split("/")[1] === countryCode
 
   // if one of the country codes is in the url and the cache id is set, return next
   if (urlHasCountryCode && cacheIdCookie) {
@@ -205,8 +231,16 @@ export async function middleware(request: NextRequest) {
   return response
 }
 
+// robots.txt, sitemap.xml, llms.txt and the feeds stay out: they need no
+// region and no cookie, and the region fetch above throws while the backend
+// is down, which made each of them a 500 before its own fallback could
+// answer (review, 6 Oct 2026). A 5xx robots.txt tells Google to crawl
+// nothing. So does IndexNow's key file, public/<key>.txt, which the engines
+// fetch to check a submission (scripts/indexnow.mjs): it is named here by
+// its key, since a matcher has to be a literal, and a new key means a new
+// name here too (6 Oct 2026).
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|robots.txt|sitemap.xml|llms.txt|ec7df96eba8c58b47c1befa4913baa92.txt|feeds/|waitlist|images|assets|png|svg|jpg|jpeg|gif|webp).*)",
   ],
 }

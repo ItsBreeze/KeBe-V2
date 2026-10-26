@@ -29,6 +29,59 @@ export const retrieveOrder = async (id: string) => {
     .catch((err) => medusaError(err))
 }
 
+// The ship line in force when the order was paid for, such as "Currently
+// shipping October 31" (6 Oct 2026). placeOrder records it on the cart just
+// before completing it, and Medusa copies the cart's metadata to the order,
+// but the store API leaves an order's metadata out of what it returns. A
+// completed cart can no longer change, so its metadata holds the same value,
+// and the store API does return it. Never the line item's add-time value.
+// Null for an order without one (any cart without the presale board) and on
+// any failure, so the confirmation page never fails over a ship date.
+export const retrieveOrderShipLine = async (
+  id: string
+): Promise<string | null> => {
+  try {
+    const headers = {
+      ...(await getAuthHeaders()),
+    }
+
+    const next = {
+      ...(await getCacheOptions("orders")),
+    }
+
+    const cartId = await sdk.client
+      .fetch<{ order: { cart?: { id?: string } | null } }>(
+        `/store/orders/${id}`,
+        {
+          method: "GET",
+          query: { fields: "id,cart.id" },
+          headers,
+          next,
+          cache: "force-cache",
+        }
+      )
+      .then(({ order }) => order.cart?.id)
+
+    if (!cartId) {
+      return null
+    }
+
+    const shipLine = await sdk.client
+      .fetch<HttpTypes.StoreCartResponse>(`/store/carts/${cartId}`, {
+        method: "GET",
+        query: { fields: "id,metadata" },
+        headers,
+        next,
+        cache: "force-cache",
+      })
+      .then(({ cart }) => cart.metadata?.ship_line)
+
+    return typeof shipLine === "string" && shipLine ? shipLine : null
+  } catch {
+    return null
+  }
+}
+
 export const listOrders = async (
   limit: number = 10,
   offset: number = 0,

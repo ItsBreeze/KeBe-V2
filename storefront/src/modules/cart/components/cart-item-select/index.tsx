@@ -49,10 +49,12 @@ const CartItemSelect = forwardRef<HTMLSelectElement, NativeSelectProps>(
             }
           )}
         >
+          {/* text-base: 16px, as checkout's fields (6 Oct 2026). At the
+              badge's 13px, iOS zoomed in on a tap and did not zoom back. */}
           <select
             ref={innerRef}
             {...props}
-            className="appearance-none bg-transparent border-none px-4 transition-colors duration-150 focus:border-gray-700 outline-none w-16 h-16 items-center justify-center"
+            className="appearance-none bg-transparent border-none px-4 text-base transition-colors duration-150 focus:border-gray-700 outline-none w-16 h-16 items-center justify-center"
           >
             <option disabled value="">
               {placeholder}

@@ -11,7 +11,7 @@ export const paymentInfoMap: Record<
   { title: string; icon: React.JSX.Element }
 > = {
   pp_stripe_stripe: {
-    title: "Credit card",
+    title: "Card or wallet",
     icon: <CreditCard />,
   },
   "pp_medusa-payments_default": {
@@ -74,7 +74,27 @@ export const noDivisionCurrencies = [
   "xau",
 ]
 
-// Where buyers and the privacy notice send people. Cloudflare Email Routing
-// forwards it to the owner's inbox. (support@keberds.ca is dead: the .ca
-// domain lapsed.)
-export const CONTACT_EMAIL = "support@grounders.app"
+// Where buyers and the privacy notice send people. Porkbun email forwarding
+// delivers it to the owner's inbox (22 Oct 2026; the old support@grounders.app
+// still forwards too). (support@keberds.ca is dead: the .ca domain lapsed.)
+export const CONTACT_EMAIL = "support@brisebois.xyz"
+
+// Who sells KeBe, as the pre-order terms and the contact page name it (owner,
+// 6 Oct 2026; province corrected 18 Oct 2026: "It can say bc but Vancouver
+// and the address no"). KEBERDS is a BC sole proprietorship (FM1049069). No
+// city, street address or personal name is published; BC's distance-sales
+// rules (BPCPA s.46) list the seller's name, address and phone among what a
+// buyer is told before ordering, so the address stays the owner's open
+// decision. (Not legal advice.)
+export const SELLER_NAME = "KEBERDS"
+export const SELLER_PLACE = "British Columbia, Canada"
+export const CONTACT_PHONE = "780-901-1304"
+// The same number for a tel: link.
+export const CONTACT_PHONE_TEL = "+17809011304"
+
+// What a KeBe charge is called on the buyer's card statement: the Stripe
+// account's statement descriptor, checked in its Public details on 6 Oct 2026.
+// The account is shared with Offhand, so it is not renamed for KeBe; the site
+// says what the charge will be called instead, so a buyer recognises it.
+// Change this if the descriptor changes in Stripe.
+export const STATEMENT_DESCRIPTOR = "GROUNDERS.APP"

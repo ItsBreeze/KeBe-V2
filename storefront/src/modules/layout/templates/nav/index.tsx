@@ -29,7 +29,7 @@ export default async function Nav() {
           <div className="flex items-center h-full">
             <LocalizedClientLink
               href="/"
-              className="flex items-center gap-x-3 font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-white"
+              className="flex items-center gap-x-3 font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
               data-testid="nav-store-link"
             >
               <Bear height={22} />
@@ -39,6 +39,13 @@ export default async function Nav() {
 
           <div className="flex items-center gap-x-6 h-full flex-1 basis-0 justify-end">
             <div className="hidden small:flex items-center gap-x-6 h-full">
+              <LocalizedClientLink
+                className="hover:text-ui-fg-base"
+                href="/train"
+                data-testid="nav-train-link"
+              >
+                Learn
+              </LocalizedClientLink>
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"

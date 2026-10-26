@@ -1,5 +1,12 @@
+import { Metadata } from "next"
+
+import { PRIVATE_PAGE_ROBOTS } from "@lib/util/seo"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import ChevronDown from "@modules/common/icons/chevron-down"
+
+export const metadata: Metadata = {
+  robots: PRIVATE_PAGE_ROBOTS,
+}
 
 export default function CheckoutLayout({
   children,
@@ -7,7 +14,7 @@ export default function CheckoutLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="w-full bg-ui-bg-base relative small:min-h-screen">
+    <div className="w-full bg-ui-bg-base relative small:min-h-dvh">
       <div className="h-16 bg-ui-bg-base border-b border-ui-border-base">
         <nav className="flex h-full items-center content-container justify-between">
           <LocalizedClientLink
@@ -25,7 +32,7 @@ export default function CheckoutLayout({
           </LocalizedClientLink>
           <LocalizedClientLink
             href="/"
-            className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-white"
+            className="font-display text-2xl uppercase tracking-[0.25em] text-ui-fg-base hover:text-kebe-bright"
             data-testid="store-link"
           >
             KeBe
@@ -33,7 +40,7 @@ export default function CheckoutLayout({
           <div className="flex-1 basis-0" />
         </nav>
       </div>
-      <div className="relative" data-testid="checkout-container">{children}</div>
+      <div id="content" className="relative" data-testid="checkout-container">{children}</div>
     </div>
   )
 }

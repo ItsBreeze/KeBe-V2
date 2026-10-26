@@ -4,10 +4,28 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 
 import { Heading, Text, clx } from "@medusajs/ui"
 
+import { convertToLocale } from "@lib/util/money"
+import {
+  cartItemsLabel,
+  holdsOnHoldBoard,
+  holdsPresaleBoard,
+  ON_HOLD_CHECKOUT,
+} from "@lib/util/presale"
+import { fccNoticeBoardsIn } from "@lib/util/fcc"
+import FccNotice from "@modules/common/components/fcc-notice"
+import ErrorMessage from "../error-message"
 import PaymentButton from "../payment-button"
 import { useSearchParams } from "next/navigation"
 
-const Review = ({ cart }: { cart: any }) => {
+const Review = ({
+  cart,
+  shipLine,
+}: {
+  cart: any
+  // The presale's ship line in force now, read from the product by the page.
+  // Null for any other cart, and then the sentence is left out.
+  shipLine: string | null
+}) => {
   const searchParams = useSearchParams()
 
   const isOpen = searchParams.get("step") === "review"
@@ -15,10 +33,31 @@ const Review = ({ cart }: { cart: any }) => {
   const paidByGiftcard =
     cart?.gift_cards && cart?.gift_cards?.length > 0 && cart?.total === 0
 
+  const shippingMethod = cart.shipping_methods?.at(-1)
+
   const previousStepsCompleted =
     cart.shipping_address &&
-    cart.shipping_methods.length > 0 &&
+    !!shippingMethod &&
     (cart.payment_collection || paidByGiftcard)
+
+  // The presale board's cart: the pre-order terms' cancel promise and the
+  // link to them join the line.
+  const preorder = holdsPresaleBoard(cart.items)
+
+  const money = (amount?: number | null) =>
+    convertToLocale({ amount: amount ?? 0, currency_code: cart.currency_code })
+
+  // "KeBe v2 pre-order CA$349.00 + Canada Post Expedited Parcel CA$20.00 =
+  // CA$369.00". Taxes join the sum only when the cart has them, as in the
+  // phone's order bar, so it still adds up.
+  const sum = [
+    `${cartItemsLabel(cart.items ?? [])} ${money(cart.item_subtotal)}`,
+    `+ ${shippingMethod?.name} ${money(cart.shipping_subtotal)}`,
+    cart.tax_total ? `+ ${money(cart.tax_total)} taxes` : "",
+    `= ${money(cart.total)}`,
+  ]
+    .filter(Boolean)
+    .join(" ")
 
   return (
     <div className="bg-ui-bg-base">
@@ -35,25 +74,83 @@ const Review = ({ cart }: { cart: any }) => {
           Review
         </Heading>
       </div>
+      {isOpen && !shippingMethod && (
+        <Text
+          className="txt-medium text-ui-fg-base"
+          data-testid="review-no-delivery"
+        >
+          <LocalizedClientLink
+            href="/checkout?step=delivery"
+            className="underline"
+          >
+            Choose a delivery option
+          </LocalizedClientLink>{" "}
+          first.
+        </Text>
+      )}
       {isOpen && previousStepsCompleted && (
         <>
           <div className="flex items-start gap-x-1 w-full mb-6">
             <div className="w-full">
               {/* The starter's line had buyers accept a Terms of Use, Terms
                   of Sale and Returns Policy that do not exist, and "Medusa
-                  Store's" privacy policy. Only what is true is said here. */}
-              <Text className="txt-medium-plus text-ui-fg-base mb-1">
-                Placing the order charges your card the total above, now,
-                shipping included. How we handle your details is set out in
-                our{" "}
-                <LocalizedClientLink href="/privacy" className="underline">
+                  Store's" privacy policy. Only what is true is said here.
+                  The amounts are written out (6 Oct 2026): on a phone the
+                  order summary comes after this step, so "the total above"
+                  pointed at nothing. */}
+              <Text
+                className="txt-medium-plus text-ui-fg-base mb-1"
+                data-testid="review-order-line"
+              >
+                {sum}. Placing the order charges {money(cart.total)} to your
+                card now, in full.{shipLine ? " Built and shipped in the order received." : ""}
+                {/* The terms link sits in the cancel sentence it belongs to,
+                    a sentence apart from the privacy link, and neither link
+                    breaks across lines: on a phone the two used to sit 8 px
+                    apart on one line. */}
+                {preorder && (
+                  <>
+                    {" "}
+                    You can cancel for a full refund until it ships; see the{" "}
+                    <LocalizedClientLink
+                      href="/terms"
+                      className="underline whitespace-nowrap"
+                      data-testid="review-terms-link"
+                    >
+                      order terms
+                    </LocalizedClientLink>
+                    .
+                  </>
+                )}{" "}
+                How we handle your details is set out in our{" "}
+                <LocalizedClientLink
+                  href="/privacy"
+                  className="underline whitespace-nowrap"
+                >
                   privacy notice
                 </LocalizedClientLink>
                 .
               </Text>
+              {/* The FCC notice for US orders, once more before the card is
+                  charged, naming each board in the cart whose SDoC is
+                  pending, for a cart that ships to a US address
+                  (lib/util/fcc.ts, 7 Oct 2026). */}
+              <FccNotice
+                boards={fccNoticeBoardsIn(
+                  cart.shipping_address?.country_code,
+                  cart.items
+                )}
+                className="mt-4 rounded-xl border border-ui-border-base p-4 txt-medium text-ui-fg-subtle"
+              />
             </div>
           </div>
-          <PaymentButton cart={cart} data-testid="submit-order-button" />
+          {/* A cart from before 14 Oct 2026 can hold KeBe Lite, on hold: no
+              button, so an old payment session cannot charge for it. */}
+          {holdsOnHoldBoard(cart.items) ? (
+            <ErrorMessage error={ON_HOLD_CHECKOUT} data-testid="on-hold-error" />
+          ) : (
+            <PaymentButton cart={cart} data-testid="submit-order-button" />
+          )}
         </>
       )}
     </div>

@@ -11,6 +11,8 @@ type ThumbnailProps = {
   size?: "small" | "medium" | "large" | "full" | "square"
   isFeatured?: boolean
   className?: string
+  // What the picture shows; the starter called every one "Thumbnail".
+  alt?: string
   "data-testid"?: string
 }
 
@@ -19,6 +21,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   images,
   size = "small",
   className,
+  alt = "Thumbnail",
   "data-testid": dataTestid,
 }) => {
   const initialImage = thumbnail || images?.[0]?.url
@@ -26,7 +29,9 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   return (
     <Container
       className={clx(
-        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle shadow-elevation-card-rest rounded-large group-hover:shadow-elevation-card-hover transition-shadow ease-in-out duration-150",
+        // No resting shadow, Container's included (design audit, 14 Oct
+        // 2026); a card's hover dims it instead.
+        "relative w-full overflow-hidden p-4 bg-ui-bg-subtle rounded-large !shadow-none group-hover:opacity-90 transition-opacity duration-150",
         className,
         {
           // Keyboards are wide: the starter's portrait frames showed a slice.
@@ -40,7 +45,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
       )}
       data-testid={dataTestid}
     >
-      <ImageOrPlaceholder image={initialImage} size={size} />
+      <ImageOrPlaceholder image={initialImage} size={size} alt={alt} />
     </Container>
   )
 }
@@ -48,11 +53,12 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
 const ImageOrPlaceholder = ({
   image,
   size,
-}: Pick<ThumbnailProps, "size"> & { image?: string }) => {
+  alt,
+}: Pick<ThumbnailProps, "size"> & { image?: string; alt: string }) => {
   return image ? (
     <Image
       src={image}
-      alt="Thumbnail"
+      alt={alt}
       className="absolute inset-0 object-cover object-center"
       draggable={false}
       quality={50}

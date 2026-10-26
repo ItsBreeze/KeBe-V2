@@ -55,12 +55,18 @@ export const formatOrder = (order: any) => {
   const total = itemsTotal + shipTotal;
 
   const a = order.shipping_address ?? {};
+  // The storefront stores the province as its lowercase ISO 3166-2 code
+  // ("ca-on"), the form Medusa's tax regions match. A label wants "ON".
+  // Anything else (an older free-text "Ontario") prints as it was typed.
+  const province = /^[a-z]{2}-[a-z0-9]+$/i.test(a.province ?? "")
+    ? a.province.split("-")[1].toUpperCase()
+    : a.province;
   const address = [
     [a.first_name, a.last_name].filter(Boolean).join(" "),
     a.company,
     a.address_1,
     a.address_2,
-    [a.city, a.province, a.postal_code].filter(Boolean).join(", "),
+    [a.city, province, a.postal_code].filter(Boolean).join(", "),
     String(a.country_code ?? "").toUpperCase(),
     a.phone ? `Phone: ${a.phone}` : "",
   ].filter(Boolean);

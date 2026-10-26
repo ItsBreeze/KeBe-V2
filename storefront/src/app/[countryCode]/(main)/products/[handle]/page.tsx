@@ -2,6 +2,18 @@ import { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { listProducts } from "@lib/data/products"
 import { getRegion, listRegions } from "@lib/data/regions"
+import { pageAlternates } from "@lib/data/seo"
+import { productImageAlt } from "@lib/util/image-alt"
+import {
+  SOCIAL_IMAGE,
+  listingImageUrls,
+  productMetaDescription,
+  productSeoTitle,
+  socialMetadata,
+} from "@lib/util/seo"
+import { isOnHold } from "@lib/util/presale"
+import { breadcrumbJsonLd, productJsonLd } from "@lib/util/structured-data"
+import JsonLd from "@modules/common/components/json-ld"
 import ProductTemplate from "@modules/products/templates"
 import { HttpTypes } from "@medusajs/types"
 
@@ -87,14 +99,38 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     notFound()
   }
 
+  // The description was the title again; now it is what the board is, then
+  // this country's price and its ship date while they fit (lib/util/seo.ts).
+  const title = productSeoTitle(product)
+  const description = productMetaDescription(product, params.countryCode)
+  const alternates = await pageAlternates(
+    params.countryCode,
+    `/products/${handle}`
+  )
+  // The link preview is the product's first CAD render or photograph. The
+  // thumbnail it used is v2's AI desk scene, which no preview, feed or
+  // structured data shows (image-alt.ts).
+  const [image] = listingImageUrls(product)
+
   return {
-    title: `${product.title} | KeBe`,
-    description: `${product.title}`,
-    openGraph: {
-      title: `${product.title} | KeBe`,
-      description: `${product.title}`,
-      images: product.thumbnail ? [product.thumbnail] : [],
-    },
+    // Whole: the brand is already in it.
+    title: { absolute: title },
+    description,
+    alternates,
+    ...socialMetadata({
+      title,
+      description,
+      path: `/products/${handle}`,
+      countryCode: params.countryCode,
+      images: image
+        ? [
+            {
+              url: image,
+              alt: productImageAlt({ url: image }, product.title, 0),
+            },
+          ]
+        : [SOCIAL_IMAGE],
+    }),
   }
 }
 
@@ -114,18 +150,29 @@ export default async function ProductPage(props: Props) {
     queryParams: { handle: params.handle },
   }).then(({ response }) => response.products[0])
 
-  const images = getImagesForVariant(pricedProduct, selectedVariantId)
-
+  // After the check: an unknown handle read .images off undefined first.
   if (!pricedProduct) {
     notFound()
   }
 
+  const images = getImagesForVariant(pricedProduct, selectedVariantId)
+
+  // The product and the way to it, for search engines and shopping surfaces,
+  // in the HTML itself.
   return (
-    <ProductTemplate
-      product={pricedProduct}
-      region={region}
-      countryCode={params.countryCode}
-      images={images}
-    />
+    <>
+      {/* No Product for KeBe Lite on hold: without an offer Google reads it
+          as an invalid item (14 Oct 2026). The breadcrumb stays. */}
+      {!isOnHold(pricedProduct.handle) && (
+        <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />
+      )}
+      <JsonLd data={breadcrumbJsonLd(params.countryCode, pricedProduct)} />
+      <ProductTemplate
+        product={pricedProduct}
+        region={region}
+        countryCode={params.countryCode}
+        images={images}
+      />
+    </>
   )
 }

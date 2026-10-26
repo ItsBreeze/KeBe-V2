@@ -6,25 +6,17 @@ import CartTotals from "@modules/common/components/cart-totals"
 import Divider from "@modules/common/components/divider"
 import DiscountCode from "@modules/checkout/components/discount-code"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import { getCheckoutStep } from "@lib/util/checkout-step"
 import { HttpTypes } from "@medusajs/types"
 
 type SummaryProps = {
   cart: HttpTypes.StoreCart & {
     promotions: HttpTypes.StorePromotion[]
   }
+  shippingNote?: string
 }
 
-function getCheckoutStep(cart: HttpTypes.StoreCart) {
-  if (!cart?.shipping_address?.address_1 || !cart.email) {
-    return "address"
-  } else if (cart?.shipping_methods?.length === 0) {
-    return "delivery"
-  } else {
-    return "payment"
-  }
-}
-
-const Summary = ({ cart }: SummaryProps) => {
+const Summary = ({ cart, shippingNote }: SummaryProps) => {
   const step = getCheckoutStep(cart)
 
   return (
@@ -32,9 +24,12 @@ const Summary = ({ cart }: SummaryProps) => {
       <Heading level="h2" className="text-[2rem] leading-[2.75rem]">
         Summary
       </Heading>
-      <DiscountCode cart={cart} />
+      {/* The promotion code field shows only on a cart that already has a
+          promotion (6 Oct 2026): KeBe runs none, and the field sent buyers
+          looking for a code that does not exist. */}
+      {!!cart.promotions?.length && <DiscountCode cart={cart} />}
       <Divider />
-      <CartTotals totals={cart} />
+      <CartTotals totals={cart} shippingNote={shippingNote} />
       <LocalizedClientLink
         href={"/checkout?step=" + step}
         data-testid="checkout-button"

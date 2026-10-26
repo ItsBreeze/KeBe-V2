@@ -4,9 +4,13 @@ import { Text } from "@medusajs/ui"
 type OrderDetailsProps = {
   order: HttpTypes.StoreOrder
   showStatus?: boolean
+  // The confirmation page, straight after payment: says Stripe is emailing
+  // the receipt. The account's order page shows the address alone, since an
+  // older order may never have had a receipt.
+  receipt?: boolean
 }
 
-const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
+const OrderDetails = ({ order, showStatus, receipt }: OrderDetailsProps) => {
   const formatStatus = (str: string) => {
     const formatted = str.split("_").join(" ")
 
@@ -15,15 +19,18 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
 
   return (
     <div>
+      {/* Only what is true (6 Oct 2026): KeBe sends the buyer no email of its
+          own. The card payment sets receipt_email, so Stripe sends the
+          receipt. */}
       <Text>
-        We have sent the order confirmation details to{" "}
+        {receipt ? "Stripe is emailing your receipt to " : "Email: "}
         <span
           className="text-ui-fg-medium-plus font-semibold"
           data-testid="order-email"
         >
           {order.email}
         </span>
-        .
+        {receipt && "."}
       </Text>
       <Text className="mt-2">
         Order date:{" "}
