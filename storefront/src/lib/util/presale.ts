@@ -233,7 +233,7 @@ export const cartItemsLabel = (
         (only.product_title ?? only.title ?? "").split(" — ")[0]
       }${
         isPresaleHandle(lineHandle(only))
-          ? " pre-order"
+          ? ""
           : ""
       }`
     : `${items.reduce((n, i) => n + i.quantity, 0)} items`

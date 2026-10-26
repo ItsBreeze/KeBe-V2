@@ -68,7 +68,7 @@ export default function ContactPage() {
               href="/terms"
               className="text-ui-fg-base underline underline-offset-4"
             >
-              Pre-order terms
+              Order terms
             </LocalizedClientLink>
           </p>
         </div>

@@ -52,7 +52,7 @@ async function V2OnPreorder({ regionId }: { regionId: string }) {
 
   return (
     <p className="text-base text-ui-fg-subtle">
-      v1 is sold out. KeBe v2 is on pre-order.{" "}
+      v1 is sold out. KeBe v2 is for sale now.{" "}
       <LocalizedClientLink
         href={`/products/${PRESALE_HANDLE}`}
         className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"

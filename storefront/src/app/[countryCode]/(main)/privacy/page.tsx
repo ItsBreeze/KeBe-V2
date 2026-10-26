@@ -85,7 +85,7 @@ export default function PrivacyPage() {
               </strong>{" "}
               We advertise on Instagram and Facebook, and this site runs Meta&apos;s
               pixel, a script from Meta. It tells Meta which pages you view and
-              when you tap Pre-order (and if the pre-order could not start), add
+              when you tap Buy now (and if the order could not start), add
               a keyboard to your cart, start a checkout, place an order or join
               the waitlist, with the product and the amount, but not your name,
               shipping address or card. Meta links that to your

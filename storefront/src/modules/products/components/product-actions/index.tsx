@@ -250,7 +250,7 @@ export default function ProductActions({
   // Hidden while a retry is under way, so a second failure shows afresh.
   const addError = shipsBy
     ? state?.error && !pending
-      ? addErrorText("We couldn't start your pre-order.")
+      ? addErrorText("We couldn't start your order.")
       : null
     : addFailed
     ? addErrorText("We couldn't add it to your cart.")
@@ -367,7 +367,7 @@ export default function ProductActions({
             {/* The cancel promise sits inside the first sentence, not on a
                 line of its own, and the note is under the button, so the
                 button stays where it was (6 Oct 2026). */}
-            Pre-order: plus shipping, calculated at checkout, and charged in
+            Plus shipping, calculated at checkout, and charged in
             full there; you can cancel for a full refund until it ships.{" "}
             {/* While a board's FCC authorization is pending, /ca offers it
                 to Canada only and says nothing of the FCC: the CA region
@@ -388,7 +388,7 @@ export default function ProductActions({
               className="underline underline-offset-4 hover:text-ui-fg-base"
               data-testid="presale-terms-link"
             >
-              Pre-order terms
+              Order terms
             </LocalizedClientLink>
           </p>
         )}

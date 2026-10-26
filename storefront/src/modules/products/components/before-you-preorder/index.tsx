@@ -37,7 +37,7 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
   return (
     <section aria-labelledby="byp" className="flex flex-col gap-4">
       <h2 id="byp" className="font-display text-xl text-ui-fg-base">
-        Before you pre-order
+        Before you buy
       </h2>
       {/* Each question on its own raised row, no rules between them (design audit, 14 Oct 2026). */}
       <div className="flex flex-col gap-2">
@@ -88,7 +88,7 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
               href="/terms"
               className="text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
             >
-              Pre-order terms
+              Order terms
             </LocalizedClientLink>
           </p>
         </Row>

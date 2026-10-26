@@ -37,7 +37,7 @@ const Help = ({ order }: { order: HttpTypes.StoreOrder }) => {
             href="/terms"
             className="underline underline-offset-4"
           >
-            Pre-order terms
+            Order terms
           </LocalizedClientLink>
         </p>
       )}

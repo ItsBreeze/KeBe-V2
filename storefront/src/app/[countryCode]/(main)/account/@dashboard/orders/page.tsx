@@ -36,7 +36,7 @@ export default async function Orders() {
         </p>
         <p className="text-base-regular">
           <LocalizedClientLink href="/terms" className="underline">
-            Pre-order terms
+            Order terms
           </LocalizedClientLink>
         </p>
       </div>

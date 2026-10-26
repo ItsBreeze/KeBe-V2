@@ -18,7 +18,7 @@ export default async function PreviewPrice({
   return (
     // Spans at the card's 16 px: Text set it at 14 (design audit, 14 Oct 2026).
     <div className="flex flex-wrap items-baseline gap-x-1 text-ui-fg-muted">
-      {preorder && <span data-testid="preorder-label">Pre-order</span>}
+      {preorder && <span data-testid="preorder-label">For sale now</span>}
       <span className="text-ui-fg-base" data-testid="price">
         {price.calculated_price}
       </span>
