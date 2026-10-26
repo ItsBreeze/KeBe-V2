@@ -53,7 +53,7 @@ export default async function Footer() {
               href="/terms"
               className="txt-compact-small hover:text-ui-fg-base"
             >
-              Pre-order terms
+              Order terms
             </LocalizedClientLink>
             <LocalizedClientLink
               href="/contact"

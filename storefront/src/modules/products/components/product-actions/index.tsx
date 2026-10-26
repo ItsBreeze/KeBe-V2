@@ -171,7 +171,7 @@ export default function ProductActions({
 
   const shipsBy = presaleShipsBy(product)
   const shipLine = presaleShipLine(product, countryCode)
-  const buyLabel = shipsBy ? "Pre-order" : "Add to cart"
+  const buyLabel = shipsBy ? "Buy now" : "Add to cart"
 
   // The sticky bar shows while the inline button is not all on screen. It
   // watched the whole price, button and note block, and any pixel of that

@@ -17,7 +17,7 @@ import { lateTerm } from "@lib/util/terms"
 
 // "KeBe keyboard": the brand alone is easily read as "keeb" or Keebio.
 const DESCRIPTION =
-  "The terms of a KeBe keyboard pre-order: who sells it, the price, paying, shipping, cancelling, returns and the warranty."
+  "The terms of a KeBe keyboard order: who sells it, the price, paying, shipping, cancelling, returns and the warranty."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -25,11 +25,11 @@ export async function generateMetadata(props: {
   const { countryCode } = await props.params
   return {
     // The root layout's template adds " | KeBe".
-    title: "Pre-order terms",
+    title: "Order terms",
     description: DESCRIPTION,
     alternates: await pageAlternates(countryCode, "/terms"),
     ...socialMetadata({
-      title: `Pre-order terms | ${BRAND}`,
+      title: `Order terms | ${BRAND}`,
       description: DESCRIPTION,
       path: "/terms",
       countryCode,
@@ -39,7 +39,7 @@ export async function generateMetadata(props: {
 
 // Last substantive change to these terms. Update it whenever the content
 // changes.
-const LAST_UPDATED = "7 October 2026"
+const LAST_UPDATED = "25 October 2026"
 
 // The region's currency as a sentence says it. Read from the region, so
 // /ca and /us each name their own; nothing when it is unknown.
@@ -82,7 +82,7 @@ export default async function TermsPage(props: {
     <div className="bg-ui-bg-base">
       <div className="mx-auto max-w-[760px] px-[6vw] py-20 small:px-[4vw]">
         <h1 className="font-display text-[clamp(2rem,5vw,2.8rem)] text-ui-fg-base">
-          Pre-order terms
+          Order terms
         </h1>
         <p className="mt-3 text-sm text-kebe-muted">
           Last updated {LAST_UPDATED}
@@ -111,7 +111,7 @@ export default async function TermsPage(props: {
           <section>
             <h2 className="font-display text-2xl text-ui-fg-base">The price</h2>
             <p className="mt-3">
-              You pay the pre-order price shown on the product page, plus the
+              You pay the price shown on the product page, plus the
               shipping you choose at checkout
               {currency ? `, in ${currency}` : ""}. Any tax is shown at
               checkout before you pay.
@@ -136,7 +136,8 @@ export default async function TermsPage(props: {
                 shown date is not a deadline here, and "If it is late" is the
                 only commitment about it (owner, 6 Oct 2026). */}
             <p className="mt-3">
-              Before you order, the site shows the date your board ships.
+              Your board is built and shipped in the order received. Before you
+              order, the site shows the date your board ships.
               Shipping goes by Canada Post. US orders go by Canada Post with
               the US duties already paid, so there is nothing more to pay on
               delivery.

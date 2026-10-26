@@ -103,7 +103,7 @@ const Review = ({
                 data-testid="review-order-line"
               >
                 {sum}. Placing the order charges {money(cart.total)} to your
-                card now, in full.{shipLine ? ` ${shipLine}.` : ""}
+                card now, in full.{shipLine ? " Built and shipped in the order received." : ""}
                 {/* The terms link sits in the cancel sentence it belongs to,
                     a sentence apart from the privacy link, and neither link
                     breaks across lines: on a phone the two used to sit 8 px
@@ -117,7 +117,7 @@ const Review = ({
                       className="underline whitespace-nowrap"
                       data-testid="review-terms-link"
                     >
-                      pre-order terms
+                      order terms
                     </LocalizedClientLink>
                     .
                   </>

@@ -208,7 +208,7 @@ const ExpressButtons = ({
       <Text className="txt-small text-ui-fg-subtle">
         Your wallet fills in your name, email, phone and address, and you pick
         the delivery in it. Paying charges the total, delivery included, now,
-        in full.{shipLine ? ` ${shipLine}.` : ""}
+        in full.{shipLine ? " Built and shipped in the order received." : ""}
         {preorder && (
           <>
             {" "}
@@ -217,7 +217,7 @@ const ExpressButtons = ({
               href="/terms"
               className="underline whitespace-nowrap"
             >
-              pre-order terms
+              order terms
             </LocalizedClientLink>
             .
           </>
