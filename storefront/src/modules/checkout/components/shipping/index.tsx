@@ -350,7 +350,7 @@ const Shipping: React.FC<ShippingProps> = ({
                     className="txt-medium text-ui-fg-subtle mt-2"
                     data-testid="delivery-ship-line"
                   >
-                    {shipLine}.
+                    Built and shipped in the order received.
                     {showsTransitTimes &&
                       " These are Canada Post's times once it ships."}
                   </Text>

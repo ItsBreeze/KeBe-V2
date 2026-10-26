@@ -63,7 +63,6 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
   if (!presaleAvailability(product).open) return "Status: sold out."
   if (!presaleShipsBy(product)) return "Status: in stock."
   const line = presaleShipLine(product)
-  const iso = presaleShipDate(product)
   // While US orders wait on the FCC authorization, their own date
   // (lib/util/fcc.ts, owner 7 Oct 2026).
   const us = usShipsLater(product)
@@ -76,10 +75,10 @@ const statusLine = (product: HttpTypes.StoreProduct) => {
   // every US listing does (review, 7 Oct 2026).
   const name = fccBoardName(product.handle)
   return `Status: for sale now, charged in full at checkout.${
-    line ? ` ${line}${iso ? ` (${iso})` : ""}${us ? " to Canada" : ""}.` : ""
+    line ? " Built and shipped in the order received." : ""
   }${
     us?.line
-      ? ` US orders ${us.line.replace(/^Ships /, "ship ")}${us.iso ? ` (${us.iso})` : ""}, once the board's FCC authorization is complete.`
+      ? " US orders ship once the board's FCC authorization is complete."
       : ""
   }${name ? `\n\n${fccShortNotice(name, absoluteUrl("/us/terms#fcc-notice"))}` : ""}`
 }

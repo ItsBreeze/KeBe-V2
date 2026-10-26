@@ -216,7 +216,7 @@ export const presalePaymentLabel = (
 ): string | null => {
   const line = presaleLineOf(items)
   if (!line) return null
-  return `${(line.product_title ?? line.title ?? "KeBe").split(" — ")[0] || "KeBe"} pre-order`
+  return `${(line.product_title ?? line.title ?? "KeBe").split(" — ")[0] || "KeBe"}`
 }
 
 // What a cart holds, in a few words, for checkout's order lines: the name

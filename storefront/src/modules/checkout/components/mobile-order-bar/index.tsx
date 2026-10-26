@@ -53,7 +53,7 @@ export default function MobileOrderBar({
           </span>
           {shipLine && (
             <span className="txt-compact-small text-ui-fg-muted">
-              {shipLine}
+              Built and shipped in the order received.
             </span>
           )}
         </span>

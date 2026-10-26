@@ -6,5 +6,5 @@
 // read it from here, so the two never differ.
 export const lateTerm = (countryCode: string | null | undefined) =>
   countryCode?.toLowerCase() === "us"
-    ? "If we can't ship by the date shown, we email you before it with a new date, and you can cancel for a full refund."
-    : "If it hasn't shipped 30 days after the date shown when you ordered, we email you and you choose a full refund or keep waiting."
+    ? "Your board is built and shipped in the order received. If we can't ship it within 30 days of your order, we email you before then with a new shipping date, and you can cancel for a full refund."
+    : "Your board is built and shipped in the order received. If it hasn't shipped 30 days after you ordered, we email you and you choose a full refund or keep waiting."
