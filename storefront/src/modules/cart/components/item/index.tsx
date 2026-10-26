@@ -96,7 +96,7 @@ const Item = ({ item, type = "full", currencyCode, shipLine }: ItemProps) => {
               className="txt-medium text-ui-fg-subtle"
               data-testid="product-ship-line"
             >
-              Pre-order. {shipLine}.
+              Built and shipped in the order received.
             </Text>
           )}
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
