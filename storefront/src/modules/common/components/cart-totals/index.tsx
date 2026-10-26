@@ -36,12 +36,18 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, shippingNote }) => {
   // is still to come and the total says what it leaves out. An order always
   // has its delivery, so the order pages read as before.
   const shippingChosen = !!shipping_methods?.length
+  // Canadian prices include tax (owner, 26 Oct 2026): nothing is added on top.
+  const taxIncluded = currency_code?.toLowerCase() === "cad" && !tax_total
 
   return (
     <div>
       <div className="flex flex-col gap-y-2 txt-medium text-ui-fg-subtle ">
         <div className="flex items-center justify-between">
-          <span>Subtotal (excl. shipping and taxes)</span>
+          <span>
+            {taxIncluded
+              ? "Subtotal (taxes included, excl. shipping)"
+              : "Subtotal (excl. shipping and taxes)"}
+          </span>
           <span data-testid="cart-subtotal" data-value={item_subtotal || 0}>
             {convertToLocale({ amount: item_subtotal ?? 0, currency_code })}
           </span>
@@ -80,7 +86,9 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals, shippingNote }) => {
         <div className="flex justify-between">
           <span className="flex gap-x-1 items-center ">Taxes</span>
           <span data-testid="cart-taxes" data-value={tax_total || 0}>
-            {convertToLocale({ amount: tax_total ?? 0, currency_code })}
+            {taxIncluded
+              ? "Included"
+              : convertToLocale({ amount: tax_total ?? 0, currency_code })}
           </span>
         </div>
       </div>

@@ -113,8 +113,10 @@ export default async function TermsPage(props: {
             <p className="mt-3">
               You pay the price shown on the product page, plus the
               shipping you choose at checkout
-              {currency ? `, in ${currency}` : ""}. Any tax is shown at
-              checkout before you pay.
+              {currency ? `, in ${currency}` : ""}.{" "}
+              {region?.currency_code?.toLowerCase() === "cad"
+                ? "Canadian prices include tax: nothing is added on top at checkout."
+                : "Any tax is shown at checkout before you pay."}
             </p>
           </section>
 
