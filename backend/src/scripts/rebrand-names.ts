@@ -11,10 +11,12 @@ import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
 // Safe to re-run: a title already renamed no longer starts with an old name.
 // Not to be run on the live database before Josh's go (rebrand plan Phase 3).
 
+// No revision numbers (Josh via Lute, 26 Oct 2026 12:15 PM PT): v1 and v2
+// are both the Breeze Board; their full titles still differ after the name.
 // Longest first, so "KeBe v2" is matched before any shorter "KeBe".
 export const RENAMES: [string, string][] = [
-  ["KeBe v2", "Breeze Board V2"],
-  ["KeBe v1", "Breeze Board V1"],
+  ["KeBe v2", "Breeze Board"],
+  ["KeBe v1", "Breeze Board"],
   ["KeBe Lite", "Breeze Board Lite"],
 ];
 
