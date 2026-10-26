@@ -8,7 +8,8 @@ import { DESCRIPTION as LITE_DESCRIPTION } from "./start-lite";
 // the products are renamed, the handles stay, so every old link, feed id and
 // order keeps working. Only the leading model name of each title changes,
 // and the two boards on sale get start-presale's and start-lite's renamed
-// descriptions (the live ones name KeBe v2 and KeBe Lite).
+// descriptions (the live ones name KeBe v2 and KeBe Lite), and the gift card
+// seed-kebe's.
 //
 //   medusa exec ./src/scripts/rebrand-names.ts
 //
@@ -33,6 +34,7 @@ export const rename = (title: string) => {
 export const DESCRIPTIONS: Record<string, string> = {
   "kebe-v2-keyboard": V2_DESCRIPTION,
   "kebe-lite": LITE_DESCRIPTION,
+  "gift-card": "A Brisebois' Boards gift card.",
 };
 
 export default async function rebrandNames({ container }: ExecArgs) {
