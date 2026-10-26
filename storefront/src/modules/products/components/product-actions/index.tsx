@@ -367,7 +367,8 @@ export default function ProductActions({
             {/* The cancel promise sits inside the first sentence, not on a
                 line of its own, and the note is under the button, so the
                 button stays where it was (6 Oct 2026). */}
-            Plus shipping, calculated at checkout, and charged in
+            {countryCode === "us" ? "Plus" : "Taxes included, plus"}{" "}
+            shipping, calculated at checkout, and charged in
             full there; you can cancel for a full refund until it ships.{" "}
             {/* While a board's FCC authorization is pending, /ca offers it
                 to Canada only and says nothing of the FCC: the CA region

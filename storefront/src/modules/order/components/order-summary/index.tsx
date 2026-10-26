@@ -44,7 +44,11 @@ const OrderSummary = ({ order }: OrderSummaryProps) => {
           </div>
           <div className="flex items-center justify-between">
             <span>Taxes</span>
-            <span>{getAmount(order.tax_total)}</span>
+            <span>
+              {order.currency_code?.toLowerCase() === "cad" && !order.tax_total
+                ? "Included"
+                : getAmount(order.tax_total)}
+            </span>
           </div>
         </div>
         <div className="h-px w-full border-b border-ui-border-base border-dashed my-4" />
