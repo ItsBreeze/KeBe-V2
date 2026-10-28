@@ -46,6 +46,13 @@ export default async function Nav() {
               >
                 Learn
               </LocalizedClientLink>
+              <a
+                className="hover:text-ui-fg-base"
+                href="https://blog.kebe.grounders.app/blog"
+                data-testid="nav-blog-link"
+              >
+                Blog
+              </a>
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"
