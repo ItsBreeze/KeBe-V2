@@ -3,7 +3,7 @@ import { litePlannedPrice } from "@lib/util/presale"
 import { FCC_NOT_FOR_SALE, fccPending } from "@lib/util/fcc"
 import WaitlistForm from "@modules/home/components/waitlist-form"
 
-// Breeze Board Lite's buy box while it is on hold (owner, 14 Oct 2026): no variant
+// The Chinook's buy box while it is on hold (owner, 14 Oct 2026): no variant
 // picker, price, Pre-order button or phone bar, so nothing on its page can put
 // it in a cart; an email-only waitlist measures who wants one. The planned
 // price is this store's, never a ship date. /us still shows the board, so it
@@ -22,7 +22,7 @@ export default function LiteWaitlist({
         Planned price {litePlannedPrice(countryCode)} plus shipping
       </p>
       <p className="text-base leading-relaxed text-ui-fg-subtle">
-        Breeze Board Lite is planned, not made yet. Its keypad needs moulds that don&apos;t pay off
+        The Chinook is planned, not made yet. Its keypad needs moulds that don&apos;t pay off
         until enough people want one. Join the waitlist: no payment, and
         we&apos;ll email you once if it goes ahead.
       </p>
@@ -33,7 +33,7 @@ export default function LiteWaitlist({
           data-testid="fcc-not-for-sale"
         >
           <strong className="font-medium text-ui-fg-base">
-            FCC notice for Breeze Board Lite.
+            FCC notice for the Chinook.
           </strong>{" "}
           {FCC_NOT_FOR_SALE}
         </p>

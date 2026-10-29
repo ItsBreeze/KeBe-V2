@@ -34,7 +34,7 @@ export async function generateMetadata(props: {
           url: "/products/kebe-v2-top.jpg",
           width: 2400,
           height: 1800,
-          alt: "Breeze Board from above, rendered from its CAD: 68 keys in straight columns, the Dvorak letters in the middle.",
+          alt: "The Breeze from above, rendered from its CAD: 68 keys in straight columns, the Dvorak letters in the middle.",
         },
       ],
     }),
@@ -54,16 +54,16 @@ export default async function TrainPage(props: {
   return (
     <div className="bg-kebe-page text-kebe-text">
       <div className="mx-auto max-w-[1320px] px-[6vw] pb-20 pt-4 small:px-[4vw] small:pt-6">
-        <h1 className="sr-only">Learn the Breeze Board&apos;s layout: a typing trainer</h1>
+        <h1 className="sr-only">Learn the Breeze&apos;s layout: a typing trainer</h1>
         <Trainer account={account} initial={itemFrom(at, mode)} />
         {/* A note for any keyboard, no shop link: the page is the game (owner, 14 Oct 2026). */}
         <p className="mt-10 max-w-xl text-sm leading-relaxed text-kebe-muted">
           The letters work on any keyboard: press the key in the same place
           as on the board, with no need to set your computer to Dvorak. The
-          symbol and Fn levels use keys only the Breeze Board has. On a Breeze Board, tick
-          &ldquo;Typing on a Breeze Board&rdquo;, and turn autocorrect off with Fn +
+          symbol and Fn levels use keys only the Breeze has. On the Breeze, tick
+          &ldquo;Typing on the Breeze&rdquo;, and turn autocorrect off with Fn +
           A while you practise: words it fixes don&apos;t count. The board
-          above is Breeze Board&apos;s, legends and all.
+          above is the Breeze&apos;s, legends and all.
         </p>
       </div>
     </div>

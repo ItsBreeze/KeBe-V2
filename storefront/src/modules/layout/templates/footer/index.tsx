@@ -6,7 +6,7 @@ import Bear from "@modules/common/icons/bear"
 
 // The owner's Instagram accounts, same order on every site
 const INSTAGRAM_HANDLES = [
-  "kebe_keyboards",
+  "brisebois.boards",
   "unslip.app",
   "offhand.app",
   "grounders.app",

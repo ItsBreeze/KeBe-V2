@@ -18,12 +18,12 @@ import { DESCRIPTION as LITE_DESCRIPTION } from "./start-lite";
 // Not to be run on the live database before Josh's go (rebrand plan Phase 3).
 
 // No revision numbers (Josh via Lute, 26 Oct 2026 12:15 PM PT): v1 and v2
-// are both the Breeze Board; their full titles still differ after the name.
+// are both the Breeze; their full titles still differ after the name.
 // Longest first, so "KeBe v2" is matched before any shorter "KeBe".
 export const RENAMES: [string, string][] = [
-  ["KeBe v2", "Breeze Board"],
-  ["KeBe v1", "Breeze Board"],
-  ["KeBe Lite", "Breeze Board Lite"],
+  ["KeBe v2", "The Breeze"],
+  ["KeBe v1", "The Breeze"],
+  ["KeBe Lite", "The Chinook"],
 ];
 
 export const rename = (title: string) => {

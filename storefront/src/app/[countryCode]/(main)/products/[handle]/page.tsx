@@ -161,7 +161,7 @@ export default async function ProductPage(props: Props) {
   // in the HTML itself.
   return (
     <>
-      {/* No Product for Breeze Board Lite on hold: without an offer Google reads it
+      {/* No Product for the Chinook on hold: without an offer Google reads it
           as an invalid item (14 Oct 2026). The breadcrumb stays. */}
       {!isOnHold(pricedProduct.handle) && (
         <JsonLd data={productJsonLd(pricedProduct, params.countryCode)} />

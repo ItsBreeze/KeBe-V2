@@ -398,11 +398,11 @@ export const LESSONS: Lesson[] = [
   },
   {
     id: "learn-extras",
-    title: "The Breeze Board's extras",
+    title: "The Breeze's extras",
     steps: [
       {
         title: "Guess first",
-        body: "On a Breeze Board, a Shift tapped on its own, without a letter, types something.",
+        body: "On the Breeze, a Shift tapped on its own, without a letter, types something.",
         act: "What would be most useful?",
         lit: [SHIFT.left, SHIFT.right, ...ids(ALL)],
         choice: {
@@ -418,7 +418,7 @@ export const LESSONS: Lesson[] = [
         body: "Numbers run along the top in the usual order. The two middle columns hold symbols a standard keyboard leaves to the right pinky: / and \\ between the home rows, [ ] above them, - and = among the numbers. Held, Fn turns the right hand into a number pad. Backspace is one key out from A, under the left pinky; Enter one out from S.",
         lit: ids("1234567890-=[]/\\").concat(SHIFT.left, SHIFT.right, "CH57", "CH68", "CH60", "CH65", "CH59", "CH66", "CH29", "CH42"),
         after:
-          "The levels ahead teach each of these in turn. They need a Breeze Board: other keyboards don't have these keys.",
+          "The levels ahead teach each of these in turn. They need the Breeze: other keyboards don't have these keys.",
       },
     ],
   },

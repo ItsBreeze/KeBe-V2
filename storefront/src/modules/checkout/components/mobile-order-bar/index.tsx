@@ -24,7 +24,7 @@ export default function MobileOrderBar({
   const money = (amount?: number | null) =>
     convertToLocale({ amount: amount ?? 0, currency_code: cart.currency_code })
 
-  // "Breeze Board pre-order", as the Review step says it.
+  // "The Breeze pre-order", as the Review step says it.
   const what = cartItemsLabel(items)
 
   // Taxes join the sum only when the cart has them, so it still adds up.

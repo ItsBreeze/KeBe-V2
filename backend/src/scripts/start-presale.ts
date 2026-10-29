@@ -41,7 +41,7 @@ import {
 const HANDLE = "kebe-v2-keyboard";
 // Set at creation; set-v2-copy.ts renamed the live product (owner, 7 Oct 2026: v2 "mechanical"). The name before
 // " — " stays, so the buy box's heading, the cart and the FCC notice still say "KeBe v2".
-export const TITLE = "Breeze Board — Mechanical 68-Key Ortholinear Keyboard with USB Hub";
+export const TITLE = "The Breeze — Mechanical 68-Key Ortholinear Keyboard with USB Hub";
 // The regular price, charged once pre-orders close. While they are open,
 // preorder-sale.ts puts a CA$349 sale price list over it.
 const PRICE_CAD = 386.89; // plus shipping, calculated at checkout
@@ -61,7 +61,7 @@ const VIDEO = "/products/kebe-v2-desk-clip";
 // Also written by ship-dates.ts. No quantity: the site never says how many
 // boards there are.
 export const DESCRIPTION =
-  "The Breeze Board is the mechanical one: V1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
+  "The Breeze is the mechanical one: V1's 68-key Matrix-Dvorak keyboard with a USB hub built in. " +
   "Four USB-C ports sit on the back edge: one goes to your computer, and the " +
   "other three are a USB 2.0 hub for a mouse receiver, a flash drive or " +
   "anything else that draws little power.\n\n" +

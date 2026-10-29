@@ -883,7 +883,7 @@ function Words({ run }: { run: Run }) {
               fixed &&
                 "underline decoration-kebe-warn decoration-dotted decoration-2 underline-offset-[6px]"
             )}
-            title={fixed ? "Fixed by the Breeze Board's autocorrect: it doesn't count" : undefined}
+            title={fixed ? "Fixed by the Breeze's autocorrect: it doesn't count" : undefined}
           >
             {Array.from({ length: len }, (_, j) => {
               const ch = j < word.length ? word[j] : t[j]
@@ -982,7 +982,7 @@ function verdict(
   if (over)
     line = `Over ${MAX_WPM} words a minute is faster than anyone types, so it isn't kept as a score.`
   if (r.fixed)
-    line += ` ${r.fixed === 1 ? "One word was" : `${r.fixed} words were`} fixed by the Breeze Board's autocorrect and didn't count: Fn + A turns it off.`
+    line += ` ${r.fixed === 1 ? "One word was" : `${r.fixed} words were`} fixed by the Breeze's autocorrect and didn't count: Fn + A turns it off.`
   const stars = o.mode === "levels" && !over ? starsFor(wpm, o.pass) : null
   return { label, line, stars, wpm }
 }

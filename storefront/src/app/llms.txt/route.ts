@@ -57,7 +57,7 @@ const priceRange = (product: HttpTypes.StoreProduct) => {
 }
 
 const statusLine = (product: HttpTypes.StoreProduct) => {
-  // Breeze Board Lite (owner, 14 Oct 2026): no ship date, nothing to buy.
+  // The Chinook (owner, 14 Oct 2026): no ship date, nothing to buy.
   if (isOnHold(product.handle))
     return "Status: planned, not made yet, not for sale. Its keypad needs moulds that don't pay off until enough people want one. Its page has a free waitlist: an email address, no payment, and one email if it goes ahead."
   if (!presaleAvailability(product).open) return "Status: sold out."
@@ -183,7 +183,7 @@ export async function GET() {
     "",
     `- [Typing trainer](${absoluteUrl(
       `/${home}/train`
-    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the symbols, numbers and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on a Breeze Board or on any keyboard with the computer set to Dvorak.`,
+    )}): a free typing game in the browser that teaches the Matrix-Dvorak layout one letter at a time and then the symbols, numbers and Fn pad, with whole words from the thousand most common, a target speed to open each level and a 10-word speed test. It reads the letters the computer receives, so it works on the Breeze or on any keyboard with the computer set to Dvorak.`,
     "",
     "## More",
     "",
@@ -199,7 +199,7 @@ export async function GET() {
     `- [Order terms](${absoluteUrl(
       `/${home}/terms`
     )}): an order can be cancelled for a full refund until it ships, defects are repaired or replaced for a year, and a board in its original condition can be returned for a refund within 30 days of delivery, the buyer paying return shipping`,
-    `- [Instagram @kebe_keyboards](${INSTAGRAM_URL})`,
+    `- [Instagram @brisebois.boards](${INSTAGRAM_URL})`,
     `- Questions about an order: ${CONTACT_EMAIL}`,
     "",
   ].join("\n")

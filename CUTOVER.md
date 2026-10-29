@@ -1,11 +1,11 @@
 # Cut-over: KeBe -> Brisebois' Boards
 
-Run this only after Josh says go through Lute. The recommended day is Mon 2 Nov 2026. Before that day this branch (`rebrand`) stays unmerged. Do the steps in order. "Josh" means the step needs Josh himself: money, DNS, a new account or his login.
+Run this only after Josh says go through Lute. The day is Mon 2 Nov 2026 (Josh, 29 Oct 2026 via Lute; names: the Breeze and the Chinook, handle @brisebois.boards, the bear stays). It still runs only on Josh's go that day. Before that day this branch (`rebrand`) stays unmerged. Do the steps in order. "Josh" means the step needs Josh himself: money, DNS, a new account or his login.
 
 ## 0. Before the day
 - [ ] Artie's wordmark is final. If it replaces the text wordmark in the header and footer, it lands on this branch first.
 - [ ] Mark has QA'd the renamed renders (marketing/brand/brisebois-boards/renders/MANIFEST.md) and captions.
-- [ ] Lute has confirmed the new IG handle is free in the app (first pick @brisebois.boards, fallback @briseboisboards).
+- [ ] Lute has confirmed @brisebois.boards (Josh's pick, 29 Oct) is free on the in-app rename screen.
 
 ## 1. Merge order
 1. If `taxes-included` (b7bf41f, "Canadian prices say taxes included") is still unmerged, merge it into `main` **first**, the same way any store change goes in. It merges cleanly into `rebrand` (checked with `git merge-tree`, 26 Oct). Merging it first means the tax-inclusive CA$349 wording ships either way, and this branch never has to carry it.
@@ -14,17 +14,18 @@ Run this only after Josh says go through Lute. The recommended day is Mon 2 Nov 
 3. Merge `rebrand` into `main`.
 
 ## 2. Instagram link in code (same day, before deploying)
-The rename frees the old handle, so instagram.com/kebe_keyboards stops being ours the moment the rename happens. On `main`, change all three to the new handle, then commit:
+The rename frees the old handle, so instagram.com/kebe_keyboards stops being ours the moment the rename happens. Already done on this branch (29 Oct), so it ships with the merge; if the handle had to change, fix all three before deploying:
 - `storefront/src/lib/util/seo.ts`: `INSTAGRAM_URL`
 - `storefront/src/modules/layout/templates/footer/index.tsx`: `INSTAGRAM_HANDLES[0]`
-- `storefront/src/app/llms.txt/route.ts`: the `Instagram @kebe_keyboards` link text
+- `storefront/src/app/llms.txt/route.ts`: the `Instagram @brisebois.boards` link text
+- The other five sites' footers (Unslip, Offhand, Grounders, ItsRadio, hub.ai) still list kebe_keyboards: change them the same day.
 
 ## 3. Product data (live database)
 From `backend/`, with the new code deployed to `medusa-backend` (step 4) or run through `railway ssh` as the other scripts are:
 ```
 railway ssh --service medusa-backend -- sh -c "cd /app && ./node_modules/.bin/medusa exec ./src/scripts/rebrand-names.ts"
 ```
-- Renames titles: KeBe v2 / v1 -> Breeze Board, KeBe Lite -> Breeze Board Lite. Writes the renamed Breeze Board, Lite and gift card descriptions. Handles, SKUs and prices are unchanged.
+- Renames titles: KeBe v2 / v1 -> The Breeze, KeBe Lite -> The Chinook. Writes the renamed Breeze, Chinook and gift card descriptions. Handles, SKUs and prices are unchanged.
 - Safe to re-run. It logs every row it changes. The v1 case set and PCB are drafts: their titles are renamed, their descriptions are not (they are never shown).
 - Afterwards, check the store API: `/store/products?fields=handle,title`.
 - Price list names ("KeBe v2 pre-order", "KeBe Lite pre-order") stay as they are. The scripts find the lists by those names, and the site never shows them.
@@ -40,8 +41,8 @@ The storefront must be rebuilt, not restarted. Then revalidate, or wait for the 
 Optional, low stakes: `cd workers/order-mail && wrangler deploy` changes only the sender name on the shop's own order emails ("Brisebois' Boards orders").
 
 ## 5. Instagram (Lute, in the app)
-1. Rename @kebe_keyboards to the new handle. Update the name, the bio and the link in bio.
-2. **Josh:** right after that, register @kebe_keyboards as a parked account with one line: "We're now @<new handle>" plus the store link. This is a new account, so it needs Josh.
+1. Rename @kebe_keyboards to @brisebois.boards. Update the name, the bio and the link in bio.
+2. **Josh:** right after that, register @kebe_keyboards as a parked account with one line: "We're now @brisebois.boards" plus the store link. This is a new account, so it needs Josh.
 3. Switch the scheduled posts to the renamed renders (renders/MANIFEST.md). Post the single "we're now Brisebois' Boards" announcement first.
 
 ## 6. Domain boards.brisebois.xyz (Josh, later, optional the same day)

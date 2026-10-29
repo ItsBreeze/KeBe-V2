@@ -41,7 +41,7 @@ const TITLE = "Brisebois' Boards: Mechanical Ortholinear Dvorak Keyboards"
 // -- so that claim is gone and not coming back. The Lite is named on hold
 // before v2, so the price sentence after it reads as v2's (14 Oct 2026).
 const LEAD =
-  "Ortholinear Dvorak keyboards with a USB hub. A slim membrane Lite is planned. The Breeze Board has Choc switches."
+  "Ortholinear Dvorak keyboards with a USB hub. A slim membrane Chinook is planned. The Breeze has Choc switches."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -130,7 +130,7 @@ async function getPresale(countryCode: string): Promise<Presale> {
   }
 }
 
-// Whether Breeze Board Lite's page is there for its button beside v2's. The Lite is on hold with a waitlist (owner, 14 Oct
+// Whether the Chinook's page is there for its button beside v2's. The Lite is on hold with a waitlist (owner, 14 Oct
 // 2026), so the button gives no price or ship line. Any failure leaves the button out.
 async function getLite(countryCode: string) {
   return !!(await presaleProduct(countryCode, LITE_HANDLE))
@@ -176,7 +176,7 @@ function PriceButton({
   )
 }
 
-// The two boards side by side, under the hero, Breeze Board Lite marked on hold (owner, 7 Oct 2026: "better describe
+// The two boards side by side, under the hero, the Chinook marked on hold (owner, 7 Oct 2026: "better describe
 // and differentiate the two offered products"). Only the rows where they differ, then one line for what they share.
 // Every value is in the kebe repo: the switches and sockets (Case_Files/v3/V3-ENVELOPE.md), v2's caps (Chosfox
 // order 21742, CFX "Black Coated", legends lasered through the coating), the Lite's keypad (PCBs/lite/README.md,
@@ -208,17 +208,17 @@ const TWO_BOARDS = [
 
 function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice: string }) {
   const boards = [
-    { key: "v2" as const, handle: PRESALE_HANDLE, kind: "Mechanical", name: "Breeze Board", price: v2Price,
-      image: "/products/kebe-v2-glow.jpg", alt: "Breeze Board, rendered from its CAD with its per-key lighting on." },
-    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "Breeze Board Lite", price: `${litePrice} planned`,
-      image: "/products/kebe-lite-r3c-glow.jpg", alt: "Breeze Board Lite, rendered from its design files with its per-key lighting on." },
+    { key: "v2" as const, handle: PRESALE_HANDLE, kind: "Mechanical", name: "The Breeze", price: v2Price,
+      image: "/products/kebe-v2-glow.jpg", alt: "The Breeze, rendered from its CAD with its per-key lighting on." },
+    { key: "lite" as const, handle: LITE_HANDLE, kind: "Slim membrane", name: "The Chinook", price: `${litePrice} planned`,
+      image: "/products/kebe-lite-r3c-glow.jpg", alt: "The Chinook, rendered from its design files with its per-key lighting on." },
   ]
   return (
     <div className="text-left">
       {/* Not "Mechanical or membrane": with the Lite not for sale that
           offered a choice nobody can make (owner, 14 Oct 2026). */}
       <h2 className="text-center font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-        Breeze Board and the planned Lite
+        The Breeze and the planned Chinook
       </h2>
       <div className="mt-10 grid gap-6 small:grid-cols-2">
         {boards.map((b) => (
@@ -258,14 +258,14 @@ function TwoBoards({ v2Price, litePrice }: { v2Price?: string; litePrice: string
   )
 }
 
-// Breeze Board V1's photographs for the home page's "Real photos" section, the first
+// The Breeze V1's photographs for the home page's "Real photos" section, the first
 // one large: only the three lit on black (owner, 7 Oct 2026: not the two on
 // the pale desk). Alt text comes from lib/util/image-alt.ts.
 const V1_PHOTOS = [
   "/products/kebe-v1-hero.jpg",
   "/products/kebe-v1-angle.jpg",
   "/products/kebe-v1-port.jpg",
-].map((src, i) => ({ src, alt: productImageAlt({ url: src }, "Breeze Board V1", i) }))
+].map((src, i) => ({ src, alt: productImageAlt({ url: src }, "The Breeze V1", i) }))
 
 export default async function Home(props: {
   params: Promise<{ countryCode: string }>
@@ -277,11 +277,11 @@ export default async function Home(props: {
   ])
   // The store's return policy is given for each of these (structured-data.ts).
   const countries = await storefrontCountries()
-  // The reel's end card names Breeze Board's pre-order price and the market: US$249 · US on
+  // The reel's end card names the Breeze's pre-order price and the market: US$249 · US on
   // the US route, CA$349 · Canada everywhere else (the shop's two regions). No ship date.
   const market = countryCode.toLowerCase() === "us" ? "us" : "ca"
   // The boards the hero offers, and whether /us must give the FCC notice for
-  // any of them (none on /ca: lib/util/fcc.ts). Not Breeze Board Lite, on hold: it is
+  // any of them (none on /ca: lib/util/fcc.ts). Not the Chinook, on hold: it is
   // shown, not offered, so it gets the not-for-sale notice below (14 Oct 2026).
   const offered = [presale.state === "open" ? PRESALE_HANDLE : null]
   const usNotice = fccNoticeBoards(countryCode, offered).length > 0
@@ -291,8 +291,8 @@ export default async function Home(props: {
   // under the name, over the model; on phones under the model.
   const offer = (
     <>
-      {/* Two buttons, one a board, side by side: Breeze Board with its
-          pre-order price, what its keys are and when it ships, and Breeze Board
+      {/* Two buttons, one a board, side by side: The Breeze with its
+          pre-order price, what its keys are and when it ships, and the Breeze
           Lite on hold, leading to its waitlist (owner, 7 Oct 2026: "2
           price buttons instead of hiding the lite"; 14 Oct: the Lite on
           hold). v2 has no button when it cannot be pre-ordered. */}
@@ -303,7 +303,7 @@ export default async function Home(props: {
               <PriceButton
                 handle={PRESALE_HANDLE}
                 kind="Mechanical"
-                name="Breeze Board"
+                name="The Breeze"
                 price={presale.price}
                 keys="Choc switches"
                 shipLine="For sale now"
@@ -313,7 +313,7 @@ export default async function Home(props: {
               <PriceButton
                 handle={LITE_HANDLE}
                 kind="Slim membrane"
-                name="Breeze Board Lite"
+                name="The Chinook"
                 price={litePlannedPrice(countryCode)}
                 keys="shine-through caps"
                 shipLine="Planned price, join the waitlist"
@@ -350,7 +350,7 @@ export default async function Home(props: {
         <div className={lite ? "mt-6 flex w-full flex-col items-center" : "flex w-full flex-col items-center"}>
           {lite && (
             <p className="mb-3 text-base text-kebe-text/80">
-              Hear when Breeze Board, the mechanical one, is back on sale:
+              Hear when the Breeze, the mechanical one, is back on sale:
             </p>
           )}
           <WaitlistForm source="v2" />
@@ -373,7 +373,7 @@ export default async function Home(props: {
         <ProductModel
           src="/products/kebe-v2.glb"
           poster="/products/kebe-v2-glow.jpg"
-          alt="Breeze Board, a 3D model with its per-key lighting on."
+          alt="The Breeze, a 3D model with its per-key lighting on."
           eager
           variant="backdrop"
           angle="-25deg 62deg"
@@ -388,7 +388,7 @@ export default async function Home(props: {
                 open" label over the name went in the design audit (14 Oct
                 2026): the buttons and the line under them say pre-order. */}
             <h1 className="font-display text-[clamp(3rem,8vw,5rem)] leading-none">
-              Breeze Board
+              The Breeze
             </h1>
             {/* What KeBe is, before the tagline: until 14 Oct 2026 the first
                 screen never said Dvorak or straight columns, and an ad
@@ -424,16 +424,16 @@ export default async function Home(props: {
         )}
         <p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-kebe-text/80">
           {presale.state === "sold-out"
-            ? "Breeze Board is not on sale right now — leave an address and you'll hear when it is again."
+            ? "The Breeze is not on sale right now — leave an address and you'll hear when it is again."
             : presale.state === "none"
-            ? "Leave an address and you'll hear when Breeze Board goes on sale."
+            ? "Leave an address and you'll hear when the Breeze goes on sale."
             : lite
-            ? "Breeze Board's shipping is calculated at checkout, where the board is charged in full."
+            ? "The Breeze's shipping is calculated at checkout, where the board is charged in full."
             : "Shipping is calculated at checkout, and each keyboard is charged in full there."}
         </p>
-        {/* The hero offers Breeze Board at its US price, so /us gives the product
+        {/* The hero offers the Breeze at its US price, so /us gives the product
             page's FCC notice here too while its SDoC is pending
-            (lib/util/fcc.ts, 7 Oct 2026). Breeze Board Lite, on hold, is only shown:
+            (lib/util/fcc.ts, 7 Oct 2026). The Chinook, on hold, is only shown:
             the FCC's notice for a device not offered for sale, as on its
             page (14 Oct 2026). */}
         {usNotice && (
@@ -445,7 +445,7 @@ export default async function Home(props: {
         {lite && countryCode === "us" && fccPending(LITE_HANDLE) && (
           <p className="mx-auto mt-6 max-w-xl rounded-xl bg-kebe-raised p-4 text-left text-base leading-relaxed text-kebe-text/80">
             <strong className="font-medium text-ui-fg-base">
-              FCC notice for Breeze Board Lite.
+              FCC notice for the Chinook.
             </strong>{" "}
             {FCC_NOT_FOR_SALE}
           </p>
@@ -460,14 +460,14 @@ export default async function Home(props: {
       <section className="bg-kebe-raised py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
           <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-            Breeze Board: V1&apos;s board, with a hub built in
+            The Breeze: V1&apos;s board, with a hub built in
           </h2>
           {/* An AI camera move over the night scene, with the CAD keyboard
               tracked back into every frame (scripts/render-v2). */}
           <div className="relative mt-10 aspect-[16/9] w-full overflow-hidden rounded-2xl">
             <Image
               src="/products/kebe-v2-night-clip.jpg"
-              alt="Breeze Board on a desk at night, its legends lit in a rainbow by the per-key RGB."
+              alt="The Breeze on a desk at night, its legends lit in a rainbow by the per-key RGB."
               fill
               sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
@@ -501,8 +501,8 @@ export default async function Home(props: {
           {/* The pictures' disclosure, in the section's body ink: it was
               faint 14 px text at 3.1:1 until the design audit (14 Oct 2026). */}
           <p className="mt-14 max-w-2xl text-base leading-relaxed text-kebe-text/80">
-            The Breeze Board is wired: the battery-and-Bluetooth design is not for sale, and
-            this is the board that ships. None of the Breeze Board pictures or videos are
+            The Breeze is wired: the battery-and-Bluetooth design is not for sale, and
+            this is the board that ships. None of the Breeze pictures or videos are
             photographs. The 3D model at the top and the plain renders come
             straight from its CAD; the desk, studio and night scenes, the clip
             above included, set that CAD model in AI-generated surroundings.
@@ -510,7 +510,7 @@ export default async function Home(props: {
         </div>
       </section>
 
-      {/* Breeze Board V1, photographed: the one KeBe that is built, so the one with
+      {/* the Breeze V1, photographed: the one KeBe that is built, so the one with
           real pictures (owner, 7 Oct 2026: it shows what comes of KeBe's
           design files). It follows the v2 renders and scenes above and comes
           before the case for the layout (owner, 7 Oct 2026). Every picture
@@ -520,10 +520,10 @@ export default async function Home(props: {
       <section className="py-24">
         <div className="mx-auto max-w-[1200px] px-[6vw] small:px-[4vw]">
           <h2 className="font-display text-[clamp(2rem,5vw,3rem)] leading-tight">
-            Breeze Board V1, built and photographed
+            The Breeze V1, built and photographed
           </h2>
           <p className="mt-6 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            The Breeze Board and the Lite are not built yet, so their pictures are
+            The Breeze and the Chinook are not built yet, so their pictures are
             renders. V1 is built: these are photographs of one. It is the board both are
             drawn from, on the same 68-key grid, hand-built in small batches
             and sold out.
@@ -575,10 +575,10 @@ export default async function Home(props: {
           {/* The reel (marketing/instagram/kebe-reel-levers.mp4, owner's
               voice, captions burnt in) makes the whole case in 48 seconds,
               drawn in KeBe's own keys; the text below it goes further. The
-              end card names Breeze Board's pre-order price and the market, so each
+              end card names the Breeze's pre-order price and the market, so each
               market gets its own cut (r2, 14 Oct 2026: "Pre-order price /
               CA$349 + shipping / Pre-order now · Canada", US$249 on /us, no
-              ship date, since Breeze Board Lite is on hold; src-levers/build-v2end.mjs
+              ship date, since the Chinook is on hold; src-levers/build-v2end.mjs
               --market=cav2|usv2 --from=42.9, audio remuxed from the approved
               cut). Whoever changes the presale price must re-render both
               markets and copy all four files here under NEW names: /products/*
@@ -590,7 +590,7 @@ export default async function Home(props: {
                 playsInline
                 preload="metadata"
                 poster="/products/kebe-v2-reel.jpg"
-                aria-label="Why the Breeze Board is laid out the way it is, in 48 seconds"
+                aria-label="Why the Breeze is laid out the way it is, in 48 seconds"
                 className="h-full w-full object-cover"
               >
                 <source src={`/products/kebe-hero-for-sale-now${market === "us" ? "-us" : ""}-v2.webm`} type="video/webm" />
@@ -599,7 +599,7 @@ export default async function Home(props: {
             </div>
             <div className="max-w-xl">
               <p className="font-display text-[clamp(1.35rem,2.5vw,1.75rem)] leading-snug">
-                The whole argument in 48 seconds, drawn in the Breeze Board&apos;s own keys.
+                The whole argument in 48 seconds, drawn in the Breeze&apos;s own keys.
               </p>
               <p className="mt-4 text-lg leading-relaxed text-kebe-text/75">
                 Or read on: the words below have the history, the rest of the
@@ -636,7 +636,7 @@ export default async function Home(props: {
               With William Dealey he counted which letters and which pairs of
               letters English uses most, studied how the hand moves, and
               watched slow-motion films of typists at work. The order they
-              patented in 1936 follows from a few rules. The Breeze Board&apos;s letters
+              patented in 1936 follows from a few rules. The Breeze&apos;s letters
               are theirs, so every rule below holds on it.
             </p>
             <div className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
@@ -655,7 +655,7 @@ export default async function Home(props: {
           <div className="relative mt-12 aspect-[2/1] w-full overflow-hidden rounded-2xl">
             <Image
               src="/products/kebe-v2-top.jpg"
-              alt="Breeze Board from above: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides."
+              alt="The Breeze from above: 68 keys in straight columns, the Dvorak letters in the middle, the modifiers mirrored on both sides."
               fill
               sizes="(max-width: 1200px) 100vw, 1200px"
               className="object-cover"
@@ -663,7 +663,7 @@ export default async function Home(props: {
           </div>
           {/* Not a sequence, so no 01 to 04 over them (design audit, 14 Oct 2026). */}
           <h3 className="mt-14 font-display text-[clamp(1.75rem,4vw,2.5rem)] leading-tight">
-            What the Breeze Board adds
+            What the Breeze adds
           </h3>
           <ul className="mt-10 grid gap-x-12 gap-y-12 small:grid-cols-2">
             {WHY.map((w) => (
@@ -678,7 +678,7 @@ export default async function Home(props: {
             ))}
           </ul>
           <p className="mt-14 max-w-2xl text-lg leading-relaxed text-kebe-text/80">
-            Nothing sits where a standard keyboard puts it, so you learn the Breeze Board
+            Nothing sits where a standard keyboard puts it, so you learn the Breeze
             as a new instrument instead of unpicking old habits one key at a
             time. Switching takes practice, and the first weeks are slower.
             Once it is in your hands you stop thinking about the keyboard at

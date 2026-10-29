@@ -65,7 +65,7 @@ export default async function TermsPage(props: {
     : null
 
   // /us only, while any board's SDoC is pending: every such board, since the
-  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026), but Breeze Board Lite on hold,
+  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026), but the Chinook on hold,
   // which takes no orders (14 Oct 2026).
   const fccBoards = fccNoticeBoards(
     countryCode,

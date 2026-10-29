@@ -121,7 +121,7 @@ const offerFor = (
   countryCode: string
 ) => {
   const price = variantPrice(variant)
-  // Breeze Board Lite on hold cannot be bought, so it has no offer (14 Oct 2026).
+  // The Chinook on hold cannot be bought, so it has no offer (14 Oct 2026).
   if (!price || isOnHold(product.handle)) return null
   const availability = variantAvailability(product, variant)
   const startsAt =

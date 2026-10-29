@@ -47,7 +47,7 @@ const Review = ({
   const money = (amount?: number | null) =>
     convertToLocale({ amount: amount ?? 0, currency_code: cart.currency_code })
 
-  // "Breeze Board pre-order CA$349.00 + Canada Post Expedited Parcel CA$20.00 =
+  // "The Breeze pre-order CA$349.00 + Canada Post Expedited Parcel CA$20.00 =
   // CA$369.00". Taxes join the sum only when the cart has them, as in the
   // phone's order bar, so it still adds up.
   const sum = [
@@ -144,7 +144,7 @@ const Review = ({
               />
             </div>
           </div>
-          {/* A cart from before 14 Oct 2026 can hold Breeze Board Lite, on hold: no
+          {/* A cart from before 14 Oct 2026 can hold the Chinook, on hold: no
               button, so an old payment session cannot charge for it. */}
           {holdsOnHoldBoard(cart.items) ? (
             <ErrorMessage error={ON_HOLD_CHECKOUT} data-testid="on-hold-error" />
