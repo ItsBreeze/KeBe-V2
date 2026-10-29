@@ -181,7 +181,9 @@ const CartDropdown = ({
                     <span className="text-ui-fg-base font-semibold">
                       Subtotal{" "}
                       <span className="font-normal">
-                        (excl. shipping and taxes)
+                        {cartState?.currency_code?.toLowerCase() === "cad"
+                          ? "(taxes included, excl. shipping)"
+                          : "(excl. shipping and taxes)"}
                       </span>
                     </span>
                     <span
