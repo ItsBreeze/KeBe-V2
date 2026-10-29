@@ -1,6 +1,6 @@
 # Cut-over: KeBe -> Brisebois' Boards
 
-Run this only after Josh says go through Lute. The day is Mon 2 Nov 2026 (Josh, 29 Oct 2026 via Lute; names: the Breeze and the Chinook, handle @brisebois.boards, the bear stays). It still runs only on Josh's go that day. Before that day this branch (`rebrand`) stays unmerged. Do the steps in order. "Josh" means the step needs Josh himself: money, DNS, a new account or his login.
+Josh gave the go on Thu 29 Oct 2026 8:38 AM PT via Lute: the cut-over is today, not Mon 2 Nov (names: the Breeze and the Chinook, handle @brisebois.boards, the bear stays; Mark renames the handle). Steps 0-2 are done: `taxes-included` and `rebrand` are merged into `main` (525aa5b) and pushed, the Instagram link already reads @brisebois.boards. Steps 3-5 are Lute's from the box, in order. "Josh" means the step needs Josh himself: money, DNS, a new account or his login.
 
 ## 0. Before the day
 - [ ] Artie's wordmark is final. If it replaces the text wordmark in the header and footer, it lands on this branch first.
