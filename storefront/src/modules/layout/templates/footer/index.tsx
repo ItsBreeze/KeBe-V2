@@ -67,6 +67,13 @@ export default async function Footer() {
             >
               Typing trainer
             </LocalizedClientLink>
+            {/* The BabyLoveGrowth-hosted blog: this is its one inbound link */}
+            <a
+              href="https://blog.kebe.grounders.app/blog"
+              className="txt-compact-small hover:text-ui-fg-base"
+            >
+              Blog
+            </a>
             {/* KeBe's free autocorrect app; its site links back here */}
             <a
               href="https://unslip.brisebois.xyz"
