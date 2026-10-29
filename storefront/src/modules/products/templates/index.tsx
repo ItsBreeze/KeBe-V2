@@ -52,12 +52,12 @@ async function V2OnPreorder({ regionId }: { regionId: string }) {
 
   return (
     <p className="text-base text-ui-fg-subtle">
-      v1 is sold out. KeBe v2 is for sale now.{" "}
+      The Breeze V1 is sold out. The Breeze is for sale now.{" "}
       <LocalizedClientLink
         href={`/products/${PRESALE_HANDLE}`}
         className="whitespace-nowrap text-ui-fg-base underline underline-offset-4 hover:text-kebe-bright"
       >
-        See KeBe v2
+        See the Breeze
       </LocalizedClientLink>
     </p>
   )
@@ -101,8 +101,8 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // model_poster is a daylight render on a pale ground, which flashed white.
   const modelPoster = model ? model.replace(/\.glb$/, "-glow.jpg") : undefined
   // The name without the title's description, as the pictures' alt text has
-  // it: "KeBe v2".
-  const productName = (product.title ?? "").split(" — ")[0] || "KeBe"
+  // it: "The Breeze".
+  const productName = (product.title ?? "").split(" — ")[0] || "The Breeze"
 
   // Without a model the first picture leads, and the grid shows the rest.
   const lead = model ? null : images[0]
@@ -120,7 +120,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   // place, the argument the reel and the ad make, and the same four facts
   // shrink to one line after them (6 Oct 2026).
   const shipsBy = presaleShipsBy(product)
-  // KeBe Lite on hold: a waitlist in the buy box's place (14 Oct 2026).
+  // The Chinook on hold: a waitlist in the buy box's place (14 Oct 2026).
   const onHold = isOnHold(product.handle)
   // v1's page, once it cannot be bought, points at the board that can,
   // rather than ending at a disabled button (6 Oct 2026). The handle check
@@ -288,29 +288,29 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           {/* On a pre-order board a line above the pictures says what they
               are, none of them a photograph. It is the disclosure that ends
               the description, set where the pictures start, in the clip
-              caption's style (6 Oct 2026). KeBe Lite's are plain renders of
+              caption's style (6 Oct 2026). The Chinook's are plain renders of
               its design files (storefront/scripts/render-lite), with no AI
               scenes (7 Oct 2026). Body size since the design audit (14 Oct
               2026): a disclosure has to be read. */}
           {product.handle === LITE_HANDLE && (
             <p className="mb-4 max-w-3xl text-base leading-relaxed text-kebe-text/80">
-              None of the KeBe Lite pictures here are photographs: they and
-              the 3D model are renders of the Lite&apos;s design files. For a
-              built KeBe, see{" "}
+              None of the Chinook pictures here are photographs: they and
+              the 3D model are renders of the Chinook&apos;s design files. For a
+              built the Breeze, see{" "}
               <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-kebe-bright">
-                KeBe v1&apos;s photographs
+                The Breeze V1&apos;s photographs
               </LocalizedClientLink>
               .
             </p>
           )}
           {shipsBy && product.handle !== LITE_HANDLE && (
             <p className="mb-4 max-w-3xl text-base leading-relaxed text-kebe-text/80">
-              None of the v2 pictures here are photographs: the plain renders
-              and the 3D model come straight from v2&apos;s CAD, and the desk,
+              None of the Breeze pictures here are photographs: the plain renders
+              and the 3D model come straight from its CAD, and the desk,
               studio and night pictures and the clip set that CAD model in
-              AI-generated scenes. For a built KeBe, see{" "}
+              AI-generated scenes. For a built the Breeze, see{" "}
               <LocalizedClientLink href="/products/kebe-v1-keyboard" className="underline hover:text-kebe-bright">
-                KeBe v1&apos;s photographs
+                The Breeze V1&apos;s photographs
               </LocalizedClientLink>
               .
             </p>

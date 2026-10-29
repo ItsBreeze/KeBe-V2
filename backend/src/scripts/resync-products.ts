@@ -72,7 +72,7 @@ export default async function resyncProducts({ container }: ExecArgs) {
     input: {
       products: [
         {
-          title: "KeBe v1 — 68-Key Ortholinear Keyboard",
+          title: "The Breeze — 68-Key Ortholinear Keyboard",
           handle: "kebe-v1-keyboard",
           category_ids: keyboards ? [keyboards] : [],
           description:
@@ -128,11 +128,11 @@ export default async function resyncProducts({ container }: ExecArgs) {
           sales_channels: [{ id: salesChannel.id }],
         },
         {
-          title: "KeBe v1 Case Set",
+          title: "The Breeze Case Set",
           handle: "kebe-v1-case-set",
           category_ids: parts ? [parts] : [],
           description:
-            "The 3D printed plate and bottom for a KeBe v1, sold on their own for " +
+            "The 3D printed plate and bottom for the Breeze V1, sold on their own for " +
             "anyone rebuilding or replacing a case. Machined to the corrected v1 " +
             "geometry: 108.000 mm M2 pattern, 4.150 mm plate cavity.",
           weight: 250,

@@ -158,7 +158,7 @@ export async function getPresaleShipInfo({
 }: {
   regionId: string
   fresh?: boolean
-  // which pre-order board: KeBe v2 unless a cart line says otherwise
+  // which pre-order board: The Breeze unless a cart line says otherwise
   handle?: string
   // where the order ships: a US address gets the FCC date (presale.ts)
   countryCode?: string | null
@@ -211,7 +211,7 @@ export async function getPresaleShipInfo({
 }
 
 // The ship line for a cart's or an order's pre-order boards: the latest of their dates, since an order holding
-// KeBe v2 and KeBe Lite ships when both can (6 Oct 2026). Null when it holds none, and on any failure.
+// The Breeze and the Chinook ships when both can (6 Oct 2026). Null when it holds none, and on any failure.
 export async function getCartPresaleShipInfo({
   regionId,
   items,

@@ -1,15 +1,15 @@
-// KeBe Lite waitlist page: copied verbatim from brand/kebe-waitlist/worker/src/page.mjs (Dan's design).
+// The Chinook waitlist page: copied verbatim from brand/kebe-waitlist/worker/src/page.mjs (Dan's design).
 // Edit CONFIG there and copy back, or edit here. Signups go to the Cloudflare Worker + D1.
 // @ts-nocheck
-// KeBe Lite waitlist page (Dan's handoff design). Shared by the Worker preview and the storefront's /waitlist route.
+// The Chinook waitlist page (Dan's handoff design). Shared by the Worker preview and the storefront's /waitlist route.
 // ===== SITE CONFIG: one-line swaps =====
 export const CONFIG = {
-  productName: 'KeBe Lite',                                   // wordmark, title, footer, success line
-  kicker: 'KeBe Lite · Waitlist',                             // kicker label
+  productName: 'The Chinook',                                   // wordmark, title, footer, success line
+  kicker: 'The Chinook · Waitlist',                             // kicker label
   shipDate: 'Coming soon',                                    // nav + facts "Ships"
-  intro: 'A lighter KeBe, assembled by hand in Canada.',      // lede
+  intro: 'A lighter Breeze, assembled by hand in Canada.',      // lede
   privacy: 'Email only. No spam. Unsubscribe any time.',      // privacy/unsubscribe line
-  storeLine: "Want the full KeBe? It's on sale now, built and shipped in order received.",
+  storeLine: "Want the full the Breeze? It's on sale now, built and shipped in order received.",
   errorColour: '#E0735A',                                     // CSS var --error (final, Dan)
 };
 // =======================================
@@ -55,7 +55,7 @@ export function renderPage(opts) {
    </form>
   </section>
   <figure class="media">
-   <div class="photo"><img src="${o.heroSrc}" alt="KeBe Lite keyboard, render"></div>
+   <div class="photo"><img src="${o.heroSrc}" alt="The Chinook keyboard, render"></div>
    <figcaption class="cap">Render from its CAD.</figcaption>
   </figure>
  </main>

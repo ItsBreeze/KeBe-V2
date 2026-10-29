@@ -576,7 +576,7 @@ export function BoardFooter({
 export function KebeToggle({ on, set }: { on: boolean; set: (v: boolean) => void }) {
   return (
     <label
-      title={on ? "Reading the letters your KeBe types" : "Reading your keyboard's keys by their place"}
+      title={on ? "Reading the letters the Breeze types" : "Reading your keyboard's keys by their place"}
       className="flex min-h-[32px] cursor-pointer items-center gap-2 font-mono text-[11px] uppercase tracking-[0.14em] text-kebe-muted hover:text-kebe-text"
     >
       <input
@@ -589,7 +589,7 @@ export function KebeToggle({ on, set }: { on: boolean; set: (v: boolean) => void
         }}
         className="accent-kebe-good"
       />
-      Typing on a KeBe
+      Typing on the Breeze
     </label>
   )
 }

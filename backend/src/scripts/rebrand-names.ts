@@ -1,0 +1,57 @@
+import { ExecArgs } from "@medusajs/framework/types";
+import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { updateProductsWorkflow } from "@medusajs/medusa/core-flows";
+import { DESCRIPTION as V2_DESCRIPTION } from "./start-presale";
+import { DESCRIPTION as LITE_DESCRIPTION } from "./start-lite";
+
+// The rebrand to Brisebois' Boards (Josh via Lute, 26 Oct 2026 11:59 AM PT):
+// the products are renamed, the handles stay, so every old link, feed id and
+// order keeps working. Only the leading model name of each title changes,
+// and the two boards on sale get start-presale's and start-lite's renamed
+// descriptions (the live ones name KeBe v2 and KeBe Lite), and the gift card
+// seed-kebe's.
+//
+//   medusa exec ./src/scripts/rebrand-names.ts
+//
+// Safe to re-run: a title already renamed no longer starts with an old name,
+// and a description already equal is left alone.
+// Not to be run on the live database before Josh's go (rebrand plan Phase 3).
+
+// No revision numbers (Josh via Lute, 26 Oct 2026 12:15 PM PT): v1 and v2
+// are both the Breeze; their full titles still differ after the name.
+// Longest first, so "KeBe v2" is matched before any shorter "KeBe".
+export const RENAMES: [string, string][] = [
+  ["KeBe v2", "The Breeze"],
+  ["KeBe v1", "The Breeze"],
+  ["KeBe Lite", "The Chinook"],
+];
+
+export const rename = (title: string) => {
+  const hit = RENAMES.find(([from]) => title.startsWith(from));
+  return hit ? hit[1] + title.slice(hit[0].length) : title;
+};
+
+export const DESCRIPTIONS: Record<string, string> = {
+  "kebe-v2-keyboard": V2_DESCRIPTION,
+  "kebe-lite": LITE_DESCRIPTION,
+  "gift-card": "A Brisebois' Boards gift card.",
+};
+
+export default async function rebrandNames({ container }: ExecArgs) {
+  const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
+  const query = container.resolve(ContainerRegistrationKeys.QUERY);
+
+  const { data: products } = await query.graph({
+    entity: "product",
+    fields: ["id", "handle", "title", "description"],
+  });
+  for (const p of products as any[]) {
+    const title = rename(p.title ?? "");
+    const description = DESCRIPTIONS[p.handle] ?? p.description;
+    if (title === p.title && description === p.description) continue;
+    await updateProductsWorkflow(container).run({
+      input: { selector: { id: p.id }, update: { title, description } },
+    });
+    logger.info(`${p.handle}: "${p.title}" -> "${title}"${description === p.description ? "" : ", description renamed"}`);
+  }
+}

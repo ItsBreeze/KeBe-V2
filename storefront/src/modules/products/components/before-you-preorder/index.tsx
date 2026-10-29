@@ -46,7 +46,7 @@ const BeforeYouPreorder = ({ product, countryCode }: BeforeYouPreorderProps) => 
               learning paragraph, word for word. */}
           <p>
             Yes. Nothing sits where a standard keyboard puts it, so you learn
-            KeBe as a new instrument instead of unpicking old habits one key
+            the Breeze as a new instrument instead of unpicking old habits one key
             at a time. Switching takes practice, and the first weeks are
             slower. The free typing trainer on this site teaches the layout
             one letter at a time, so you can start before your board arrives.

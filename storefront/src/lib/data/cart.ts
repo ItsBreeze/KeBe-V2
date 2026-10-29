@@ -312,8 +312,8 @@ export async function preorderNow(
 ): Promise<{ error?: boolean }> {
   const variantId = formData.get("variant_id")
   const countryCode = formData.get("country_code")
-  // Which pre-order board the form is for: its ship line goes on the line. Anything else reads as KeBe v2, the
-  // form's only board since KeBe Lite went on hold (14 Oct 2026).
+  // Which pre-order board the form is for: its ship line goes on the line. Anything else reads as the Breeze, the
+  // form's only board since the Chinook went on hold (14 Oct 2026).
   const posted = formData.get("handle")
   const handle =
     typeof posted === "string" && isPresaleHandle(posted) ? posted : PRESALE_HANDLE
@@ -553,7 +553,7 @@ export async function initiatePaymentSession(
           ...data,
           data: {
             ...data.data,
-            payment_description: presalePaymentLabel(cart.items) ?? "KeBe order",
+            payment_description: presalePaymentLabel(cart.items) ?? "Brisebois' Boards order",
           },
         }
       : data

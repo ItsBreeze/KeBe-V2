@@ -19,7 +19,7 @@ const header = (s) => `=?UTF-8?B?${b64(s)}?=`;
 
 const raw = ({ to, subject, text, replyTo }) =>
   [
-    `From: ${header("KeBe orders")} <${FROM}>`,
+    `From: ${header("Brisebois' Boards orders")} <${FROM}>`,
     `To: <${to}>`,
     ...(replyTo ? [`Reply-To: <${replyTo}>`] : []),
     `Subject: ${header(subject)}`,

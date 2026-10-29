@@ -1,4 +1,4 @@
-// The FCC notice for US orders (6 Oct 2026). KeBe v2 and KeBe Lite are each
+// The FCC notice for US orders (6 Oct 2026). The Breeze and the Chinook are each
 // a Class B digital device under FCC Part 15, and neither one's Supplier's
 // Declaration of Conformity (SDoC) is done yet. Until a board's is, 47 CFR
 // 2.803(c)(2)(i) (renumbered (d)(2)(i) on 13 Oct 2026) lets it be advertised
@@ -13,8 +13,8 @@
 // shows), and each one's name as the notice gives it: the name before the
 // " — " in its product title, as the cart and checkout show it (7 Oct 2026).
 const FCC_BOARD_NAMES = {
-  "kebe-v2-keyboard": "KeBe v2",
-  "kebe-lite": "KeBe Lite",
+  "kebe-v2-keyboard": "The Breeze",
+  "kebe-lite": "The Chinook",
 } as const
 
 type FccBoard = keyof typeof FCC_BOARD_NAMES
@@ -22,8 +22,8 @@ type FccBoard = keyof typeof FCC_BOARD_NAMES
 // The one switch, a board at a time: the handles whose SDoC is still
 // pending. Take a board's handle out once its SDoC is complete, and the
 // notice stops naming it everywhere (components/fcc-notice); empty, the
-// notice leaves every page. Each SDoC is its own, so KeBe v2 can come out
-// while KeBe Lite stays in (7 Oct 2026).
+// notice leaves every page. Each SDoC is its own, so the Breeze can come out
+// while the Chinook stays in (7 Oct 2026).
 export const FCC_SDOC_PENDING: readonly FccBoard[] = [
   "kebe-v2-keyboard",
   "kebe-lite",
@@ -46,7 +46,7 @@ export const fccBoardName = (handle: string | null | undefined) =>
 export const fccShortNotice = (name: string, noticeUrl: string) =>
   `FCC notice for US orders: ${name}'s FCC authorization isn't complete yet, and no board ships to a US address until it is. The FCC's rules don't address consumer-protection, contract or other law. If authorization isn't completed, we cancel your order and refund it in full. Details: ${noticeUrl}`
 
-// The notice for a board shown on /us but not sold (KeBe Lite on hold, 14 Oct 2026): 47 CFR 2.803(c)(2)(iii)(A),
+// The notice for a board shown on /us but not sold (The Chinook on hold, 14 Oct 2026): 47 CFR 2.803(c)(2)(iii)(A),
 // (d)(2)(iii)(A) since 13 Oct 2026, prescribes these words. Never the conditional-sale notice for it: there is no
 // order to condition (Compliance/store-disclosure.md 1).
 export const FCC_NOT_FOR_SALE =
@@ -56,7 +56,7 @@ export const FCC_NOT_FOR_SALE =
 // no board may reach a US address before its authorization, and the FTC's
 // Mail Order Rule (16 CFR 435.2(a)(1)) wants a shown date to have a
 // reasonable basis, which means the EMC test booked. The owner chose 30
-// November for KeBe v2 (7 Oct 2026); KeBe Lite's own date, 31 January 2027,
+// November for the Breeze (7 Oct 2026); the Chinook's own date, 31 January 2027,
 // is already later. presale.ts shows the later of this and the product's own
 // date to US buyers only, and drops it with the board's handle above.
 const US_SHIPS_BY: Partial<Record<FccBoard, string>> = {

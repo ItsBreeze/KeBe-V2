@@ -17,7 +17,7 @@ import { lateTerm } from "@lib/util/terms"
 
 // "KeBe keyboard": the brand alone is easily read as "keeb" or Keebio.
 const DESCRIPTION =
-  "The terms of a KeBe keyboard order: who sells it, the price, paying, shipping, cancelling, returns and the warranty."
+  "The terms of a Brisebois' Boards keyboard order: who sells it, the price, paying, shipping, cancelling, returns and the warranty."
 
 export async function generateMetadata(props: {
   params: Promise<{ countryCode: string }>
@@ -65,7 +65,7 @@ export default async function TermsPage(props: {
     : null
 
   // /us only, while any board's SDoC is pending: every such board, since the
-  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026), but KeBe Lite on hold,
+  // terms cover them all (lib/util/fcc.ts, 7 Oct 2026), but the Chinook on hold,
   // which takes no orders (14 Oct 2026).
   const fccBoards = fccNoticeBoards(
     countryCode,

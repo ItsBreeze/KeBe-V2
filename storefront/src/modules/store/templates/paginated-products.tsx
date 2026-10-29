@@ -77,7 +77,7 @@ export default async function PaginatedProducts({
       <FccNotice
         boards={fccNoticeBoards(
           countryCode,
-          // KeBe Lite on hold is not offered, so the order notice leaves it
+          // The Chinook on hold is not offered, so the order notice leaves it
           // out (14 Oct 2026); its own page gives its notice.
           products.map((p) => p.handle).filter((h) => !isOnHold(h))
         )}

@@ -62,7 +62,7 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   return {
     // The root layout's template adds " | KeBe".
     title: collection.title,
-    description: `${collection.title} from KeBe, a one-person keyboard workshop in Canada.`,
+    description: `${collection.title} from Brisebois' Boards, a one-person keyboard workshop in Canada.`,
     alternates: await pageAlternates(
       params.countryCode,
       `/collections/${params.handle}`

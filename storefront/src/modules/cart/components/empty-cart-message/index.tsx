@@ -22,7 +22,7 @@ const EmptyCartMessage = () => {
       </Text>
       <div>
         <InteractiveLink href={`/products/${PRESALE_HANDLE}`}>
-          See KeBe v2
+          See the Breeze
         </InteractiveLink>
       </div>
     </div>

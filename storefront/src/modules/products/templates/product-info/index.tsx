@@ -13,14 +13,14 @@ type ProductInfoProps = {
   countryCode?: string
 }
 
-// The buy box's heading. Titles read "KeBe v2 — 68-Key Ortholinear Keyboard
+// The buy box's heading. Titles read "The Breeze — 68-Key Ortholinear Keyboard
 // with USB Hub": the name goes large, the rest under it. The description is
 // set in full further down the page (templates/index.tsx).
 const ProductInfo = ({ product, countryCode }: ProductInfoProps) => {
   const [name, ...rest] = (product.title ?? "").split(" — ")
   const kind = rest.join(" — ")
   const shipsBy = presaleShipsBy(product)
-  // KeBe Lite, planned, keeps its tagline, under "Planned, with a free waitlist."
+  // The Chinook, planned, keeps its tagline, under "Planned, with a free waitlist."
   const onHold = isOnHold(product.handle)
   // On the presale board the line under the name continues the reel's
   // argument instead (kebe-copy.ts). Only this line changes: the title, and

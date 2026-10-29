@@ -397,7 +397,7 @@ export default function ProductActions({
         )}
         {/* The FCC notice for US orders, under the button and its note, on
             /us only and only while this board's SDoC is pending
-            (lib/util/fcc.ts): KeBe v2's and KeBe Lite's pages each name
+            (lib/util/fcc.ts): The Breeze's and the Chinook's pages each name
             their own board (7 Oct 2026). Always shown, not only once the
             board can be bought: the page advertises it either way. */}
         <FccNotice

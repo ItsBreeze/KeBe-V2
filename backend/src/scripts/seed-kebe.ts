@@ -297,7 +297,7 @@ export default async function seedKebeData({ container }: ExecArgs) {
     input: {
       products: [
         {
-          title: "KeBe v1 — 68-Key Ortholinear Keyboard",
+          title: "The Breeze — 68-Key Ortholinear Keyboard",
           handle: "kebe-v1-keyboard",
           category_ids: [keyboards],
           description:
@@ -353,11 +353,11 @@ export default async function seedKebeData({ container }: ExecArgs) {
           sales_channels: [{ id: defaultSalesChannel[0].id }],
         },
         {
-          title: "KeBe v1 Case Set",
+          title: "The Breeze Case Set",
           handle: "kebe-v1-case-set",
           category_ids: [parts],
           description:
-            "The 3D printed plate and bottom for a KeBe v1, sold on their own for " +
+            "The 3D printed plate and bottom for the Breeze V1, sold on their own for " +
             "anyone rebuilding or replacing a case. Machined to the corrected v1 " +
             "geometry: 108.000 mm M2 pattern, 4.150 mm plate cavity.",
           weight: 250,
@@ -414,11 +414,11 @@ export default async function seedKebeData({ container }: ExecArgs) {
         {
           // Blocked: the corrected gerbers in PCBs/fab-corrected/gerbers-v2/
           // have never been fabricated. Do not publish until a run exists.
-          title: "KeBe v1 PCB",
+          title: "The Breeze PCB",
           handle: "kebe-v1-pcb",
           category_ids: [parts],
           description:
-            "The bare KeBe v1 board: 252.010 × 84.990 mm, two layers, 68 hot-swap " +
+            "The bare Breeze V1 board: 252.010 × 84.990 mm, two layers, 68 hot-swap " +
             "sockets and 68 SK6812MINI-E LEDs, STM32F072 controller.",
           weight: 120,
           status: ProductStatus.DRAFT,
@@ -438,7 +438,7 @@ export default async function seedKebeData({ container }: ExecArgs) {
           title: "Gift Card",
           handle: "gift-card",
           category_ids: [],
-          description: "A KeBe gift card.",
+          description: "A Brisebois' Boards gift card.",
           status: ProductStatus.DRAFT,
           shipping_profile_id: shippingProfile.id,
           options: [{ title: "Amount", values: ["50", "100", "250"] }],

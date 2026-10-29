@@ -182,8 +182,8 @@ export default function Board({ learned, adds, next, flash, blind, onPress, clas
       aria-label={
         // A key whose legend is dark isn't named: finding out is the point.
         next && !next.keys.some((id) => blind?.has(id))
-          ? `KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each, with ${next.name} lit as the next key`
-          : "KeBe's keys, the ones in play lit from underneath in the colour of the finger that presses each"
+          ? `The Breeze's keys, the ones in play lit from underneath in the colour of the finger that presses each, with ${next.name} lit as the next key`
+          : "The Breeze's keys, the ones in play lit from underneath in the colour of the finger that presses each"
       }
     >
       <defs>
